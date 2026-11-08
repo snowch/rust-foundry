@@ -1,0 +1,60 @@
+{
+  "version": "rust-wasm-v0.2.0",
+  "upstream": "https://github.com/oligamiq/rust_wasm",
+  "assets": {
+    "compiler": {
+      "bytes": 95427808,
+      "gzipBytes": 30360310,
+      "sha256": "c6dccf3e5f01631b942a0a008b9f2f5312987e7d8590f8c61024cd00687a5791",
+      "parts": [
+        {
+          "file": "compiler.0.gz.part",
+          "bytes": 8388608,
+          "sha256": "45c34a24e315f88d5d0763d74582ab1d96631bdf5f4c8460a24e5c5fe4b2a4db"
+        },
+        {
+          "file": "compiler.1.gz.part",
+          "bytes": 8388608,
+          "sha256": "f81eff076fa06cbae664c923b5fdeb09bf04dac11e05c3b5bd7b44efc5c24788"
+        },
+        {
+          "file": "compiler.2.gz.part",
+          "bytes": 8388608,
+          "sha256": "34487afe45658a0340db2638fab4d12f2cd7299b621518047e4cc0a1760e2054"
+        },
+        {
+          "file": "compiler.3.gz.part",
+          "bytes": 5194486,
+          "sha256": "ff716d7ddc3728443c5fb467ea6eccd3ef5ab1513328fad483a9df3d21ca388a"
+        }
+      ]
+    },
+    "sysroot": {
+      "bytes": 74096640,
+      "gzipBytes": 27429237,
+      "sha256": "f64fee34c0789749cd01f9f6fba3f60e6fca7f35fbeac41b453b66bd20a943ad",
+      "parts": [
+        {
+          "file": "sysroot.0.gz.part",
+          "bytes": 8388608,
+          "sha256": "4828c9d43841d98d555772e7fd0749b35f143b10bd3ed9e15962e6f83e1d3b4d"
+        },
+        {
+          "file": "sysroot.1.gz.part",
+          "bytes": 8388608,
+          "sha256": "c85af55026d3bde6134f0941025367283f1acf5be416c40b9cdd67a66ee74ebd"
+        },
+        {
+          "file": "sysroot.2.gz.part",
+          "bytes": 8388608,
+          "sha256": "05a338a1fba931550faf6130c965b2f319bb0fecdee63ef992d5b27aa784a1ba"
+        },
+        {
+          "file": "sysroot.3.gz.part",
+          "bytes": 2263413,
+          "sha256": "8b55661d057a9943c2c0ef77c4ce5e511c7427735c9f27483492b9ac1db89709"
+        }
+      ]
+    }
+  }
+}

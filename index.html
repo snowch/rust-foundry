@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+  <meta name="theme-color" content="#121518" />
+  <meta name="description" content="Write real Rust, compile to WebAssembly, and run it entirely in your browser. An experimental Rust Foundry playground." />
+  <title>Rust Foundry — a local Rust playground</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+</head>
+<body>
+  <header class="header">
+    <a class="brand" href="./" aria-label="Rust Foundry home"><span class="brand-mark" aria-hidden="true">R<span>·</span></span><span>rust<span class="brand-light">foundry</span><sup>MVP</sup></span></a>
+    <div class="header-right"><span class="privacy"><span class="dot"></span> Source stays in your browser</span><a href="#about">About this prototype <span aria-hidden="true">↗</span></a></div>
+  </header>
+  <div class="layout">
+    <aside class="sidebar" aria-label="Learning exercises">
+      <div class="sidebar-heading"><span class="eyebrow">THE WORKBENCH</span><span class="version">01—04</span></div>
+      <h2>Small steps.<br>Real Rust.</h2>
+      <p class="sidebar-intro">Four experiments to put a compiler in your browser.</p>
+      <nav id="lessons" class="lesson-list" aria-label="Choose an exercise"></nav>
+      <div class="progress-card"><div><span>Your experiments</span><span id="progress-count">0 / 4</span></div><div class="progress-track"><div id="course-progress"></div></div><p>Saved on this device</p></div>
+      <div class="sidebar-bottom"><span class="outline-icon" aria-hidden="true">⌘</span><div><strong>No terminal. No install.</strong><p>Just a browser and a little curiosity.</p></div></div>
+    </aside>
+    <main>
+      <div class="page-heading"><div class="breadcrumb">PLAYGROUND <span>/</span> <span id="breadcrumb">Hello, Rust</span></div><span class="experimental">Experimental toolchain</span></div>
+      <section class="brief" aria-labelledby="lesson-title">
+        <div class="lesson-index" id="lesson-index">01</div>
+        <div><p class="eyebrow" id="concept">YOUR FIRST PROGRAM</p><h1 id="lesson-title">Hello, Rust</h1><p id="description" class="description"></p></div>
+      </section>
+      <div id="compatibility" class="notice error" role="alert" hidden></div>
+      <section class="toolchain-card" aria-label="Compiler setup">
+        <div class="toolchain-icon" aria-hidden="true">↓</div>
+        <div class="toolchain-copy"><strong id="load-title">Bring the compiler to your browser.</strong><p id="load-detail">One download, about 58 MB. Your code never leaves this tab.</p><div class="download-track" id="download-track" hidden><div id="download-progress"></div></div></div>
+        <button id="load" class="button secondary">Load compiler <span aria-hidden="true">↗</span></button>
+      </section>
+      <section class="workspace" aria-label="Rust editor and results">
+        <div class="editor-panel">
+          <div class="panel-bar"><div class="file-tab"><span class="file-icon" aria-hidden="true">R</span> main.rs <span class="saved-dot" id="saved-dot" title="Saved locally"></span></div><div class="panel-tools"><button id="reset" class="text-button" title="Restore this exercise’s starter code">Reset</button><span class="separator"></span><button id="export-source" class="icon-button" aria-label="Download Rust source" title="Download Rust source">↓</button></div></div>
+          <div class="code-area"><pre id="line-numbers" class="line-numbers" aria-hidden="true">1</pre><textarea id="source" aria-label="Rust source code" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" inputmode="text" enterkeyhint="enter" wrap="off"></textarea></div>
+          <div id="code-keys" class="code-keys" role="group" aria-label="Code editing keys"><button type="button" data-key="indent" aria-label="Insert four spaces">↹</button><button type="button" data-key="{}" aria-label="Insert braces">{ }</button><button type="button" data-key="()" aria-label="Insert parentheses">( )</button><button type="button" data-key="[]" aria-label="Insert brackets">[ ]</button><button type="button" data-key=";" aria-label="Insert semicolon">;</button><button type="button" data-key='""' aria-label="Insert quotes">&quot; &quot;</button><button type="button" data-key="&amp;" aria-label="Insert ampersand">&amp;</button><button type="button" data-key=":" aria-label="Insert colon">:</button><button type="button" data-key="newline" aria-label="New line with indentation">↵</button><button type="button" id="hide-keyboard" aria-label="Hide keyboard">↓</button></div>
+          <div class="editor-footer"><span>Rust 2021 <span>·</span> UTF-8</span><span id="cursor-position">Ln 1, Col 1</span></div>
+          <div class="stdin-bar"><label for="stdin">STANDARD INPUT</label><span>Available to std::io::stdin()</span></div>
+          <textarea id="stdin" aria-label="Standard input" placeholder="Input for your program, if it needs any…" spellcheck="false"></textarea>
+        </div>
+        <div class="results-panel">
+          <div class="panel-bar result-tabs" role="tablist" aria-label="Program results"><button id="tab-output" role="tab" aria-selected="true" aria-controls="output-panel">Output</button><button id="tab-diagnostics" role="tab" aria-selected="false" aria-controls="diagnostics-panel">Compiler <span id="diagnostic-indicator" hidden>●</span></button></div>
+          <div class="output-content"><div id="output-panel" role="tabpanel" aria-labelledby="tab-output"><div id="empty-output" class="empty-output"><span class="terminal-glyph" aria-hidden="true">&gt;_</span><strong>Your program starts here.</strong><p>Load the compiler, then run your code.<br>Output will appear in this panel.</p></div><pre id="stdout" class="console" hidden></pre><pre id="stderr" class="console stderr" hidden></pre></div><div id="diagnostics-panel" role="tabpanel" aria-labelledby="tab-diagnostics" hidden><pre id="diagnostics" class="console">Compiler messages will appear here.</pre></div></div>
+          <div class="run-summary" id="run-summary"><span class="status-light" id="status-light"></span><span id="status-text" role="status" aria-live="polite">Ready when you are</span></div>
+          <div class="goal"><span class="eyebrow">THE CHECK</span><p id="goal-text"></p><div id="check-result" hidden></div></div>
+        </div>
+        <div class="run-bar"><span class="runtime-label"><span class="dot" id="runtime-dot"></span><span id="runtime-state">Compiler not loaded</span></span><div class="run-actions"><button id="export-wasm" class="text-button" disabled>Save .wasm</button><button id="stop" class="button stop" disabled><span aria-hidden="true">■</span> Stop</button><button id="run" class="button primary" disabled><span aria-hidden="true">▶</span> Run code <kbd>⌘ ↵</kbd></button></div></div>
+      </section>
+      <div class="learning-note"><span aria-hidden="true">↳</span><p id="note"></p></div>
+      <footer id="about"><div><strong>Built for experimenting on phones and tablets.</strong><p>A browser-only MVP using an experimental, pinned Rust compiler. Single-file programs and the standard library; external crates and procedural macros aren’t included. Target browsers are Safari on iPhone/iPad and Chrome on Android. The compiler is memory intensive; real-device compatibility is still being verified. Keep this tab open while compiling.</p></div><div class="footer-links"><a href="./THIRD-PARTY-NOTICES.txt" target="_blank" rel="noopener">Toolchain & licenses ↗</a><span>3 min compile · 5 sec run · 100 KB output</span></div></footer>
+    </main>
+  </div>
+  <script src="./coi-config.js"></script>
+  <script src="./coi-serviceworker.js"></script>
+  <script type="module" src="/src/app.js"></script>
+</body>
+</html>

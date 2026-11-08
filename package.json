@@ -1,0 +1,26 @@
+{
+  "name": "rust-foundry",
+  "version": "1.0.0",
+  "description": "Browser-only Rust compilation and execution playground",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "node scripts/serve.mjs",
+    "toolchain:fetch": "node scripts/fetch-toolchain.mjs",
+    "check": "node scripts/check.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@bjorn3/browser_wasi_shim": "0.3.0",
+    "@fontsource-variable/dm-sans": "5.3.0",
+    "@fontsource/ibm-plex-mono": "5.3.0",
+    "@oligami/browser_wasi_shim-threads": "0.1.1",
+    "typescript": "5.9.3",
+    "vite": "6.4.1"
+  }
+}

@@ -1,0 +1,43 @@
+Rust Foundry MVP — experimental browser-only Rust toolchain
+
+GitHub Pages isolation: coi-serviceworker v0.1.7
+https://github.com/gzuidhof/coi-serviceworker
+Vendored unchanged from commit 7b1d2a092d0d2dd2b7270b6f12f13605de26f214.
+Guido Zuidhof and contributors, MIT. Text: licenses/coi-serviceworker-MIT.txt.
+The local coi-config.js selects require-corp for Safari compatibility.
+
+Compiler and standard library: oligamiq/rust_wasm v0.2.0
+https://github.com/oligamiq/rust_wasm
+https://oligamiq.github.io/rust_wasm/v0.2.0/rustc_opt.wasm.br
+https://oligamiq.github.io/rust_wasm/v0.2.0/wasm32-wasip1.tar.br
+
+Prebuilt patched Rust compiler with LLVM and integrated LLD, plus its matching
+wasm32-wasip1 standard library. Locally recompressed as gzip, split into 8 MiB
+files for static hosting. SHA-256 integrity metadata is in toolchain/manifest.json.
+This is a pinned experimental compiler distribution, not current stable Rust.
+Rust: MIT OR Apache-2.0. LLVM and LLD: Apache-2.0 WITH LLVM-exception.
+License text: licenses/RUST-LICENSE-MIT, licenses/RUST-LICENSE-APACHE,
+licenses/LLVM-LICENSE.txt.
+
+Runtime: @bjorn3/browser_wasi_shim 0.3.0
+https://github.com/bjorn3/browser_wasi_shim
+Copyright (c) 2022 bjorn3. MIT OR Apache-2.0.
+License text: licenses/LICENSE-MIT and licenses/LICENSE-APACHE.
+
+Threads: @oligami/browser_wasi_shim-threads 0.1.1
+https://github.com/oligamiq/browser_wasi_shim-threads
+Copyright oligami and browser_wasi_shim contributors. MIT OR Apache-2.0.
+Based on browser_wasi_shim; the same license options apply.
+
+Fonts: DM Sans and IBM Plex Mono, distributed via Fontsource.
+SIL Open Font License 1.1. Text: licenses/DM-Sans-OFL.txt and
+licenses/IBM-Plex-Mono-OFL.txt.
+
+Integration informed by Rubrc 1.1.2:
+https://github.com/oligamiq/rubrc/tree/v1.1.2
+Copyright oligami. MIT OR Apache-2.0.
+
+No compiler services, analytics, or source uploads are used. The application
+serves its compiler assets from the same origin. Program files are temporary
+and reset for each execution. Source and lesson progress use browser localStorage;
+compiler downloads use Cache Storage when available. Fonts are bundled locally.
