@@ -1,4 +1,5 @@
 import './style.css';
+import './themes.css';
 import { examples, matchesOutput } from './examples.js';
 import { startRun } from './runner.js';
 import { insertCode } from './editing.js';

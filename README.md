@@ -28,6 +28,11 @@ project starters, compile it locally, then install that actual compiled program
 into the workspace. Download the course archive for starters, references,
 project instructions, and native invariant tests.
 
+The header includes a light/dark theme switch. It follows the device preference
+until a choice is made, remembers that choice when browser storage permits,
+and applies it before the app loads. Switching themes preserves the current
+lesson, editor drafts, and results.
+
 The Rust compiler,
 LLVM backend, integrated LLD linker, standard library, and generated programs
 run on the learner's device. The server only serves static files. No compiler
