@@ -11,6 +11,14 @@ walkthrough, a pitfall, a prediction question with feedback, an experiment,
 progressive hints, and a TODO exercise with assertions and a reference solution.
 Explicit reading completion and passing an exercise are tracked separately.
 
+Examples, editable practice code, output, and compiler messages live directly
+inside each lesson. Running them keeps the current lesson URL and reading
+context. A sticky chapter/lesson indicator and lesson chooser show your place;
+the chapter outline highlights the current lesson and distinguishes reading
+from practice progress. Previous/next links identify chapter boundaries, and
+the overview offers a resume link. Existing full-editor course drafts are
+adopted by the inline cards. Progress updates preserve editor nodes and results.
+
 The **TinyDB workspace** runs a bundled 842 KB Rust/Wasm program; it does not
 download the full compiler. It saves real files in IndexedDB with a revision
 check inside the write transaction, so a stale tab cannot overwrite newer
@@ -110,6 +118,12 @@ performance still depends on browser and hardware.
 prepares the Wasm compiler module, and extracts its standard library. Toolchain
 data stays in tab memory until the tab closes; verified compressed downloads
 are cached when possible.
+
+`src/compiler.js` shares one prepared compiler between lesson cards and the
+full editor. `src/lesson-runner.js` provides cancellable inline compilation,
+practice checks, diagnostics, touch editing, and per-card drafts. Leaving a
+lesson cancels its current run. The full editor remains available for standalone
+programs and TinyDB implementation projects.
 
 `src/engine.worker.js` owns a fresh in-memory filesystem. A separate compiler
 worker uses `@oligami/browser_wasi_shim-threads` to run the patched compiler and

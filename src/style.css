@@ -137,6 +137,58 @@ summary{cursor:pointer;min-height:44px;align-content:center;font-size:17px;color
 .field-note{font-size:15px!important}.db-file-panel code{font-size:16px;overflow-wrap:anywhere}.db-file-panel details{margin-top:24px}
 .project-picker{border:1px solid #414e56;border-radius:8px;padding:12px 18px;margin:24px 0}.project-picker p{max-width:850px}.project-picker>.button{margin:10px 10px 10px 0;white-space:normal}
 .workspace-tools{border-top:1px solid #3d474e;border-bottom:1px solid #3d474e;padding:8px 0;margin:20px 0}.workspace-tools>summary{color:#d1dcd7}
+
+/* Keep explanation, code, feedback, and course position in the same view. */
+.course-view{max-width:1440px}.course-heading{max-width:none}
+.course-breadcrumb{font-size:16px;color:#b9c8d1;line-height:1.7}.course-breadcrumb a{color:#edb99b;min-height:44px;display:inline-block;padding:8px 0}
+.course-heading .progress-copy{color:#b6c3cc}
+.course-outline .progress-copy{font-size:14px!important;line-height:1.75;color:#b7c7c6;border-top:1px solid #425158;padding-top:14px}
+.lesson-position{position:sticky;top:0;z-index:8;display:flex;align-items:center;gap:24px;justify-content:space-between;border:1px solid #526259;border-radius:8px;padding:13px 18px;background:#1c2828;box-shadow:0 4px 16px #0005;margin:24px 0}
+.chapter-position{font:15px/1.6 var(--mono);margin:0;color:#efb491}.position-title{margin:3px 0 0;color:#e0e8e4;font-size:18px}
+.position-select-label{font-size:14px;color:#bacac5;min-width:0;width:330px;max-width:48%;flex-shrink:0}
+.position-select-label select{display:block;width:100%;min-height:44px;font-size:17px;padding:8px;color:#ecf2ed;background:#253434;border:1px solid #6c8278;border-radius:5px}
+.course-body{display:grid;grid-template-columns:265px minmax(0,1fr);gap:32px;align-items:start}
+.course-body .reading{width:100%;margin:0;max-width:900px;min-width:0}
+.course-outline{position:sticky;top:126px;max-height:calc(100svh - 150px);overflow-y:auto;border:1px solid #3c4b51;border-radius:8px;padding:18px;background:#192126;min-width:0}
+.course-outline h2{font-size:23px;line-height:1.35;margin:9px 0 14px;font-weight:550}.course-outline>.outline-disclosure>summary{display:none}
+.chapter-progress-copy{font-size:15px;color:#bccdc7;line-height:1.7}.course-outline progress{width:100%;height:5px;accent-color:#a8c2ad}
+.chapter-lesson-list{list-style:none;margin:16px 0;padding:0}.chapter-lesson-list li{margin:8px 0}
+.chapter-lesson{display:block;border:1px solid #3d4b51;border-radius:6px;padding:12px;min-height:44px;line-height:1.5;color:#dce4e6;background:#1e282d}
+.chapter-lesson[aria-current=page]{background:#392b23;border-color:#cd9878;color:#ffdbc3}
+.chapter-lesson-title{display:block;font-size:17px}.current-lesson-badge{display:block;font-size:14px;line-height:1.6;color:#ffb88b;margin-top:4px}
+.lesson-progress-label{display:block;font-size:14px;line-height:1.7;margin-top:7px;color:#b8c8c3}
+.course-outline .all-chapters{border-top:1px solid #425158;padding-top:12px;margin-top:20px}
+.all-chapters nav>a{display:block;min-height:44px;padding:10px 0;border-bottom:1px solid #344249;font-size:16px;line-height:1.6}.all-chapters .current-chapter{color:#f5b38b}
+.course-outline>.outline-disclosure>a{display:inline-block;font-size:16px;min-height:44px;padding-top:14px;color:#efbb9f}
+.course-overview{max-width:900px;margin:auto;font-size:18px}.course-overview>p{font-size:18px;line-height:1.85;color:#cad5dc}.course-overview .chapter-card h2{font-size:25px;line-height:1.4}
+.course-overview .chapter-lesson-list{display:grid;gap:10px;grid-template-columns:repeat(3,minmax(0,1fr))}.course-overview .chapter-lesson-list li{margin:0}.course-overview .chapter-lesson{height:100%}
+.resume-card{border:1px solid #59695f;border-radius:8px;background:#1c2824;padding:22px;margin:28px 0}.resume-card p{font-size:17px;line-height:1.8}.resume-card .eyebrow{font-size:14px}.resume-card .button{margin-top:15px;white-space:normal}
+.inline-runner{min-width:0;border:1px solid #52626c;border-radius:8px;background:#181f25;margin:22px 0;overflow:hidden}
+.inline-code-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:#263039;border-bottom:1px solid #52626c;padding:10px 16px}
+.inline-code-heading label{font-size:16px;color:#e4ece7}.inline-code-heading button{font-size:16px;min-height:44px;padding:7px 12px}
+.inline-runner>textarea{display:block;width:100%;min-width:0;height:320px;min-height:240px;max-height:600px;resize:vertical;overflow:auto;border:0;border-bottom:1px solid #52626c;padding:18px 16px;font:17px/1.75 var(--mono);background:#151c22;color:#e4ece7;tab-size:4;white-space:pre;outline-offset:-3px;scroll-margin-top:150px}
+.inline-runner .code-keys{border-top:0;border-bottom:1px solid #46555d;padding:8px}.inline-runner .code-keys>button{padding:5px;font-size:17px}
+.inline-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:14px 16px 8px}.inline-controls .button{min-width:72px;min-height:46px}.inline-save{font-size:14px;line-height:1.6;color:#bed1c7;flex-basis:100%}
+.inline-runner>progress{display:block;width:calc(100% - 32px);height:5px;accent-color:var(--orange);margin:14px 16px}
+.reading .inline-status{font-size:17px;line-height:1.75;margin:0;padding:12px 16px;color:#c8d6de}.reading .inline-status.passed{color:#b6ddb6}.reading .inline-status.check-neutral{color:#e8cba3}
+.reading .inline-runner>h3{font:15px/1.7 var(--mono);margin:0;padding:12px 16px 8px;border-top:1px solid #40505a;color:#c2cfd8}
+.inline-runner>.console{font:17px/1.75 var(--mono);padding:4px 16px 16px;max-height:280px;overflow:auto;min-height:30px}.inline-runner>.stderr:empty{display:none}
+.inline-diagnostics,.inline-more{padding:8px 16px;border-top:1px solid #40505a}.inline-diagnostics .console{max-height:360px;overflow:auto;margin-top:10px;font-size:17px}
+.inline-more button{margin:8px 12px 8px 0;font-size:16px;white-space:normal}
+.expected-output{border:1px solid #46565e;border-radius:6px;padding:8px 16px;margin:18px 0}.expected-output .reading-code{margin:8px 0}
+.lesson-practice{scroll-margin-top:150px}.reference-solution .inline-runner{margin-top:12px}.lesson-downloads button{margin:10px 12px 8px 0;white-space:normal}
+.reading .adjacent-lessons{display:flex;gap:14px;justify-content:space-between;flex-wrap:wrap;margin:30px 0}
+.reading .adjacent-lessons a{flex:1;min-width:200px;border:1px solid #6d6558;border-radius:7px;padding:14px 16px;color:#f3c3a6;white-space:pre-line;text-decoration:none;font-size:17px;line-height:1.7;background:#272724}
+.reading .adjacent-next{border-color:#c89170!important;background:#382c24!important}
+@media(max-width:1099px){
+  .course-body{display:flex;flex-direction:column;gap:14px}.course-outline{position:static;width:100%;max-height:none;padding:10px 16px}.course-outline>.outline-disclosure>summary{display:list-item;font-size:16px}.course-outline .chapter-lesson-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.course-outline .chapter-lesson-list li{margin:0}.course-outline .chapter-lesson{height:100%}
+}
+@media(max-width:640px){
+  .lesson-position{gap:10px;flex-direction:column;align-items:stretch;padding:11px 12px;margin:18px 0;border-radius:6px}.chapter-position{font-size:14px}.position-title{font-size:17px}.position-select-label{width:100%;max-width:100%;font-size:14px}.position-select-label select{font-size:17px}.position-select-label{display:flex;flex-direction:column;gap:3px}
+  .course-outline .chapter-lesson-list,.course-overview .chapter-lesson-list{grid-template-columns:1fr}
+  .inline-code-heading{padding:8px 12px;gap:8px}.inline-code-heading label{font-size:16px}.inline-runner>textarea{height:300px;padding:14px 12px;font-size:17px}.inline-controls{padding:12px 12px 6px}.reading .inline-status{padding:10px 12px}.inline-runner>.console{padding-left:12px;padding-right:12px}.inline-runner .code-keys{gap:5px}
+  .lesson-practice,.inline-runner>textarea{scroll-margin-top:200px}.resume-card{padding:16px}.reading .adjacent-lessons a{min-width:100%;font-size:17px}
+}
 @media(max-width:1000px){.db-grid{grid-template-columns:1fr}.course-map nav{grid-template-columns:repeat(2,minmax(0,1fr))}.db-fields label{min-width:180px}}
 @media(max-width:640px){
   .mode-nav{padding:8px 10px;gap:2px}.mode-nav a{font-size:16px;padding:8px 10px}

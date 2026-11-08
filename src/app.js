@@ -5,6 +5,7 @@ import { insertCode } from './editing.js';
 import { course } from './course-data.js';
 import { initCourse, markPractice } from './course.js';
 import { initDatabase } from './database.js';
+import { loadCompiler } from './compiler.js';
 const $ = (id) => document.getElementById(id);
 const storageKey = 'rust-foundry-mvp-v1';
 let saved = { sources: {}, inputs: {}, completed: [], selected: 'hello' };
@@ -120,36 +121,15 @@ const ensureToolchain = () => {
   $('download-progress').value = 0;
   $('runtime-state').textContent = 'Preparing first run…';
   status('Preparing first run…', 'busy');
-  return new Promise((resolve, reject) => {
-    let worker, timer, settled = false;
-    const finish = (error, result) => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timer);
-      worker?.terminate();
-      cancelLoading = undefined;
-      $('download-progress').hidden = true;
-      if (error) reject(error); else resolve(result);
-    };
-    cancelLoading = () => finish(new DOMException('Stopped. You can edit and run again.', 'AbortError'));
-    try {
-      worker = new Worker(new URL('./loader.worker.js', import.meta.url), { type: 'module' });
-      timer = setTimeout(() => finish(new Error('Loading exceeded five minutes. Check your connection and choose Run code to retry.')), 300_000);
-      worker.onerror = (event) => { event.preventDefault(); finish(new Error(event.message || 'Compiler loading failed. Choose Run code to retry.')); };
-      worker.onmessage = ({ data }) => {
-        if (settled) return;
-        if (data.type === 'progress') {
-          $('download-progress').value = Math.min(1, data.loaded / data.total);
-          const progress = `${(data.loaded / 1e6).toFixed(1)} / ${(data.total / 1e6).toFixed(1)} MB`;
-          $('runtime-state').textContent = data.loaded < data.total ? `Downloading · ${progress}` : 'Preparing first run…';
-          status(data.loaded < data.total ? `Downloading compiler · ${progress}` : 'Preparing compiler…', 'busy');
-        } else if (data.type === 'ready') {
-          toolchain = { module: data.module, files: data.files };
-          finish(undefined, toolchain);
-        } else if (data.type === 'failure') finish(new Error(data.message));
-      };
-      worker.postMessage({ manifestUrl: new URL('./toolchain/manifest.json', document.baseURI).href });
-    } catch (error) { finish(error); }
+  const controller = new AbortController();
+  cancelLoading = () => controller.abort();
+  return loadCompiler({ signal: controller.signal, onProgress: data => {
+    $('download-progress').value = Math.min(1, data.loaded / data.total);
+    const progress = `${(data.loaded / 1e6).toFixed(1)} / ${(data.total / 1e6).toFixed(1)} MB`;
+    $('runtime-state').textContent = data.loaded < data.total ? `Downloading · ${progress}` : 'Preparing first run…';
+    status(data.loaded < data.total ? `Downloading compiler · ${progress}` : 'Preparing compiler…', 'busy');
+  } }).then(result => { toolchain = result; return result; }).finally(() => {
+    cancelLoading = undefined; $('download-progress').hidden = true;
   });
 };
 const event = (data) => {
@@ -172,6 +152,7 @@ const event = (data) => {
 };
 $('run').addEventListener('click', async () => {
   if (!supported || busy) return;
+  if (learning.isBusy()) { status('Stop the lesson’s current run first.', ''); return; }
   if (database.isBusy()) { status('Stop the TinyDB workspace run first.', ''); return; }
   if (new TextEncoder().encode($('source').value).length > 64_000) { status('Source exceeds the MVP’s 64 KB limit.', 'error'); return; }
   if (new TextEncoder().encode($('stdin').value).length > 100_000) { status('Input exceeds the 100 KB limit.', 'error'); return; }
@@ -289,16 +270,18 @@ const openDatabaseSource = (source, project = 'reference') => {
     note: 'Editor runs use temporary files. Installing a compiled program changes what runs in the workspace; existing saved files are only changed when you run it there.' };
   renderLesson(); setBusy(false); location.hash = '#practice/tinydb-source/' + project;
 };
-const database = initDatabase({ canRun: () => !busy, openSource: openDatabaseSource });
+const database = initDatabase({ canRun: () => !busy && !learning.isBusy(), openSource: openDatabaseSource });
 $('install-tinydb').onclick = () => { if (artifact && !busy && !database.install(artifact)) status('Stop the TinyDB workspace run before installing another program.'); };
-const learning = initCourse({ openPractice, openLab: database.openLab });
+const learning = initCourse({ openLab: database.openLab, canRun: () => !busy && !database.isBusy(), unsupported: supported ? '' : `The browser compiler needs ${features.join(', ')}. Update your browser or export your code to keep working.` });
 function route() {
   const [name, id, mode] = location.hash.slice(1).split('/');
   const view = ['course', 'workspace', 'practice'].includes(name) ? name : name === 'about' ? 'practice' : 'course';
   $('course-view').hidden = view !== 'course'; $('database-view').hidden = view !== 'workspace'; $('practice-view').hidden = view !== 'practice';
   document.querySelectorAll('[data-view]').forEach(link => { if (link.dataset.view === view) link.setAttribute('aria-current', 'page'); else link.removeAttribute('aria-current'); });
   if (view === 'course') learning.render(id);
-  if (view === 'workspace') database.initialize();
+  else learning.suspend();
+  if (view === 'workspace') { document.title = 'TinyDB workspace — Rust Foundry'; database.initialize(); }
+  if (view === 'practice') document.title = 'Rust editor — Rust Foundry';
   if (view === 'practice' && id && id !== 'tinydb-source') {
     const lesson = course.find(x => x.id === id);
     if (lesson && ['worked', 'exercise', 'reference'].includes(mode) && current.id !== `course:${id}:${mode}`) openPractice(lesson, mode);
