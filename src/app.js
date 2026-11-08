@@ -134,7 +134,7 @@ $('load').addEventListener('click', () => {
 const event = (data) => {
   if (data.type === 'phase') {
     phase = data.phase;
-    status(data.phase === 'compiling' ? 'Compiling locally… this may take a minute' : 'Running your WebAssembly…', 'busy');
+    status(data.phase === 'compiling' ? 'Compiling locally…' : 'Running your WebAssembly…', 'busy');
     if (data.phase === 'running') {
       $('empty-output').hidden = true; $('stdout').hidden = false;
       if (!diagnostics.split('\n').filter(line => !line.startsWith('Linking using ')).join('\n').trim()) $('diagnostics').textContent = 'Compilation successful. No warnings.';

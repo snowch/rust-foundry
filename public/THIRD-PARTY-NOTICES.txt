@@ -28,6 +28,10 @@ Threads: @oligami/browser_wasi_shim-threads 0.1.1
 https://github.com/oligamiq/browser_wasi_shim-threads
 Copyright oligami and browser_wasi_shim contributors. MIT OR Apache-2.0.
 Based on browser_wasi_shim; the same license options apply.
+The Vite build applies one narrow patch to version 0.1.1: descriptor-map
+acknowledgement yields a microtask instead of waiting a fixed second.
+The existing atomic lock, mapping update, and acknowledgement are retained.
+See wasiDescriptorMappingFix in vite.config.js. Error backoff is unchanged.
 
 Fonts: DM Sans and IBM Plex Mono, distributed via Fontsource.
 SIL Open Font License 1.1. Text: licenses/DM-Sans-OFL.txt and

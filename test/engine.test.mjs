@@ -62,6 +62,7 @@ fn main() {
     assert.equal(result.ok, true, JSON.stringify(result));
     assert.equal(result.stdout, '42\n');
     assert.equal(result.exitCode, 0);
+    assert.ok(result.compileMs < 20_000, `Compilation took ${result.compileMs}ms; check the descriptor-mapping delay regression.`);
     assert.ok(artifact instanceof Uint8Array);
     assert.deepEqual([...artifact.slice(0, 4)], [0, 97, 115, 109]);
     assert.ok(events.includes('artifact'));
@@ -111,6 +112,17 @@ fn main() {
     }).finished;
     assert.equal(result.ok, false); assert.equal(result.stage, 'compile');
     assert.match(diagnostics, /E0382/); assert.match(diagnostics, /borrow of moved value/); assert.equal(emitted, false);
+  });
+  await t.test('successive edits compile correctly without descriptor-mapping stalls', async () => {
+    for (const value of [17, 29, 43]) {
+      const result = await startRun({ toolchain,
+        source: `fn main() { let value = ${value}; println!("{}", value * 2); }`,
+        stdin: '', createWorker,
+      }).finished;
+      assert.equal(result.ok, true, JSON.stringify(result));
+      assert.equal(result.stdout, `${value * 2}\n`);
+      assert.ok(result.compileMs < 20_000, `Successive compilation stalled: ${result.compileMs}ms`);
+    }
   });
   await t.test('Stop during compilation terminates the real compiler worker tree', async () => {
     const task = startRun({ toolchain, source, stdin: '', createWorker });

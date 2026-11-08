@@ -13,6 +13,7 @@ import http.server
 import pathlib
 import tempfile
 import threading
+import time
 from contextlib import ExitStack
 from playwright.sync_api import sync_playwright, expect
 
@@ -45,7 +46,7 @@ with sync_playwright() as p:
     page.wait_for_function('crossOriginIsolated && !!navigator.serviceWorker.controller', timeout=30_000)
     expect(page.locator('#load')).to_be_enabled()
     assert page.evaluate('typeof SharedArrayBuffer') == 'function'
-    assert page.evaluate('getComputedStyle(document.getElementById("source")).fontSize') == '16px'
+    assert page.evaluate('getComputedStyle(document.getElementById("source")).fontSize') == '17px'
     assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
     editor = page.locator('#source')
     editor.fill('fn main() ')
@@ -57,8 +58,10 @@ with sync_playwright() as p:
     page.locator('#load').click()
     page.wait_for_function('document.getElementById("runtime-state").textContent === "Local compiler ready" || document.getElementById("load-title").textContent === "The compiler could not start."', timeout=300_000)
     assert page.locator('#runtime-state').inner_text() == 'Local compiler ready', page.locator('#load-detail').inner_text()
+    started = time.monotonic()
     page.locator('#run').click()
     expect(page.locator('#status-text')).to_contain_text('Finished', timeout=180_000)
+    assert time.monotonic() - started < 20, 'Simple compilation exceeded the desktop CI performance budget.'
     expect(page.locator('#stdout')).to_have_text('Hello, Rust!\n')
     expect(page.locator('#check-result')).to_contain_text('Output matches')
     assert not errors, errors
@@ -68,10 +71,16 @@ with sync_playwright() as p:
     for width, height in [(320, 700), (390, 844), (768, 1024), (1024, 768), (1280, 800)]:
         page.set_viewport_size({'width': width, 'height': height})
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), width
+        for selector, minimum in [('body', 18), ('#description', 18), ('#source', 17), ('#stdin', 17), ('#diagnostics', 17), ('#stdout', 17), ('#run', 16), ('#status-text', 16), ('#note', 16)]:
+            size = page.locator(selector).evaluate('(element) => parseFloat(getComputedStyle(element).fontSize)')
+            assert size >= minimum, (width, selector, size)
         for selector in ['#run', '#stop', '#load', '#code-keys button']:
             for button in page.locator(selector).all():
                 if button.is_visible():
                     box = button.bounding_box()
                     assert box['height'] >= 44 and box['width'] >= 44, (width, selector, box)
+        for lesson in page.locator('.lesson-button').all():
+            lesson.click()
+            assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), (width, lesson.inner_text())
     print(json.dumps({'phone_and_tablet_layouts': 'passed', 'page_errors': errors}), flush=True)
     browser.close()

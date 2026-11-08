@@ -49,7 +49,8 @@ Open the printed localhost URL. Loading `index.html` via `file://` will not work
 
 This is an experimental compiler distribution, not current stable Rust or a
 full Cargo environment. The interface prioritizes phones and tablets, with
-44px touch controls, 16px editor/input text, a punctuation keyboard row,
+44px touch controls, 18px body text, 17px code/input/output, 16px buttons,
+a punctuation keyboard row,
 stacked panels up to 1024px, and a sticky run/stop bar with safe-area padding.
 These changes are not a claim that compilation has passed on physical devices.
 Memory usage is substantial: the raw
@@ -59,8 +60,14 @@ worker messages share it without cloning it, and compiler files read those
 views without another copy. The filesystem transport buffer is 64 MiB rather
 than 128 MiB. This reduces avoidable copies; it does not bound total engine
 memory or prevent a mobile OS from reclaiming a tab. Keep the page in the
-foreground while compiling. Compilation of a small program took approximately 56 seconds in the
-initial Node worker probe. Performance depends on browser and hardware.
+foreground while compiling. A small program compiled in approximately 1.1
+seconds in a Chromium browser check after fixing a runtime delay. The original
+approximately 56-second result included an unconditional one-second pause on
+each descriptor-map update in the pinned WASI shim. The Vite build replaces
+that single delay with a microtask yield and retains the atomic mapping and
+acknowledgement protocol. Its exact-match patch fails the build on an unexpected
+runtime distribution. Compiler download/preparation is measured separately;
+performance still depends on browser and hardware.
 
 ## Architecture
 
