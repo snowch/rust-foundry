@@ -1,0 +1,50 @@
+[
+  {
+    "id": "01-rows",
+    "hint": "Validate the schema before returning a Row. Check byte lengths and ASCII controls.",
+    "signature": "pub fn new(id: u32, name: &str, score: u32) -> DbResult<Self> {",
+    "file": "01-rows.rs"
+  },
+  {
+    "id": "02-parser",
+    "hint": "Consume the complete token stream. Reject unsupported statements, overflow, and trailing tokens.",
+    "signature": "fn parse(text: &str) -> DbResult<Statement> {",
+    "file": "02-parser.rs"
+  },
+  {
+    "id": "03-paged-codec",
+    "hint": "Check header, lengths, checksums, page tags, references, and full tree invariants.",
+    "signature": "pub fn decode(bytes: &[u8]) -> DbResult<Self> {",
+    "file": "03-paged-codec.rs"
+  },
+  {
+    "id": "04-index-insertion",
+    "hint": "Insert recursively; split leaves and branches; return a separator and new right page on overflow.",
+    "signature": "fn insert_at(&mut self, id: usize, row: Row) -> DbResult<Option<(u32, usize)>> {",
+    "file": "04-index-insertion.rs"
+  },
+  {
+    "id": "05-index-deletion",
+    "hint": "Prefer borrowing from a sibling with spare occupancy; otherwise merge and free the removed page.",
+    "signature": "fn rebalance(&mut self, children: &mut Vec<usize>, at: usize) -> DbResult<()> {",
+    "file": "05-index-deletion.rs"
+  },
+  {
+    "id": "06-staged-changes",
+    "hint": "Change a candidate, keep failure atomic, stage during BEGIN, otherwise autocommit.",
+    "signature": "fn apply(&mut self, change: impl FnOnce(&mut Database) -> DbResult<()>) -> DbResult<String> {",
+    "file": "06-staged-changes.rs"
+  },
+  {
+    "id": "07-journal-commit",
+    "hint": "Check the generation, prepare a journal, commit its marker, install the snapshot, then clean up. Preserve all failpoints.",
+    "signature": "fn commit(&mut self, mut candidate: Database) -> DbResult<()> {",
+    "file": "07-journal-commit.rs"
+  },
+  {
+    "id": "08-recovery",
+    "hint": "Discard prepared journals, redo committed snapshots, validate installed targets, and retain corrupt/conflicting evidence.",
+    "signature": "fn recover(path: &Path) -> DbResult<Option<String>> {",
+    "file": "08-recovery.rs"
+  }
+]

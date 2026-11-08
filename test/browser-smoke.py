@@ -46,6 +46,10 @@ with sync_playwright() as p:
     context.on('request', lambda request: toolchain_requests.append(request.url) if '/toolchain/' in request.url else None)
     page.goto(base, wait_until='domcontentloaded')
     page.wait_for_function('crossOriginIsolated && !!navigator.serviceWorker.controller', timeout=30_000)
+    expect(page.locator('#course-view')).to_be_visible()
+    expect(page.locator('#course-view h1')).to_contain_text('From your first value')
+    assert toolchain_requests == [], 'Reading requested compiler assets.'
+    page.locator('[data-view="practice"]').click()
     expect(page.locator('#run')).to_be_enabled()
     assert page.locator('#load').count() == 0
     assert page.locator('.toolchain-card').count() == 0

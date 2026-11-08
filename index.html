@@ -4,16 +4,40 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
   <meta name="theme-color" content="#121518" />
-  <meta name="description" content="Write real Rust, compile to WebAssembly, and run it entirely in your browser. An experimental Rust Foundry playground." />
-  <title>Rust Foundry — a local Rust playground</title>
+  <meta name="description" content="Learn Rust in your browser, from ownership to a working TinyDB with pages, indexing, transactions, and recovery. Built for phones and tablets." />
+  <title>Rust Foundry — learn Rust, build a database</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
 </head>
 <body>
   <header class="header">
     <a class="brand" href="./" aria-label="Rust Foundry home"><span class="brand-mark" aria-hidden="true">R<span>·</span></span><span>rust<span class="brand-light">foundry</span><sup>MVP</sup></span></a>
-    <div class="header-right"><span class="privacy"><span class="dot"></span> Source stays in your browser</span><a href="#about">About this prototype <span aria-hidden="true">↗</span></a></div>
+    <div class="header-right"><span class="privacy"><span class="dot"></span> Source stays in your browser</span><a href="#about">About</a></div>
   </header>
-  <div class="layout">
+  <nav class="mode-nav" aria-label="Workbench views"><a href="#course" data-view="course">Learn Rust</a><a href="#practice" data-view="practice">Rust editor</a><a href="#workspace" data-view="workspace">TinyDB workspace</a></nav>
+  <main id="course-view" class="course-view" hidden></main>
+  <main id="database-view" class="database-view" hidden>
+    <div class="course-heading"><p class="eyebrow">THE CAPSTONE · A REAL RUST PROGRAM</p><h1>TinyDB workspace</h1><p>Store rows, inspect pages, follow an index, and recover a transaction. Everything runs locally.</p></div>
+    <p id="db-program" class="program-label">Bundled TinyDB · Rust compiled to Wasm</p>
+    <details class="workspace-tools"><summary>Rust source and projects</summary>
+    <div class="reading-actions"><button id="db-edit-source" class="button secondary">Edit TinyDB Rust source</button><button id="db-bundled" class="button secondary" disabled>Use bundled reference</button><a href="./programs/tinydb.rs" download class="button secondary">Download source</a><a href="#course/row-validation">Study the database →</a></div>
+    <details class="project-picker"><summary>Build it yourself · eight TinyDB projects</summary><p>Each starter removes one function from the working database. Implement it, compile, and install your result. The downloadable course archive includes the full native invariant tests and references.</p><div class="db-fields"><label>Project<select id="db-project"><option value="01-rows">1. Validate rows</option><option value="02-parser">2. Parse SQL</option><option value="03-paged-codec">3. Decode paged files</option><option value="04-index-insertion">4. Split and insert into the index</option><option value="05-index-deletion">5. Rebalance after deletion</option><option value="06-staged-changes">6. Stage transactional changes</option><option value="07-journal-commit">7. Commit with a journal</option><option value="08-recovery">8. Recover interrupted commits</option></select></label></div><button id="db-open-project" class="button secondary">Open project starter in editor</button><a class="button secondary" href="./course/rust-foundry-course.zip" download>Download projects and tests .zip</a></details>
+    </details>
+    <div class="db-grid">
+      <section class="db-console" aria-labelledby="db-script-heading">
+        <h2 id="db-script-heading">SQL and commands</h2>
+        <div class="db-fields"><label>Database filename<input id="db-name" value="people.rdb" spellcheck="false" autocapitalize="off" autocomplete="off" /></label><label>Load an example<select id="db-presets"></select></label></div>
+        <p class="field-note">Examples replace the script. They use the current file; choose a new filename for a fresh database.</p>
+        <label for="db-script">One complete statement per line; multiple statements may share a line.</label>
+        <textarea id="db-script" spellcheck="false" autocapitalize="off" autocorrect="off" autocomplete="off" aria-label="TinyDB script"></textarea>
+        <p class="callout">Finish BEGIN with COMMIT or ROLLBACK in the same script. An open transaction rolls back when the script ends.</p>
+        <div class="db-run-bar"><button id="db-run" class="button primary">▶ Run statements</button><button id="db-stop" class="button stop" disabled>■ Stop</button></div>
+        <p id="db-status" role="status" aria-live="polite">Ready. TinyDB downloads on your first Run; the full compiler is not needed.</p>
+        <h3>Output</h3><pre id="db-output" class="console" aria-label="TinyDB output"></pre><pre id="db-errors" class="console stderr" aria-label="TinyDB errors"></pre>
+      </section>
+      <section class="db-file-panel" aria-labelledby="db-files-heading"><h2 id="db-files-heading">Workspace files</h2><p id="db-storage" role="status">Opening browser storage…</p><div class="reading-actions"><label class="button secondary file-picker">Import files<input type="file" id="db-import" multiple aria-label="Import workspace files" /></label><button id="db-download" class="button secondary" disabled>Download all .zip</button><button id="db-reload" class="button secondary">Reload saved files</button><button id="db-retry" class="button secondary" hidden>Retry saving</button></div><div id="db-files"></div><p>Imports are files, not SQL commands. Use <code>.import exchange.tdb</code> to replace the active database with imported rows. Download .tdb files to exchange with C Foundry.</p><details><summary>Storage and recovery limits</summary><p>32 files, 2 MB each, 8 MB total. TinyDB supports 4,096 rows and 256-byte storage pages. Normal exits save a complete workspace snapshot, including earlier commits when a later statement fails. Stop, traps, and timeouts retain the previous saved snapshot.</p><p>Browser storage can be denied or evicted. Download important files. Two tabs cannot overwrite the same saved revision. Journal interruption commands are deterministic teaching simulations; browser storage does not promise physical disk fsync or survival of a power loss.</p></details></section>
+    </div>
+  </main>
+  <div class="layout" id="practice-view">
     <aside class="sidebar" aria-label="Learning exercises">
       <div class="sidebar-heading"><span class="eyebrow">THE WORKBENCH</span><span class="version">01—04</span></div>
       <h2>Small steps.<br>Real Rust.</h2>
@@ -47,7 +71,9 @@
         </div>
       </section>
       <div class="learning-note"><span aria-hidden="true">↳</span><p id="note"></p></div>
-      <footer id="about"><div><strong>Built for experimenting on phones and tablets.</strong><p>A browser-only MVP using an experimental, pinned Rust compiler. Single-file programs and the standard library; external crates and procedural macros aren’t included. Target browsers are Safari on iPhone/iPad and Chrome on Android. The compiler is memory intensive; real-device compatibility is still being verified. Keep this tab open while compiling.</p></div><div class="footer-links"><a href="./THIRD-PARTY-NOTICES.txt" target="_blank" rel="noopener">Toolchain & licenses ↗</a><span>3 min compile · 5 sec run · 100 KB output</span></div></footer>
+      <div id="practice-context" class="practice-context" hidden></div>
+      <button id="install-tinydb" class="button secondary" hidden disabled>Use compiled TinyDB in workspace</button>
+      <footer id="about"><div><strong>Built for learning on phones and tablets.</strong><p>A browser-only course using an experimental, pinned Rust compiler. TinyDB runs a small bundled Rust program; the full compiler downloads when you run Rust source. Single-file programs and the standard library are supported; external crates and procedural macros aren’t included. Target browsers are Safari on iPhone/iPad and Chrome on Android. The compiler is memory intensive; physical-device compatibility is still being verified. Keep this tab open while compiling.</p></div><div class="footer-links"><a href="./THIRD-PARTY-NOTICES.txt" target="_blank" rel="noopener">Toolchain & licenses ↗</a><span>3 min compile · 5 sec run · 100 KB output</span></div></footer>
     </main>
   </div>
   <script src="./coi-config.js"></script>

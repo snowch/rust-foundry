@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Worker } from 'node:worker_threads';
 import { readdir } from 'node:fs/promises';
-import { startRun } from '../src/runner.js';
+import { startRun, runBinary } from '../src/runner.js';
 import { examples, matchesOutput } from '../src/examples.js';
 
 const assets = await readdir(new URL('../dist/assets/', import.meta.url));
@@ -50,6 +50,10 @@ fn main() {
     "limit" => print!("{}", "x".repeat(100_001)),
     "loop" => { println!("started"); loop { std::hint::spin_loop(); } },
     "file" => { assert!(std::fs::read_to_string("transient").is_err()); std::fs::write("transient", "test").unwrap(); println!("fresh filesystem"); },
+    "persist" => { let old = std::fs::read_to_string("saved").unwrap_or_default(); std::fs::write("saved", format!("{old}+new")).unwrap(); println!("{}", std::env::args().nth(1).unwrap()); },
+    "writepanic" => { std::fs::write("saved", "bad snapshot").unwrap(); panic!("intentional write panic"); },
+    "writeloop" => { std::fs::write("saved", "bad snapshot").unwrap(); loop { std::hint::spin_loop(); } },
+    "largefile" => { std::fs::write("large", vec![0u8; 2_097_153]).unwrap(); },
     _ => { let message = String::from("Hello, Rust!"); let borrowed = &message; println!("{borrowed}"); }
   }
 }`;
@@ -104,6 +108,21 @@ fn main() {
   await t.test('program files reset between runs', async () => {
     assert.equal((await execute('file')).stdout, 'fresh filesystem\n');
     assert.equal((await execute('file')).stdout, 'fresh filesystem\n');
+  });
+  await t.test('persistent filesystem snapshots include writes only after normal exits', async () => {
+    const options = { bytes: artifact, createWorker, files: [['saved', new TextEncoder().encode('original')]], args: ['café'] };
+    const result = await runBinary({ ...options, stdin: 'persist' }).finished;
+    assert.equal(result.ok, true, JSON.stringify(result)); assert.equal(result.stdout, 'café\n');
+    assert.equal(new TextDecoder().decode(result.files[0][1]), 'original+new');
+    for (const stdin of ['writepanic', 'largefile']) {
+      const failed = await runBinary({ ...options, stdin }).finished;
+      assert.equal(failed.ok, false); assert.equal(failed.files, undefined);
+    }
+    const timed = await runBinary({ ...options, stdin: 'writeloop', runLimit: 150 }).finished;
+    assert.equal(timed.stage, 'timeout'); assert.equal(timed.files, undefined);
+    const cancelled = runBinary({ ...options, stdin: 'writeloop' }); cancelled.cancel();
+    assert.equal((await cancelled.finished).stage, 'cancelled'); assert.equal((await cancelled.finished).files, undefined);
+    assert.equal(new TextDecoder().decode(options.files[0][1]), 'original');
   });
   await t.test('real borrow checker rejects moved values without a Wasm artifact', async () => {
     let diagnostics = '', emitted = false;

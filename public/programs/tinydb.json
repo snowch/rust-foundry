@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "sourceSha256": "7169f0ebf25c1464a9049a984b5f95fdbfc3c7630c6cfd875d1eb09d3a361740",
+  "wasmSha256": "268d0e83978461369b4e3d27ce45cc880a3c54bdaf51cc1891b824b889674840",
+  "bytes": 842483,
+  "compiler": "Vendored rustc/wasm32-wasip1; see toolchain/manifest.json"
+}

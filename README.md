@@ -1,8 +1,26 @@
-# Rust Foundry MVP
+# Rust Foundry
 
 [Open Rust Foundry](https://snowch.github.io/rust-foundry/)
 
-A browser-only Rust playground with four small experiments. The Rust compiler,
+A browser-only Rust course with **12 chapters, 36 authored lessons, and eight
+TinyDB implementation projects**. Start with values, ownership, borrowing,
+structs, enums, errors, collections, traits, and byte codecs. Then build a
+working database with SQL, paged storage, a B+ tree, transactions, and recovery.
+Every lesson includes a complete runnable program, expected output, a
+walkthrough, a pitfall, a prediction question with feedback, an experiment,
+progressive hints, and a TODO exercise with assertions and a reference solution.
+Explicit reading completion and passing an exercise are tracked separately.
+
+The **TinyDB workspace** runs a bundled 842 KB Rust/Wasm program; it does not
+download the full compiler. It saves real files in IndexedDB with a revision
+check inside the write transaction, so a stale tab cannot overwrite newer
+files. Import/export supports C Foundry's TDB1 format. Inspect actual pages,
+index paths, and recovery journals. Edit the complete source or one of eight
+project starters, compile it locally, then install that actual compiled program
+into the workspace. Download the course archive for starters, references,
+project instructions, and native invariant tests.
+
+The Rust compiler,
 LLVM backend, integrated LLD linker, standard library, and generated programs
 run on the learner's device. The server only serves static files. No compiler
 API, source upload, analytics, or runtime CDN requests are used.
@@ -42,15 +60,27 @@ Open the printed localhost URL. Loading `index.html` via `file://` will not work
 
 - Real Rust 2021 single-file source, compiled to `wasm32-wasip1`.
 - Standard input, stdout, stderr, compiler diagnostics, and output checks.
-- Source editing, per-exercise local drafts and completion, reset, `.rs` export,
+- Source editing, per-example/exercise/reference local drafts and completion, reset, `.rs` export,
   and `.wasm` export after successful compilation.
 - A deliberate ownership error shows Rust's real E0382 diagnostic.
 - Stop cancels compilation or execution by terminating its worker tree.
 - Compilation: three-minute limit. Execution: five-second limit. Output and
   diagnostics: 100 KB. Source: 64 KB. Input: 100 KB.
-- No Cargo dependencies, procedural macros, OS processes, sockets, or persistent
-  program files. Source and progress are stored in localStorage; program files
-  are recreated for every run.
+- No Cargo dependencies, procedural macros, OS processes, or sockets. Source
+  and reading/practice progress use localStorage; ordinary editor runs use a
+  fresh filesystem. The TinyDB workspace explicitly mounts persistent files.
+- TinyDB: 4,096 rows; 256-byte pages; unique B+ index on ID, leaf/branch splits,
+  sibling redistribution, merges, free-page reuse, root collapse, point/range
+  queries; staged transactions, rollback, autocommit, after-image journal redo.
+- Workspace: 32 flat files, 2 MiB per file, 8 MiB total. IndexedDB saves the full
+  file set atomically after normal exits, including nonzero exits. Stop, traps,
+  and timeouts retain saved files. Storage errors keep candidates downloadable.
+
+See [TinyDB's exact file formats and failure contracts](docs/tinydb-format.md).
+This is bounded teaching code: pages load into memory, commits rewrite a full
+snapshot, and native callers must serialize writers. Browser journal crashes
+are deterministic simulations, distinct from actual tab termination and the
+IndexedDB save boundary. Browser storage may be evicted; export important files.
 
 This is an experimental compiler distribution, not current stable Rust or a
 full Cargo environment. The interface prioritizes phones and tablets, with
@@ -85,8 +115,12 @@ are cached when possible.
 worker uses `@oligami/browser_wasi_shim-threads` to run the patched compiler and
 its threads. The compiler links Wasm directly. After compilation, that entire
 worker tree is terminated. `src/run.worker.js` executes the resulting Wasm
-with the browser WASI shim in a new, temporary filesystem. `src/runner.js`
-coordinates the phases, cancellation, and deadlines. The UI checks
+with the browser WASI shim in a new filesystem. Editor files are temporary;
+workspace runs mount and return a validated file snapshot. `src/runner.js`
+coordinates the phases, cancellation, and deadlines. `src/workspace-store.js`
+performs the revision comparison and complete-file save in one IndexedDB
+transaction. The Rust program owns SQL parsing, indexing, formats, transactions,
+and recovery; JavaScript supplies the filesystem and presentation. The UI checks
 Promise.withResolvers as well as shared-memory and decompression APIs because
 the pinned thread runtime requires it. It does not block by browser name.
 
@@ -134,8 +168,34 @@ learner programs are always compiled and run in their own browser.
 
 ```sh
 npm run build
+npm run test:native
 npm test
+python test/browser-smoke.py
+python test/browser-course.py
 ```
+
+Tests also require stable `rustc` (or set `RUSTC`), a C compiler, curl, Python
+Playwright, and Chromium. The native checks run randomized tree invariants,
+transaction/recovery failpoints, corruption rejection, and C ↔ Rust exchange
+against a SHA-pinned copy of C Foundry's actual source downloaded only for tests.
+The website does not fetch that source. All 36 reference programs execute their
+assertions, and TODO starters must fail. Browser checks cover every lesson,
+separate progress, persistent files, journal recovery, downloads/imports,
+stale-tab CAS, quota fallback, and executing learner-edited TinyDB source.
+
+To rebuild the bundled TinyDB using the exact shipped browser compiler:
+
+```sh
+npm run build
+npm run tinydb:build
+npm run check
+npm run build
+```
+
+Normal builds regenerate the downloadable course archive. The bundled Rust
+source must exactly match the non-test portion of `native/tinydb.rs`; integrity
+checks verify its source hash and the shipped Wasm hash. The learner source
+fits the existing 64 KB editor limit. The archive also includes native tests.
 
 The integration tests run the actual production loader, compiler, linker, and
 runtime Wasm under Node workers using a browser-worker adapter. Outbound HTTP

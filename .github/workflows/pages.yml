@@ -24,8 +24,11 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Install native Rust for course assertions and database invariant tests
+        run: rustup toolchain install stable --profile minimal --no-self-update
       - run: npm run check
       - run: npm run build
+      - run: npm run test:native
       - run: npm test
       - uses: actions/setup-python@v5
         with:
@@ -36,6 +39,8 @@ jobs:
           python -m playwright install --with-deps chromium
       - name: Verify isolation and real compilation in a mobile-sized browser
         run: python test/browser-smoke.py
+      - name: Verify course, persistent workspace, recovery, and stale-tab protection
+        run: python test/browser-course.py
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

@@ -1,6 +1,7 @@
 import { WASI, File, OpenFile, ConsoleStdout, PreopenDirectory } from '@bjorn3/browser_wasi_shim';
+import { validateFiles } from './files.js';
 let used = false;
-self.onmessage = async ({ data: { bytes, stdin } }) => {
+self.onmessage = async ({ data: { bytes, stdin = '', args = [], files } }) => {
   if (used) return;
   used = true;
   let stdout = '', stderr = '', outputBytes = 0;
@@ -14,15 +15,21 @@ self.onmessage = async ({ data: { bytes, stdin } }) => {
     send(channel, { text });
   });
   try {
+    if (!Array.isArray(args) || args.length > 16 || args.some(x => typeof x !== 'string' || x.length > 100_000)) throw new Error('Invalid program arguments.');
+    const root = new PreopenDirectory('/', new Map((files ? validateFiles(files) : []).map(([name, data]) => [name, new File(data)])));
     const module = await WebAssembly.compile(bytes);
-    const wasi = new WASI(['main.wasm'], [], [
+    const wasi = new WASI(['main.wasm', ...args], [], [
       new OpenFile(new File(new TextEncoder().encode(stdin))),
       output('stdout', outDecoder), output('stderr', errDecoder),
-      new PreopenDirectory('/', new Map()),
+      root,
     ]);
     const instance = await WebAssembly.instantiate(module, { wasi_snapshot_preview1: wasi.wasiImport });
     const start = performance.now();
     const exitCode = wasi.start(instance);
-    send('result', { ok: exitCode === 0, stage: 'run', stdout, stderr, exitCode, runMs: performance.now() - start });
+    const snapshot = files ? validateFiles([...root.dir.contents].map(([name, file]) => {
+      if (!(file instanceof File)) throw new Error('The workspace supports files in one directory.');
+      return [name, file.data];
+    })) : undefined;
+    send('result', { ok: exitCode === 0, stage: 'run', stdout, stderr, exitCode, files: snapshot, runMs: performance.now() - start });
   } catch (error) { send('failure', { message: error?.message || String(error), stdout, stderr }); }
 };

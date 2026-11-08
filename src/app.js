@@ -2,6 +2,9 @@ import './style.css';
 import { examples, matchesOutput } from './examples.js';
 import { startRun } from './runner.js';
 import { insertCode } from './editing.js';
+import { course } from './course-data.js';
+import { initCourse, markPractice } from './course.js';
+import { initDatabase } from './database.js';
 const $ = (id) => document.getElementById(id);
 const storageKey = 'rust-foundry-mvp-v1';
 let saved = { sources: {}, inputs: {}, completed: [], selected: 'hello' };
@@ -25,6 +28,7 @@ const setBusy = (value) => {
   $('source').readOnly = busy;
   $('stdin').readOnly = busy;
   $('reset').disabled = busy;
+  $('install-tinydb').disabled = busy || !artifact;
   document.querySelectorAll('#code-keys button').forEach(button => { button.disabled = busy; });
   document.querySelectorAll('.lesson-button').forEach(button => { button.disabled = busy; });
   if (!busy) $('runtime-state').textContent = 'Ready';
@@ -51,7 +55,7 @@ const renderNav = () => {
     const title = document.createElement('strong'); title.textContent = lesson.title;
     const detail = document.createElement('small'); detail.textContent = lesson.tag;
     copy.append(title, detail); button.append(number, copy);
-    button.addEventListener('click', () => { if (!busy) { current = lesson; saved.selected = lesson.id; save(); renderLesson(); } });
+    button.addEventListener('click', () => { if (!busy) { current = lesson; saved.selected = lesson.id; save(); renderLesson(); location.hash = '#practice'; } });
     return button;
   }));
   const completed = examples.filter(x => saved.completed.includes(x.id)).length;
@@ -73,7 +77,7 @@ const clearResults = () => {
 };
 const renderLesson = () => {
   const index = examples.indexOf(current);
-  $('lesson-index').textContent = String(index + 1).padStart(2, '0');
+  $('lesson-index').textContent = index >= 0 ? String(index + 1).padStart(2, '0') : '↳';
   $('lesson-title').textContent = current.title;
   $('breadcrumb').textContent = current.title;
   $('concept').textContent = current.concept;
@@ -82,6 +86,14 @@ const renderLesson = () => {
   $('goal-text').textContent = current.goal;
   $('source').value = typeof saved.sources[current.id] === 'string' ? saved.sources[current.id] : current.source;
   $('stdin').value = typeof saved.inputs[current.id] === 'string' ? saved.inputs[current.id] : current.stdin;
+  $('practice-context').hidden = !current.courseId;
+  $('practice-context').replaceChildren();
+  if (current.courseId) {
+    const link = document.createElement('a'); link.href = '#course/' + current.courseId; link.textContent = '← Return to the lesson';
+    $('practice-context').append(link, document.createTextNode(' · Drafts are saved separately for each worked program, exercise, and reference.'));
+  }
+  $('install-tinydb').hidden = !current.tinydb;
+  $('install-tinydb').disabled = true;
   clearResults(); refreshLines(); renderNav(); status('Ready when you are');
 };
 const features = [];
@@ -160,6 +172,7 @@ const event = (data) => {
 };
 $('run').addEventListener('click', async () => {
   if (!supported || busy) return;
+  if (database.isBusy()) { status('Stop the TinyDB workspace run first.', ''); return; }
   if (new TextEncoder().encode($('source').value).length > 64_000) { status('Source exceeds the MVP’s 64 KB limit.', 'error'); return; }
   if (new TextEncoder().encode($('stdin').value).length > 100_000) { status('Input exceeds the 100 KB limit.', 'error'); return; }
   const source = $('source').value, stdin = $('stdin').value, lesson = current;
@@ -169,7 +182,7 @@ $('run').addEventListener('click', async () => {
   let result;
   try {
     await ensureToolchain();
-    task = startRun({ toolchain, source, stdin, onEvent: event });
+    task = startRun({ toolchain, source, stdin, args: lesson.tinydb ? ['people.rdb'] : [], files: lesson.tinydb ? [] : undefined, onEvent: event });
     result = await task.finished;
   } catch (error) {
     $('empty-output').querySelector('strong').textContent = error.name === 'AbortError' ? 'Run stopped.' : 'This run could not start.';
@@ -190,6 +203,7 @@ $('run').addEventListener('click', async () => {
     status(result.message || `Program exited with code ${result.exitCode}.`, 'error');
     if (result.stage === 'compile') selectTab('diagnostics');
   } else {
+    if (lesson.tinydb && artifact) $('install-tinydb').disabled = false;
     status(`Finished · compiled ${seconds}s · ran ${result.runMs.toFixed(0)}ms`, 'success');
     if (!output) $('stdout').textContent = '(Program finished without output.)';
     if (lesson.expected !== null) {
@@ -199,6 +213,7 @@ $('run').addEventListener('click', async () => {
       $('check-result').className = passed ? 'passed' : 'check-neutral';
       $('check-result').textContent = passed ? '✓ Output matches. Nicely done.' : customInput ? 'Custom input · example check skipped.' : 'Output differs from the example. Keep experimenting.';
       if (passed) { saved.completed = [...new Set([...saved.completed, lesson.id])]; save(); renderNav(); }
+      if (passed && lesson.courseId && lesson.practiceMode === 'exercise') markPractice(lesson.courseId);
     }
   }
 });
@@ -248,6 +263,58 @@ document.querySelector('.result-tabs').addEventListener('keydown', (event) => {
   const name = event.key === 'Home' ? 'output' : event.key === 'End' ? 'diagnostics' : $('tab-output').getAttribute('aria-selected') === 'true' ? 'diagnostics' : 'output';
   selectTab(name); $('tab-' + name).focus();
 });
-document.addEventListener('keydown', (event) => { if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') { event.preventDefault(); if (!$('run').disabled) $('run').click(); } });
+document.addEventListener('keydown', (event) => {
+  if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+    if (!$('database-view').hidden) { event.preventDefault(); if (!$('db-run').disabled) $('db-run').click(); }
+    else if (!$('practice-view').hidden) { event.preventDefault(); if (!$('run').disabled) $('run').click(); }
+  }
+});
 if (!navigator.platform?.includes('Mac')) document.querySelector('kbd').textContent = 'Ctrl ↵';
-renderLesson(); setBusy(false);
+const openPractice = (lesson, mode) => {
+  if (busy) { location.hash = '#practice'; status('Stop the current run before opening another program.'); return; }
+  current = { id: `course:${lesson.id}:${mode}`, courseId: lesson.id, practiceMode: mode,
+    title: lesson.title, concept: mode === 'exercise' ? 'PRACTICE · IMPLEMENT THE FUNCTION' : 'WORKED RUST PROGRAM',
+    description: mode === 'exercise' ? 'Replace todo! with your implementation. The assertions in main check the result and boundary cases.' : 'Run the complete program, then change it and inspect the result.',
+    source: mode === 'exercise' ? lesson.starter : lesson.solution, stdin: '', expected: lesson.expected,
+    goal: 'All supplied assertions must pass and output must match the lesson example.', note: lesson.pitfall };
+  renderLesson(); setBusy(false);
+  const target = `#practice/${lesson.id}/${mode}`;
+  if (location.hash !== target) location.hash = target;
+};
+const openDatabaseSource = (source, project = 'reference') => {
+  if (busy) return;
+  current = { id: 'tinydb-source:' + project, tinydb: true, title: project === 'reference' ? 'TinyDB source' : 'TinyDB project · ' + project, concept: 'THE FULL DATABASE · EDIT, COMPILE, INSTALL',
+    description: 'Edit the real Rust reference. Run code compiles your changes and tests the script against temporary files. Then install the compiled program into the persistent workspace.',
+    source, stdin: '.help\n', expected: null, goal: 'Compile your changes, then choose Use compiled TinyDB in workspace.',
+    note: 'Editor runs use temporary files. Installing a compiled program changes what runs in the workspace; existing saved files are only changed when you run it there.' };
+  renderLesson(); setBusy(false); location.hash = '#practice/tinydb-source/' + project;
+};
+const database = initDatabase({ canRun: () => !busy, openSource: openDatabaseSource });
+$('install-tinydb').onclick = () => { if (artifact && !busy && !database.install(artifact)) status('Stop the TinyDB workspace run before installing another program.'); };
+const learning = initCourse({ openPractice, openLab: database.openLab });
+function route() {
+  const [name, id, mode] = location.hash.slice(1).split('/');
+  const view = ['course', 'workspace', 'practice'].includes(name) ? name : name === 'about' ? 'practice' : 'course';
+  $('course-view').hidden = view !== 'course'; $('database-view').hidden = view !== 'workspace'; $('practice-view').hidden = view !== 'practice';
+  document.querySelectorAll('[data-view]').forEach(link => { if (link.dataset.view === view) link.setAttribute('aria-current', 'page'); else link.removeAttribute('aria-current'); });
+  if (view === 'course') learning.render(id);
+  if (view === 'workspace') database.initialize();
+  if (view === 'practice' && id && id !== 'tinydb-source') {
+    const lesson = course.find(x => x.id === id);
+    if (lesson && ['worked', 'exercise', 'reference'].includes(mode) && current.id !== `course:${id}:${mode}`) openPractice(lesson, mode);
+  }
+  if (view === 'practice' && id === 'tinydb-source' && current.id !== 'tinydb-source:' + mode && !busy) {
+    const project = /^(0[1-8]-[a-z-]+|reference)$/.test(mode || '') ? mode : 'reference';
+    const url = project === 'reference' ? './programs/tinydb.rs' : `./course/${project}.rs`;
+    fetch(new URL(url, document.baseURI)).then(response => {
+      if (!response.ok) throw new Error('Could not load the TinyDB source.');
+      return response.text();
+    }).then(source => {
+      if (location.hash.startsWith('#practice/tinydb-source') && !busy) openDatabaseSource(source, project);
+    }).catch(error => status(error.message, 'error'));
+  }
+  if (name !== 'about') window.scrollTo(0, 0);
+  else requestAnimationFrame(() => $('about').scrollIntoView());
+}
+window.addEventListener('hashchange', route);
+renderLesson(); setBusy(false); route();
