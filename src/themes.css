@@ -43,5 +43,7 @@
 :root[data-theme=light] .progress-track{background:#ced9e0}
 :root[data-theme=light] .workspace{box-shadow:0 9px 25px #22313c0a}
 :root[data-theme=light] .separator{background:#aebec9}
+:root[data-theme=light] .lesson-goal{background:#eaf3ee;border-color:#849e8e}
+:root[data-theme=light] :is(.lesson-prerequisites,.previous-edition){border-color:var(--light-line)}
 :root[data-theme=light] .code-keys>button{border-color:var(--light-control-line)}
 :root[data-theme=light] textarea::-webkit-scrollbar-thumb,:root[data-theme=light] .output-content::-webkit-scrollbar-thumb{background:#a4b5c1}

@@ -6,7 +6,8 @@ import { element as el, button, download } from './dom.js';
 
 export function createLessonRunner({ lesson, mode, canRun, unsupported, onPass }) {
   const initial = mode === 'exercise' ? lesson.starter : mode === 'worked' ? lesson.source : lesson.solution;
-  const key = `rust-foundry-lesson-draft-v1:${lesson.id}:${mode}`;
+  const key = `rust-foundry-lesson-draft-v${lesson.revision || 1}:${lesson.id}:${mode}`;
+  let earlierDraft;
   let running = false, disposed = false, task, controller, artifact, hasRun = false;
   const root = el('section', undefined, 'inline-runner'); root.dataset.mode = mode;
   root.setAttribute('aria-label', mode === 'exercise' ? 'Your practice code' : mode === 'reference' ? 'Reference program' : 'Worked program');
@@ -17,9 +18,10 @@ export function createLessonRunner({ lesson, mode, canRun, unsupported, onPass }
   editor.setAttribute('autocorrect', 'off'); editor.setAttribute('wrap', 'off'); editor.setAttribute('aria-label', `${mode === 'exercise' ? 'Practice' : mode === 'reference' ? 'Reference' : 'Example'} Rust code`);
   try {
     const draft = localStorage.getItem(key);
-    // Adopt existing course drafts without changing their old full-editor copies.
-    const legacy = draft === null ? JSON.parse(localStorage.getItem('rust-foundry-mvp-v1') || '{}').sources?.[`course:${lesson.id}:${mode}`] : null;
-    editor.value = typeof draft === 'string' ? draft : typeof legacy === 'string' ? legacy : initial;
+    const legacy = localStorage.getItem(`rust-foundry-lesson-draft-v1:${lesson.id}:${mode}`) || JSON.parse(localStorage.getItem('rust-foundry-mvp-v1') || '{}').sources?.[`course:${lesson.id}:${mode}`];
+    // Revised instruction must not be replaced by a saved, more advanced example.
+    if (lesson.revision > 1 && typeof legacy === 'string') earlierDraft = legacy;
+    editor.value = typeof draft === 'string' ? draft : lesson.revision > 1 ? initial : typeof legacy === 'string' ? legacy : initial;
   } catch { /* Editing and downloads still work without browser storage. */ }
   const saved = el('span', 'Edits save on this browser', 'inline-save');
   const save = () => {
@@ -43,7 +45,7 @@ export function createLessonRunner({ lesson, mode, canRun, unsupported, onPass }
   }
   keys.append(button('↓', () => editor.blur())); keys.lastElementChild.setAttribute('aria-label', 'Hide keyboard');
   const progress = el('progress'); progress.max = 1; progress.value = 0; progress.hidden = true; progress.setAttribute('aria-label', 'Compiler download');
-  const status = el('p', unsupported || (mode === 'exercise' ? 'Replace todo! and run the checks here.' : 'Edit or run this example here. Your place in the lesson stays the same.'), 'inline-status'); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
+  const status = el('p', unsupported || (mode === 'exercise' ? lesson.practiceInstruction : 'Edit or run this example here. Your place in the lesson stays the same.'), 'inline-status'); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
   const outputLabel = el('h3', 'Your output');
   const result = el('pre', '', 'console inline-output'), errors = el('pre', '', 'console stderr');
   result.setAttribute('aria-label', `${mode} program output`); errors.setAttribute('aria-label', `${mode} runtime errors`);
@@ -61,6 +63,11 @@ export function createLessonRunner({ lesson, mode, canRun, unsupported, onPass }
   const wasm = button('Download compiled .wasm', () => { if (artifact) download(artifact, `${lesson.id}.wasm`, 'application/wasm'); }); wasm.disabled = true;
   more.append(el('summary', 'Download code'), button('Download this .rs', () => download(editor.value, `${lesson.id}-${mode}.rs`, 'text/plain')), wasm);
   root.append(bar, editor, keys, controls, progress, status, outputLabel, result, errors, compilerMessages, more);
+  if (earlierDraft) {
+    const archive = el('details', undefined, 'inline-more previous-draft');
+    archive.append(el('summary', 'Previous edition draft · preserved'), el('p', 'This lesson was rewritten to teach fewer new ideas at once. Your earlier draft is preserved separately; the revised example is shown above.'), button('Download previous draft .rs', () => download(earlierDraft, `${lesson.id}-${mode}-previous-edition.rs`, 'text/plain')));
+    root.append(archive);
+  }
   function changed() {
     save(); artifact = undefined; wasm.disabled = true;
     status.className = 'inline-status'; status.textContent = mode === 'exercise' ? 'Code changed. Run the checks to test this version.' : 'Code changed. Run the example to see this version’s output.';

@@ -1,420 +1,278 @@
-// Every Rust exercise is a complete program with assertions in main. The same
-// driver runs for the starter and reference; learners can inspect the checks.
-function rust(chapter, id, title, explain, signature, body, driver, expected, walkthrough, pitfall, question, choices, answer, feedback, experiment, hints) {
-  const solution = `${signature} {\n${body}\n}\n\n${driver}\n`;
-  return { chapter, id, title, explain, source: solution, solution,
-    starter: `${signature} {\n    todo!("Implement ${id}")\n}\n\n${driver}\n`,
-    expected: expected + '\n', walkthrough, pitfall, question, choices, answer, feedback, experiment, hints, kind: 'rust' };
+import { rustLessons as previousRust, databaseLessons as previousDatabase, ownershipSteps } from './course-v1.js';
+import { foundations } from './foundations.js';
+import { bridges } from './bridges.js';
+import { exercise } from './lesson-data.js';
+export { ownershipSteps };
+
+const previous = new Map([...previousRust, ...previousDatabase].map(item => [item.id, item]));
+function revise(id, data) {
+  const old = previous.get(id);
+  if (!old) throw new Error(`Unknown earlier lesson: ${id}`);
+  const result = { ...old, ...data, revision: 2, practiceInstruction: data.practiceInstruction || 'Replace the todo! marker in the named function. Keep the supplied main and its checks.' };
+  if (data.source && !data.solution) result.solution = data.source;
+  result.checkType = /assert(?:_eq|_ne)?!/.test(result.solution) ? 'assertions' : 'output';
+  return result;
 }
+
+const revised = [
+  revise('moves', {
+    objective: 'Trace ownership through a String parameter and returned value.', prerequisites: ['formatting'], introduces: ['move', 'ownership-transfer'],
+    explain: ['The previous lessons created and changed owned text. Now follow who owns that String: a String parameter takes ownership when it receives the caller’s value.', 'In decorate(name), ownership moves from name in main into the function’s parameter. Returning the parameter moves ownership into decorated in the caller. A move does not clone the text.', 'The parameter uses mut because it appends text with the method you already know. After the call, decorated is usable and the original name binding is no longer usable.', 'The assertions and output use the new owner. To read the text without transferring ownership, we will introduce references in the next chapter.'],
+    pitfall: 'Printing the original name after the call is an ownership error: that binding no longer owns the String.',
+    walkthrough: ['The name binding in main initially owns the String.', 'The call moves it into the parameter; the returned value becomes owned by decorated.', 'When the new owner leaves its scope, Rust releases the owned text.'],
+    experiment: 'Add println!("{name}") after the call, read the moved-value diagnostic, then remove that line.'
+  }),
+  revise('copy', {
+    objective: 'Distinguish copying a u32 from moving an owned String.', prerequisites: ['moves', 'tuples'], introduces: ['Copy'],
+    explain: ['Assigning a u32 makes another usable copy of that number. Rust calls this behaviour Copy. You can use both integer bindings after the assignment.', 'This is a property of a type, not an exception to the String ownership rule. String does not have Copy behaviour; an assignment of a String transfers its ownership.', 'The worked function returns a tuple, whose construction and destructuring you have already practised. Both elements remain usable because the integers were copied.'],
+    pitfall: 'Do not infer that the same assignment copies every type. Changing u32 to String changes the ownership behaviour.',
+    choices: ['u32 has Copy behaviour', 'The binding is mutable', 'Every assignment must move its value'], answer: 0,
+    feedback: 'The integer is copied, so both bindings keep usable values. An owned String assignment follows the move rule instead.',
+    experiment: 'Compare let second = first with a u32 and with a String. Read which original binding remains usable.'
+  }),
+  revise('clone', {
+    objective: 'Make an explicit independent copy of owned text.', prerequisites: ['copy'], introduces: ['Clone', 'clone-method'],
+    explain: ['A move transfers ownership. .clone() explicitly creates a separate owned value. For a String, that means independent text storage.', 'The function clones original into changed, then appends to changed. original keeps its contents, as the checks show.', 'The tuple returns the two independent owners together. Only changed needs mut, because only that local value is edited.'],
+    pitfall: 'Cloning to silence every ownership error can add unnecessary copies. Later references let a reader access text without another owner.',
+    walkthrough: ['clone creates a second String with independent owned text.', 'Changing the second String leaves the first value intact.'],
+    feedback: 'String::clone copies the text into separate owned storage, so changing the clone leaves the original unchanged.',
+    choices: ['Yes, both names share the same owned String', 'No, the clone owns independent text', 'Yes, cloning gives away the original owner'],
+    experiment: 'Append different text to each returned String and observe that they can change independently.'
+  }),
+  revise('mutable', {
+    objective: 'Change a caller’s integer through one exclusive reference.', prerequisites: ['references', 'mutable-values'], introduces: ['mutable-reference', 'dereference', 'exclusive-borrow'],
+    explain: ['A shared reference supplies read access. &mut supplies exclusive access so a helper can change a value while the caller remains its owner.', 'The declaration fn award(score: &mut u32) accepts a mutable reference. The call uses &mut score to lend that access. The caller’s binding must itself be mut.', '*score means the integer behind the reference. *score += 5 changes that integer; it does not reassign the reference to a different integer.', 'The two calls work because their exclusive borrows do not overlap. The first call finishes before the second borrow begins.'],
+    experiment: 'Call award a third time and predict the caller’s score before changing the final assertion.'
+  }),
+  revise('shared', {
+    objective: 'Measure a borrowed text view in UTF-8 bytes.', prerequisites: ['unicode'], introduces: ['borrowed-byte-length'],
+    explain: ['You have now seen shared references, &str text views, and the difference between UTF-8 bytes and characters. This exercise combines those ideas without adding a new ownership rule.', 'The helper takes &str, reads its byte length, and returns a usize. In byte_len(&name), Rust can use the borrowed String as a text view; name.as_str() is the explicit alternative you already know.', 'The call does not take ownership. The caller can therefore display name after measuring it. café occupies five bytes, so the supplied assertion expects five.'],
+    experiment: 'Use an ASCII-only name, then an accented name, and compare the measured byte lengths.'
+  }),
+  revise('structs', {
+    objective: 'Construct and read a record with named fields.', prerequisites: ['borrowed-slices', 'static-text', 'formatting'], introduces: ['struct', 'field', 'struct-construction'],
+    explain: ['A tuple groups values by position. A struct groups them by named fields, making the meaning of each value clearer. Row has id, name, and score fields.', 'Each field declaration includes its type. A Row construction names each field and supplies its value. The name field owns a String, so it is created with String::from.', 'row.id reads the named id field, unlike pair.0 for a tuple position. The helper accepts &Row and formats the fields without taking ownership of the row.', 'There is no derive attribute in this first struct example. Generating trait implementations is a separate later lesson.'],
+    ...exercise('struct Row { id: u32, name: String, score: u32 }\n\nfn label(row: &Row) -> String', '    format!("{} | {} | {}", row.id, row.name, row.score)', 'fn main() {\n    let row = Row { id: 1, name: String::from("Ada"), score: 90 };\n    assert_eq!(label(&row), "1 | Ada | 90");\n    println!("{}", label(&row));\n}'),
+    pitfall: 'A struct with an owned String is not automatically Copy. Borrow it when a helper only needs to read it.',
+    experiment: 'Construct another Row and call label on both records.'
+  }),
+  revise('enums', {
+    objective: 'Handle each named alternative of an enum with match.', prerequisites: ['methods'], introduces: ['enum', 'variant', 'match', 'pattern', 'wildcard-pattern'],
+    explain: ['An enum represents a choice between named alternatives called variants. Command::Count carries no additional data; Command::Lookup(42) carries an ID.', 'match selects the arm whose pattern matches the current variant. An arm has pattern => expression syntax. In Command::Lookup(id), the pattern binds the carried value to id.', 'The match must handle every possible variant. A pattern written _ means “anything else”, and an _ payload ignores a value you do not need. Explicit variant arms make it easier to notice a newly added case.', 'Each arm here returns an owned String, using String::from or format!. These operations are already familiar; the new idea is choosing an arm by the enum’s variant.'],
+    ...exercise('enum Command { Count, Lookup(u32) }\n\nfn describe(command: Command) -> String', '    match command {\n        Command::Count => String::from("count all rows"),\n        Command::Lookup(id) => format!("lookup {id}"),\n    }', 'fn main() {\n    assert_eq!(describe(Command::Count), "count all rows");\n    assert_eq!(describe(Command::Lookup(7)), "lookup 7");\n    println!("{}", describe(Command::Lookup(42)));\n}'),
+    experiment: 'Add a Delete(u32) variant and let the compiler identify the match that needs another arm.'
+  }),
+  revise('option', {
+    objective: 'Return an optional borrowed name from a small record search.', prerequisites: ['optional-values', 'borrowed-slices'], introduces: ['optional-reference', 'borrowed-return'],
+    explain: ['A search may find a record or find nothing. Option<&str> expresses those outcomes without making a second owned copy of a name.', 'The helper loops over a borrowed slice of (id, String) tuples. It compares each id and returns Some(name view) as soon as it finds a match. If the loop ends with no match, it returns None.', 'The returned view refers to data owned by rows, so it cannot outlive that owner. With one borrowed input collection, Rust can infer this relationship; the later lifetime-annotation lesson makes similar relationships explicit.', 'main uses an array, which you already know. It deliberately does not introduce a Vec or iterator closure before those topics are taught.'],
+    ...exercise('fn find_name(rows: &[(u32, String)], wanted: u32) -> Option<&str>', '    for row in rows {\n        if row.0 == wanted { return Some(row.1.as_str()); }\n    }\n    None', 'fn main() {\n    let rows = [(1, String::from("Ada")), (2, String::from("Lin"))];\n    assert_eq!(find_name(&rows, 99), None);\n    assert_eq!(find_name(&rows, 2), Some("Lin"));\n    println!("{}", find_name(&rows, 1).unwrap_or("missing"));\n}'),
+    walkthrough: ['The loop reads each borrowed tuple without moving its String.', 'A matching row returns a borrowed name; exhausting the loop returns None.'],
+    experiment: 'Ask for a missing ID and use match to print a deliberate not-found message.'
+  }),
+  revise('slices', {
+    chapter: 'model', objective: 'Handle an empty slice without indexing past its bounds.', prerequisites: ['option'], introduces: ['first-method', 'checked-access'],
+    explain: ['Direct values[0] indexing assumes an element exists. .first() instead returns Some(reference) for the first element or None for an empty slice.', 'The helper matches that Option. Some(value) contains a reference, so *value reads the u32. The None arm supplies zero as the chosen fallback.', 'This reuses slice borrowing and enum matching. It avoids .copied() and iterator pipelines until their own lessons.'],
+    ...exercise('fn first_or_zero(values: &[u32]) -> u32', '    match values.first() { Some(value) => *value, None => 0 }', 'fn main() {\n    assert_eq!(first_or_zero(&[]), 0);\n    let values = [9, 8, 7];\n    assert_eq!(first_or_zero(&values[1..]), 8);\n    println!("{}", first_or_zero(&values));\n}'),
+    walkthrough: ['first returns Some(&9) for the full array view.', 'The empty view produces None, so the fallback is used.'],
+    choices: ['Stop with an error', '0', 'Read a first element even though the slice is empty'],
+    hints: ['Match the Option returned by values.first().', 'Return *value for Some(value), or zero for None.'], experiment: 'Pass &values[2..2] and predict which arm runs.'
+  }),
+  revise('result', {
+    objective: 'Parse a positive numeric ID and distinguish parsing from validation.', prerequisites: ['result-basics'], introduces: ['parse', 'method-type-argument', 'match-guard', 'numeric-overflow'],
+    explain: ['Parsing means interpreting text as a value. text.parse::<u32>() asks the standard parser for a u32. The ::<u32> chooses the method’s output type; angle brackets specify a type rather than a runtime input value.', 'parse returns Result because malformed text, negative numbers, or a number too large for u32 cannot produce this value. An Err(_) pattern ignores the parser’s detailed error when you want your own message.', 'Parsing is different from a domain rule: zero parses as u32, but TinyDB IDs must be positive. Ok(id) if id > 0 is a guarded match arm; the condition must also be true for that arm to match.', 'The function returns one fixed error message for every rejected input. Its &\'static str error type is the literal-text reference you have already learned.'],
+    experiment: 'Add checks for surrounding whitespace and leading zeroes, then document which strings the standard parser accepts.'
+  }),
+  revise('question-mark', {
+    objective: 'Propagate a Result error with ? instead of repeating a match.', prerequisites: ['checked-arithmetic'], introduces: ['result-question-mark', 'error-propagation'],
+    explain: ['A fallible helper can pass a failure back to its caller. ? returns early when its Result is Err, or extracts the value when it is Ok.', 'The worked program includes the previous parsing pattern as a named helper, number. You are reusing that helper; the new operation is ? on each call.', 'After both parses succeed, checked_add and ok_or handle overflow as in the preceding lesson. No closure or map_err knowledge is needed here.', 'The ? operator is not a panic catcher. It handles the Result values explicitly returned by these operations.'],
+    ...exercise("fn number(text: &str) -> Result<u32, &'static str> {\n    match text.parse::<u32>() { Ok(value) => Ok(value), Err(_) => Err(\"bad number\") }\n}\n\nfn add_text(a: &str, b: &str) -> Result<u32, &'static str>", '    let a = number(a)?;\n    let b = number(b)?;\n    a.checked_add(b).ok_or("overflow")', 'fn main() {\n    assert_eq!(add_text("x", "2"), Err("bad number"));\n    assert_eq!(add_text("4294967295", "1"), Err("overflow"));\n    assert_eq!(add_text("19", "23"), Ok(42));\n    println!("{}", add_text("19", "23").unwrap());\n}'),
+    walkthrough: ['number(a)? stops this function immediately if the first parse fails.', 'Only after both values are available does the checked addition run.'],
+    hints: ['Call the provided number helper on each input and put ? after each call.', 'Then return a.checked_add(b).ok_or("overflow").']
+  }),
+  revise('atomic-change', {
+    objective: 'Keep a previous value intact when a replacement is rejected.', prerequisites: ['question-mark', 'mutable'], introduces: ['failure-atomicity', 'validation-before-mutation'],
+    explain: ['A failed change should leave the previous valid state intact. First validate the proposed replacement; only assign it after those checks succeed.', 'This helper uses .is_empty() to ask whether the text has no bytes, and .len() to enforce the maximum byte count. || rejects the replacement if either rule fails.', 'On success, String::from(replacement) creates the new owned text and *name replaces the caller’s String through its mutable reference. On failure, the early Err occurs before that assignment.', 'Rust’s ownership checks do not automatically give your application this failure guarantee. The order of your validation and mutation matters.'],
+    ...exercise("fn rename(name: &mut String, replacement: &str) -> Result<(), &'static str>", '    if replacement.is_empty() || replacement.len() > 31 { return Err("invalid name"); }\n    *name = String::from(replacement);\n    Ok(())', 'fn main() {\n    let mut name = String::from("Ada");\n    assert!(rename(&mut name, "").is_err());\n    assert_eq!(name, "Ada");\n    rename(&mut name, "Lin").unwrap();\n    assert_eq!(name, "Lin");\n    println!("{name}");\n}'),
+    experiment: 'Try an overlong replacement and check that the previous name remains unchanged.'
+  }),
+  revise('iterators', {
+    objective: 'Filter copied numbers and reduce the remaining values to a sum.', prerequisites: ['iterator-basics'], introduces: ['filter', 'sum', 'lazy-adapter'],
+    explain: ['An iterator pipeline connects small operations. .iter() borrows the scores, and .copied() supplies u32 values instead of references to them.', '.filter(predicate) keeps items whose predicate returns true. It temporarily lends each candidate to the predicate, so |score| *score >= 50 reads through a reference even though the iterator supplies copied numbers.', '.sum() consumes the retained values and adds them. The helper’s u32 return type tells Rust which sum type is expected.', 'Operations such as filter are lazy: constructing them does not process the whole sequence. A consuming operation such as sum or collect drives the pipeline.'],
+    experiment: 'Instead of sum, collect the retained values into a binding annotated Vec<u32>, then print that vector with debug formatting.'
+  }),
+  revise('vectors', {
+    objective: 'Keep a vector sorted while rejecting duplicate keys.', prerequisites: ['iterators', 'result-basics'], introduces: ['sorted-invariant', 'binary-search', 'insertion-position'],
+    explain: ['An invariant is a rule kept true after every operation. Here keys must remain sorted and unique. That lets binary_search search the ordered values efficiently.', 'keys.binary_search(&key) returns Ok(index) when the key exists, or Err(index) containing where a missing key belongs. This Result uses Err for a not-found position rather than a text error.', 'Vec::insert(index, value) inserts at that position and shifts later elements. Appending with push would be wrong for a key that belongs in the middle.', 'The function checks the search result before changing keys, preserving the state if the requested key is already present.'],
+    experiment: 'Insert a key before the first element and after the last element, checking sorted order each time.'
+  }),
+  revise('maps', {
+    objective: 'Count repeated text keys with a HashMap entry.', prerequisites: ['imports', 'vectors'], introduces: ['HashMap', 'key-value', 'entry', 'or-insert', 'get'],
+    explain: ['A HashMap associates each key with a value. HashMap<String, u32> uses owned text as its keys and integer counts as its values. The import makes that standard type’s short name available.', '.entry(key).or_insert(0) finds the key’s current value or inserts an initial zero. It returns a mutable reference to the count, which you can increment using *count += 1.', 'The input is a slice of borrowed text views. The loop’s word is a reference to one such view, so *word gives the &str used by String::from. This creates the owned key the map needs.', '.get("rust") borrows a key to look up an optional reference to its value. As with other checked lookups, a missing key produces None. HashMap does not promise iteration order.'],
+    ...exercise('use std::collections::HashMap;\n\nfn counts(words: &[&str]) -> HashMap<String, u32>', '    let mut result = HashMap::new();\n    for word in words {\n        let count = result.entry(String::from(*word)).or_insert(0);\n        *count += 1;\n    }\n    result', 'fn main() {\n    let counts = counts(&["rust", "db", "rust"]);\n    assert_eq!(counts.get("rust"), Some(&2));\n    assert_eq!(counts.get("missing"), None);\n    println!("rust: {}", counts["rust"]);\n}'),
+    experiment: 'Add another rust input and predict its count without relying on map iteration order.'
+  }),
+  revise('traits', {
+    objective: 'Define and implement a named method contract for a concrete type.', prerequisites: ['sets', 'methods'], introduces: ['trait', 'trait-implementation', 'trait-method'],
+    explain: ['A trait names behaviour that a type promises to provide. trait Identified declares an id method; impl Identified for Person supplies that method for Person.', 'The method receives &self, just like the struct method you already wrote. The body returns the existing id field.', 'This first trait example uses the concrete Person type in its helper. It introduces no generic function parameters yet. The next lesson uses a trait bound to make one algorithm accept several types.', 'You have already seen Copy and Clone behaviour. Traits give such behaviour a name that other code can require.'],
+    ...exercise('trait Identified { fn id(&self) -> u32; }\nstruct Person { id: u32 }\nimpl Identified for Person { fn id(&self) -> u32 { self.id } }\n\nfn same_id(left: &Person, right: &Person) -> bool', '    left.id() == right.id()', 'fn main() {\n    assert!(same_id(&Person { id: 7 }, &Person { id: 7 }));\n    assert!(!same_id(&Person { id: 7 }, &Person { id: 8 }));\n    println!("{}", same_id(&Person { id: 1 }, &Person { id: 1 }));\n}'),
+    pitfall: 'A trait declaration states the required method; the implementation provides its actual body.',
+    question: 'Which method does Identified require?', choices: ['id()', 'clone()', 'push_str()'], answer: 0,
+    feedback: 'The trait declares the id method; each implementing type supplies its method body.',
+    experiment: 'Add a second concrete type with an id field and implement Identified for it.'
+  }),
+  revise('generics', {
+    objective: 'Write one ordered-slice algorithm for more than one element type.', prerequisites: ['traits'], introduces: ['generic-function', 'trait-bound', 'Ord', 'max'],
+    explain: ['You have used type arguments in Option<u32>, Vec<u32>, and parse::<u32>(). A generic function now lets you name an unspecified type parameter yourself: <T>.', 'The bound T: Ord requires that type to support a total ordering, so the function can compare any two values of that type. Integers and string slices support this standard trait.', 'values.iter().max() returns an optional reference to the largest element. The reference stays borrowed from the input slice, and an empty slice produces None.', 'The calls choose integer or text element types. largest::<u32>(&[]) explicitly supplies the type for an empty input, where no element would otherwise reveal it.'],
+    pitfall: 'The bound is part of the contract: Rust rejects a type that cannot provide the required ordering.',
+    experiment: 'Use a nonempty array of text slices, then an empty typed slice, and compare the results.'
+  }),
+  revise('lifetimes', {
+    objective: 'Explain which input references support a borrowed return value.', prerequisites: ['derive', 'static-text'], introduces: ['named-lifetime', 'lifetime-relationship'],
+    explain: ['The static-text lesson returned a literal valid for the whole program. This function instead returns one of two borrowed inputs, whose owners may have shorter scopes.', 'The name \'a in <\'a> is a lifetime parameter. Writing &\'a str for both inputs and the output states a relationship: the returned reference must remain valid within a lifetime supported by both input borrows.', 'The annotation neither allocates a copy nor extends an owner’s lifetime. The comparison merely selects which already-borrowed view to return.', 'Equal lengths select the first input in this contract. The assertions check both the longer-text case and that tie rule.'],
+    experiment: 'Call longer inside a nested scope containing one input owner. Check where the returned borrow can still be used.'
+  }),
+  revise('little-endian', {
+    objective: 'Encode a u32 into four bytes in a specified byte order.', prerequisites: ['aliases', 'lifetimes', 'unicode'], introduces: ['byte-order', 'little-endian', 'hexadecimal', 'integer-codec'],
+    explain: ['A file format is an agreed rule for translating values into bytes. A u32 uses four bytes, and byte order specifies which byte comes first.', 'Little-endian puts the least significant byte first. For 258, that is [2, 1, 0, 0]: two units plus one group of 256. .to_le_bytes() encodes this order, and u32::from_le_bytes(...) decodes it.', 'A numeric literal beginning 0x is hexadecimal, base sixteen. Digits A through F mean ten through fifteen. 0x12345678 is a compact way to show four distinct byte groups in the known-byte test; you do not need to calculate its decimal value.', 'The returned [u8; 4] is the fixed-size array type you learned earlier. Do not copy a Rust struct’s raw memory as a format: its internal layout and owning fields do not define portable file bytes.'],
+    experiment: 'Encode 258 and a value with a zero byte in the middle, then decode those arrays back.'
+  }),
+  revise('decode', {
+    objective: 'Check input bounds before decoding a fixed-size integer.', prerequisites: ['little-endian', 'question-mark', 'closures'], introduces: ['range-get', 'try-into', 'map-err'],
+    explain: ['A decoder cannot assume the file is long enough. bytes.get(..4) asks for the first four bytes and returns Option, instead of panicking on a short input. The ..4 range means zero through the position before four.', '.ok_or("short input") converts absence into an error, and ? propagates it as you have already practised.', '.try_into() attempts to convert the checked slice into the required [u8; 4] array. It returns Result. .map_err(closure) changes only an Err value, here into our chosen fixed message; the closure’s _ ignores the original conversion error.', 'Only after those checks does from_le_bytes interpret the four bytes as a number. Invalid input returns an error without indexing beyond the available bytes.'],
+    experiment: 'Require exactly four bytes by adding a length check, then test a five-byte input.'
+  }),
+  revise('tests', {
+    objective: 'Check codec boundaries and distinguish a round-trip test from an independent fixture.', prerequisites: ['decode', 'iterator-basics'], introduces: ['invariant-test', 'round-trip', 'independent-fixture'],
+    explain: ['A round trip encodes a value and decodes the result. The original and decoded values should agree. A boundary is a case where representation changes, such as 255 to 256.', 'The .all(closure) iterator method returns true only if every supplied value satisfies the comparison. An empty iterator also returns true because no item violates the rule.', 'A round-trip test can miss two functions sharing the same mistake. Compare known expected bytes too, or exchange a file with an independent implementation.', 'The assertions here run in main in the browser. A native rustc --test build is a separate way to run Rust test functions; you do not need that command to complete this browser lesson.'],
+    experiment: 'Compare an encoded value with its explicitly expected byte array, as well as decoding it back.'
+  }),
+  revise('row-validation', {
+    objective: 'Apply the table’s name rules before accepting a row.', prerequisites: ['sql-crud', 'unicode', 'iterator-basics'], introduces: ['validation-rule', 'ASCII-control', 'repeat'],
+    explain: ['You have seen the people table and its columns. Its name rule allows 1–31 UTF-8 bytes and forbids ASCII control characters. A control character is a byte such as newline or zero that controls text handling rather than displaying a normal letter.', 'name.is_empty() checks for no bytes. name.bytes().any(predicate) tests whether at least one byte violates the rule. Unlike filter, any passes each byte value directly to its predicate.', 'Bytes below 32 and the DEL byte 127 are rejected. A positive id, a name meeting this rule, and a u32 score form a valid row; checking id uniqueness additionally needs access to the stored table.', 'The test helper "é".repeat(16) creates a String containing sixteen copies of that text. It occupies 32 bytes and therefore exceeds the name limit. Validation must happen before changing the database.'],
+    experiment: 'In the lab, try an empty name and a duplicate ID separately. Verify that the earlier valid row remains.'
+  }),
+  revise('sql-strings', {
+    objective: 'Decode a SQL quoted-text token without treating its contents as commands.', prerequisites: ['row-validation', 'iterator-basics'], introduces: ['token', 'lexer', 'parser', 'SQL-quote-escape', 'push-character'],
+    explain: ['SQL commands contain keywords, numbers, punctuation, and quoted text. A lexer separates these into tokens; a parser checks that their order follows the supported command rules. This helper decodes just one text token.', 'SQL doubles a quote inside a quoted name: \'O\'\'Neil\' represents O\'Neil. This differs from Rust’s backslash escape for a quote in a char literal. The source uses \'\\\'\' to write one Rust quote character.', '.starts_with and .ends_with check the surrounding quotes before slicing. String::new() creates empty owned text, and .push(character) appends one char.', 'The chars iterator and while let loop use the operations you already learned. On an interior quote, the helper requires and consumes the second quote of the SQL escape pair. A complete parser must also check all remaining tokens and limits.'],
+    experiment: 'Use a SQL name containing both a quote and a semicolon; verify that the semicolon stays inside the name.'
+  }),
+  revise('tdb1', {
+    objective: 'Validate a documented header and its exact record length.', prerequisites: ['sql-strings', 'files', 'little-endian'], introduces: ['file-header', 'magic', 'version', 'record-size', 'byte-literal', 'numeric-cast'],
+    explain: ['TDB1 is an exchange format shared with C Foundry. A header is the first metadata in a file. Its magic, the bytes spelling TDB1, identifies the format; its version distinguishes compatible layouts.', 'The exact eight header bytes are TDB1, version 1, row size 40, a one-byte row count, and a reserved zero byte. The count may be at most 128. After the header, each record has id (4 bytes), a zero-terminated UTF-8 name field (32 bytes), and score (4 bytes). Integer fields use little-endian order.', 'In Rust, b"TDB1" is a byte-string literal: the ASCII letter codes as bytes rather than a text slice. bytes[6] as usize converts the small count byte to the length/index type. This widening conversion is safe for u8; arbitrary narrowing casts would need their own validation.', 'The whole file must have exactly 8 + count * 40 bytes. This exercise checks only that outer contract. The full Rust decoder also validates each row and rejects duplicate IDs. .export creates a separate TDB1 file; .import accepts it after validation.'],
+    experiment: 'Download exchange.tdb, reopen it in C Foundry, and compare the displayed rows.'
+  }),
+  revise('page-layout', {
+    objective: 'Calculate a fixed page’s offset while rejecting overflow and truncation.', prerequisites: ['tdb1', 'option-propagation'], introduces: ['page', 'page-id', 'byte-offset', 'paged-file'],
+    explain: ['TDB1 stores a simple sequence of records. TinyDB’s normal RDB2 format divides a file into fixed-size pages of 256 bytes, so each page ID can be translated into a byte offset.', 'Page zero contains the file header. Other pages hold rows, index branches, or reusable free space. The next lesson explains how branches and row-holding leaves form a tree.', 'Page id starts at id * 256 and ends just before start + 256. Both calculations must be checked for numeric overflow, and the entire page must fit inside the file.', 'The helper returns Some(start) for a whole valid page and None otherwise. Its ? operators propagate None as in the earlier optional-calculation lesson. TinyDB loads these bounded pages into memory; its commit writes a complete snapshot rather than implementing a disk cache.'],
+    experiment: 'Compare a 300-byte file with a 512-byte file when requesting page one.'
+  }),
+  revise('bplus-lookup', {
+    objective: 'Choose the correct child using a sorted separator list.', prerequisites: ['recursion', 'vectors', 'closures'], introduces: ['tree', 'root', 'branch', 'leaf', 'separator', 'B-plus-tree', 'range-seek', 'partition-point'],
+    explain: ['A tree arranges nodes in levels. Search begins at the root. A branch directs the search to a child, while a leaf holds actual rows. A B+ tree keeps every row in sorted leaves, with branches used only for direction.', 'A separator key is the smallest key in the child to its right. With separators [10, 20], keys below ten go to child zero, ten through nineteen to child one, and twenty or more to child two.', '.partition_point(predicate) finds the boundary where a rule stops being true in sorted data. Here it counts separators <= the sought key. The closure syntax and shared-reference dereference are already familiar.', 'A point lookup follows one root-to-leaf path. A range query seeks its first key and then follows links between leaves. EXPLAIN reports the actual page path; it does not substitute a different search engine.'],
+    experiment: 'Compare EXPLAIN paths for a present key, a missing key, and a bounded range in the lab.'
+  }),
+  revise('rebalance', {
+    objective: 'Split an overflowing sorted leaf without losing its promoted key.', prerequisites: ['bplus-lookup', 'vector-basics'], introduces: ['leaf-split', 'branch-split', 'occupancy', 'redistribution', 'merge', 'root-collapse', 'split-off'],
+    explain: ['TinyDB deliberately uses small capacities: four rows per leaf and five child pointers per branch. Occupancy means how many entries a node currently holds. These small limits let a short lab reveal structural changes.', 'The helper is called on a known, nonempty overflow vector. For five sorted keys, split_off(len / 2) leaves two on the left and returns three on the right. The first right key becomes the parent separator, but remains a data key in the right leaf.', 'In the full tree, the new right leaf is linked into the leaf chain and inserted into its parent. An overflowing parent splits too; a split root creates a new level.', 'Deletion needs the opposite repair: borrow an entry from a sibling with spare capacity, or merge two small nodes and free the removed page. A one-child root collapses. These are the full implementation’s invariants; .check validates them after the lab operations.'],
+    experiment: 'Delete the largest two keys after the split, then compare the root, free pages, and .check output.'
+  }),
+  revise('staging', {
+    objective: 'Keep a committed collection unchanged while editing a candidate copy.', prerequisites: ['source-primer', 'atomic-change'], introduces: ['transaction', 'staged-state', 'committed-state', 'read-own-writes', 'to-vec'],
+    explain: ['A transaction groups changes into one publish decision. Committed state is the last accepted version. Staged state is a candidate version that may still be committed or discarded.', 'TinyDB begins by cloning its current database. The small helper below uses .to_vec() to make an owned copy of a borrowed slice, then changes only that copy.', 'BEGIN starts the candidate, and reads in the same session see its staged changes. The next lessons show rollback and commit. This bounded design copies state for clarity rather than providing concurrent database sessions.', 'Each browser Run starts a fresh process. BEGIN and its COMMIT or ROLLBACK must therefore appear in the same script; an open transaction rolls back when that input ends.'],
+    pitfall: 'An open transaction rolls back when the browser script ends. A later Run cannot continue that same transaction.',
+    experiment: 'Remove COMMIT from the lab, run it, then query again in another Run to see which version survived.'
+  }),
+  revise('rollback', {
+    objective: 'Discard an entire staged candidate while keeping committed data.', prerequisites: ['staging', 'optional-values'], introduces: ['rollback', 'transaction-state', 'is-none'],
+    explain: ['ROLLBACK abandons all staged changes in this transaction. It does not delete rows that were committed before BEGIN.', 'Option<Vec<u32>> makes this state explicit: Some(candidate) means a transaction has a staged vector, and None means no active candidate. Assigning None drops that owned candidate.', '.is_none() is a boolean check for the None variant. The test verifies both that staged state disappears and that the committed vector remains unchanged.', 'TinyDB leaves a transaction active after a statement error, preserving the previous staged state. The learner then chooses whether to inspect, commit, or roll back.'],
+    experiment: 'Stage both an update and an insert, roll back, and compare all rows with the pre-BEGIN data.'
+  }),
+  revise('commit-generation', {
+    objective: 'Advance one generation for a whole successfully committed transaction.', prerequisites: ['rollback', 'checked-arithmetic'], introduces: ['commit', 'generation', 'autocommit'],
+    explain: ['COMMIT publishes a valid candidate as the next committed state. A generation is a counter identifying that published database version; it is not a row count.', 'Two successful changes inside one transaction produce one new generation. A standalone write autocommits through the same commit operation, producing its own increment.', 'checked_add prevents the counter from wrapping and making a new state look like an old version. The full commit protocol records intent before installing pages; the next chapter explains that journal.', 'A database generation and a browser workspace revision count different things. The final persistence lesson distinguishes the Rust database commit from saving a browser file snapshot.'],
+    pitfall: 'Advance the generation when the whole candidate is published, not merely when another SQL line is read.',
+    experiment: 'Compare .pages generation changes for two standalone inserts and two inserts in one explicit transaction.'
+  }),
+  revise('journal', {
+    objective: 'Choose recovery behaviour based on whether a commit marker exists.', prerequisites: ['commit-generation', 'checksums', 'files'], introduces: ['journal', 'after-image', 'prepared-marker', 'commit-marker', 'redo', 'flush'],
+    explain: ['A journal records the intended change before replacing committed pages. TinyDB’s RWL2 journal contains a full after-image: the complete candidate RDB2 snapshot for the next generation.', 'The ordered steps are: write a prepared journal, write its committed marker, install the main snapshot, then remove the journal. A prepared marker alone does not commit the candidate. A committed marker says recovery should redo the saved after-image.', '.crash prepare, .crash commit, and .crash install deliberately interrupt the next commit at those stages. Reopen the database in a second Run to observe the actual recovery decision.', 'These commands are teaching simulations. Native file syncing asks the operating system to flush writes, while a browser virtual filesystem has no physical fsync guarantee. The webpage saves a snapshot after the simulated exit; an actual tab kill has a different persistence boundary, covered in the final lesson.'],
+    experiment: 'Run the prepare interruption, then replace the script with SELECT * FROM people; and run again.'
+  }),
+  revise('redo', {
+    objective: 'Replay a committed after-image once and verify it safely on another recovery attempt.', prerequisites: ['journal'], introduces: ['idempotence', 'recovery-conflict', 'snapshot-identity'],
+    explain: ['Idempotent means repeating an operation has the same effect as doing it once. Recovery needs this property because an interruption may happen after pages are installed but before journal cleanup.', 'A committed journal targeting generation N can install over its base generation N−1. If N is already installed, the exact snapshot bytes must match before removing the journal.', 'Matching generation numbers alone do not prove matching data. A different generation or different bytes are a conflict: report the error and retain the files rather than guessing which state to keep.', 'Checksums detect accidental byte changes, while structural validation checks the tree rules. Neither check authenticates a file against deliberate rewriting.'],
+    choices: ['Yes, the generation number is enough', 'No, retain the files and report the conflict', 'Yes, discard both snapshots'],
+    experiment: 'Try commit and install interruptions in different lab filenames, then reopen each one twice.'
+  }),
+  revise('browser-storage', {
+    objective: 'Distinguish a database commit from publishing a browser workspace snapshot.', prerequisites: ['redo'], introduces: ['virtual-filesystem', 'IndexedDB', 'workspace-revision', 'compare-and-save', 'stale-tab', 'atomic-save'],
+    explain: ['The Rust program runs with a private virtual filesystem: an in-memory set of filenames and bytes supplied for this Run. A normal exit returns its complete file set to the webpage.', 'The webpage stores that set in IndexedDB, a browser-provided local database separate from TinyDB itself. A workspace revision counts successful whole-file-set saves, including reads that create or recover files. It is separate from TinyDB’s committed generation.', 'Saving compares the expected revision with the current revision inside one atomic browser storage transaction: either the complete new set is saved, or none of that save is published. A stale tab keeps its unsaved candidate downloadable rather than overwriting another tab.', 'An ordinary nonzero process exit can include earlier successful commits. Stop, traps, or timeouts return no candidate snapshot and keep the previous saved files. Browser storage can be denied or evicted, so download important files.', 'This explains the recovery lab boundary: a deliberate .crash exit can save the journal plus main file together, while an actual tab termination during the Run leaves the prior IndexedDB snapshot. No JavaScript or operating-system knowledge is required to use these rules.'],
+    pitfall: 'A separate check and save lets another tab change the stored files in between. Compare and save within the same atomic operation.',
+    experiment: 'Open the workspace in two tabs, save in one, and observe how a stale save in the other is blocked.'
+  })
+];
+
 export const chapters = [
-  ['start', '01', 'Values and decisions', 'Bindings, functions, and branches.'],
-  ['ownership', '02', 'Ownership you can follow', 'Moves, copies, and explicit clones.'],
-  ['borrowing', '03', 'Borrow without taking', 'Shared access, mutation, and slices.'],
-  ['model', '04', 'Model meaningful states', 'Structs, enums, and missing values.'],
-  ['errors', '05', 'Make failure explicit', 'Result, propagation, and checked arithmetic.'],
-  ['collections', '06', 'Work with collections', 'Vectors, maps, and iterator pipelines.'],
-  ['abstraction', '07', 'Small reusable interfaces', 'Generics, traits, and lifetimes.'],
-  ['bytes', '08', 'From values to bytes', 'Codecs, validation, and tests.'],
-  ['database', '09', 'Build TinyDB', 'Rows, SQL, and C-compatible files.'],
-  ['pages', '10', 'Store and index pages', 'Fixed pages and a real B+ tree.'],
-  ['transactions', '11', 'Make changes together', 'Staging, rollback, and commit.'],
-  ['recovery', '12', 'Recover and keep your work', 'Journal replay and browser persistence.'],
-].map(([id, number, title, summary]) => ({ id, number, title, summary }));
+  ['start', 'Start with a running program', 'Printing, named values, simple types, and compiler feedback.'],
+  ['flow', 'Give instructions structure', 'Calculations, choices, functions, checks, and fixed sequences.'],
+  ['ownership', 'Work with owned text', 'Strings, moves, copies, explicit clones, and scope.'],
+  ['borrowing', 'Borrow existing values', 'Shared and exclusive access, text views, bytes, and slices.'],
+  ['model', 'Model records and alternatives', 'Structs, methods, enums, optional values, and checked lookup.'],
+  ['errors', 'Report and preserve failure', 'Results, numeric parsing, checked arithmetic, and propagation.'],
+  ['collections', 'Work with growing collections', 'Vectors, closures, iterators, maps, and sets.'],
+  ['abstraction', 'Name reusable contracts', 'Traits, generic functions, derives, lifetimes, and type aliases.'],
+  ['bytes', 'Store and validate bytes', 'Portable codecs, tests, files, checked sizes, and checksums.'],
+  ['database', 'Build a table and command language', 'Database vocabulary, CRUD, validation, parsing, and exchange files.'],
+  ['pages', 'Organise and index pages', 'Page addresses, B+ tree lookup, splits, and source navigation.'],
+  ['transactions', 'Publish changes together', 'Staged state, rollback, commit, and generations.'],
+  ['recovery', 'Recover and retain work', 'Journals, idempotent replay, and browser persistence.']
+].map(([id, title, summary], index) => ({ id, number: String(index + 1).padStart(2, '0'), title, summary }));
 
-export const rustLessons = [
-  rust('start', 'bindings', 'Give values names',
-    ['A binding gives a value a name. Rust infers many types, but a function boundary makes the contract explicit: greeting returns a string slice that lives for the whole program.', 'String literals are already stored in the program. Returning one does not allocate a String. println! formats a value and adds a newline.'],
-    "fn greeting() -> &'static str", '    let message = "Hello, Rust!";\n    message',
-    'fn main() {\n    assert_eq!(greeting(), "Hello, Rust!");\n    println!("{}", greeting());\n}', 'Hello, Rust!',
-    ['Call greeting; its last expression becomes the returned value.', 'The assertion compares the result before println! writes it.'],
-    'A semicolon after the final expression turns it into a statement; the body then returns ().',
-    'What does a semicolon after the final expression change?', ['It adds a newline', 'The function body returns ()', 'It allocates a String'], 1,
-    'The body then evaluates to unit, (), which does not match the declared return type.',
-    'Add the semicolon, read the compiler message, then remove it.',
-    ['Return the exact string literal requested by the assertion.', 'Leave the final expression without a semicolon.']),
-  rust('start', 'functions', 'Functions have contracts',
-    ['A function takes typed inputs and returns a typed output. Here the small conversion function keeps its calculation separate from printing.', 'A u32 can represent zero through 4,294,967,295. This exercise uses small inputs; later we will make overflow part of the return type.'],
-    'fn minutes_to_seconds(minutes: u32) -> u32', '    minutes * 60',
-    'fn main() {\n    assert_eq!(minutes_to_seconds(0), 0);\n    assert_eq!(minutes_to_seconds(2), 120);\n    println!("{}", minutes_to_seconds(3));\n}', '180',
-    ['Pass 3 into minutes.', 'Multiply by 60 and return 180; the caller chooses how to display it.'],
-    'Integer division discards the fractional part. minutes / 60 performs the reverse conversion.',
-    'Which input is checked even though it produces no elapsed time?', ['0', '3', '60'], 0,
-    'Zero is a useful boundary case: conversion should preserve it.',
-    'Add an assertion for 10 minutes without changing the printed result.',
-    ['Multiply the parameter by the number of seconds in a minute.', 'The return expression is minutes * 60.']),
-  rust('start', 'branches', 'Choose with an expression',
-    ['An if expression can produce a value. Both branches must agree on the resulting type.', 'Handle the boundary deliberately. A score of exactly 50 passes this rule; a comparison using > would reject it.'],
-    "fn verdict(score: u32) -> &'static str", '    if score >= 50 { "pass" } else { "retry" }',
-    'fn main() {\n    assert_eq!(verdict(49), "retry");\n    assert_eq!(verdict(50), "pass");\n    println!("{}", verdict(90));\n}', 'pass',
-    ['Evaluate the comparison once.', 'Return the selected literal directly; no mutable temporary is needed.'],
-    'Using > instead of >= changes the boundary case, even though the 90 example still looks right.',
-    'What does verdict(50) return?', ['retry', 'pass', '()'], 1,
-    'The comparison includes equality, and the assertion checks that exact boundary.',
-    'Change the threshold to 60 and update the boundary assertions together.',
-    ['Use an if expression with two string literal branches.', 'Include equality in the passing comparison.']),
-
-  rust('ownership', 'moves', 'Follow a moved String',
-    ['String owns a heap allocation. Passing it by value transfers ownership to the receiving function. The original binding cannot be used after that move.', 'Here decorate consumes the String, mutates the allocation through its own binding, and returns ownership to its caller. Moving does not mean copying all the text.'],
-    'fn decorate(mut name: String) -> String', '    name.push_str("!");\n    name',
-    'fn main() {\n    let name = String::from("Ada");\n    let decorated = decorate(name);\n    assert_eq!(decorated, "Ada!");\n    println!("{decorated}");\n}', 'Ada!',
-    ['name in main owns the allocation.', 'The call moves it into the parameter; returning name moves it into decorated.', 'At the end of main, decorated drops and releases the allocation.'],
-    'Printing the original name after the call causes E0382 because ownership has moved.',
-    'Who owns the allocation after decorate returns?', ['The original name', 'decorated', 'Both independently'], 1,
-    'Ownership passes through the parameter and into decorated; no clone was made.',
-    'Add println!("{name}") after the call to inspect E0382, then remove it.',
-    ['The parameter is mutable, so push_str can append in place.', 'Return name after appending an exclamation mark.']),
-  rust('ownership', 'copy', 'Small values can Copy',
-    ['u32 implements Copy. Assigning it duplicates the value, so both bindings remain usable. This is a type property, not a rule based only on how many bytes happen to be stored.', 'An array of Copy values can also be Copy. String cannot be Copy because blindly duplicating its owning fields would create two owners of one allocation.'],
-    'fn twice(value: u32) -> (u32, u32)', '    let other = value;\n    (value, other)',
-    'fn main() {\n    assert_eq!(twice(0), (0, 0));\n    let (a, b) = twice(7);\n    assert_eq!((a, b), (7, 7));\n    println!("{a} {b}");\n}', '7 7',
-    ['Assign value to other; the integer is copied.', 'Both integer bindings remain valid when constructing the tuple.'],
-    'Replacing u32 with String changes the ownership behavior; the same assignment becomes a move.',
-    'Why can value still be used after let other = value?', ['The binding is mutable', 'u32 implements Copy', 'All parameters are borrowed'], 1,
-    'Copy permits implicit duplication of this type at assignment and call boundaries.',
-    'Try a String parameter and observe which line the borrow checker rejects.',
-    ['Assign value to another binding.', 'Return a tuple containing both bindings.']),
-  rust('ownership', 'clone', 'Clone deliberately',
-    ['Clone is an explicit request to duplicate a value. Cloning a String allocates independent text storage, unlike moving its ownership or borrowing its contents.', 'Use a clone when two independently mutable owners are part of the design. Use a reference when another function only needs to read.'],
-    'fn keep_and_change(original: String) -> (String, String)', '    let mut changed = original.clone();\n    changed.push_str(" Jr");\n    (original, changed)',
-    'fn main() {\n    let pair = keep_and_change(String::from("Ada"));\n    assert_eq!(pair.0, "Ada");\n    assert_eq!(pair.1, "Ada Jr");\n    println!("{} / {}", pair.0, pair.1);\n}', 'Ada / Ada Jr',
-    ['clone creates a second owned String.', 'Changing the second String leaves the first value intact.'],
-    'Cloning just to silence every ownership error can hide an unsuitable interface and unnecessary allocations.',
-    'Does changing the clone change the original String?', ['Yes, they share mutable storage', 'No, their text storage is independent', 'Only on mobile'], 1,
-    'String::clone copies the contents into its own allocation.',
-    'Append to both returned Strings independently.',
-    ['Clone original before changing the second value.', 'Only changed needs to be declared mut.']),
-
-  rust('borrowing', 'shared', 'Read through a shared borrow',
-    ['&str is a borrowed view of UTF-8 text. A function taking &str can read a String without becoming its owner, and can also accept a literal.', 'String::len counts bytes. For text with non-ASCII characters, byte length and character count differ. This matters when TinyDB reserves a fixed number of bytes for a name.'],
-    'fn byte_len(text: &str) -> usize', '    text.len()',
-    'fn main() {\n    let name = String::from("café");\n    assert_eq!(byte_len(""), 0);\n    assert_eq!(byte_len(&name), 5);\n    println!("{} {}", byte_len(&name), name);\n}', '5 café',
-    ['&name borrows text owned by name.', 'The borrow ends after the call, and name can still be printed.'],
-    'Treating byte length as the number of visible letters gives incorrect storage bounds.',
-    'How many UTF-8 bytes are in café?', ['4', '5', '8'], 1,
-    'The é character uses two UTF-8 bytes; c, a, and f each use one.',
-    'Compare text.len() with text.chars().count() for a crab emoji.',
-    ['Use the slice method that reports byte length.', 'The function only reads text; no clone or ownership transfer is needed.']),
-  rust('borrowing', 'mutable', 'Change through one mutable borrow',
-    ['&mut gives exclusive access for the duration of a borrow. This lets a helper update a value while the caller keeps ownership.', 'The rule prevents simultaneous access that could invalidate assumptions. After the final use of a mutable borrow, the owner can usually be used again.'],
-    'fn award(score: &mut u32)', '    *score += 5;',
-    'fn main() {\n    let mut score = 10;\n    award(&mut score);\n    assert_eq!(score, 15);\n    award(&mut score);\n    assert_eq!(score, 20);\n    println!("{score}");\n}', '20',
-    ['&mut score lends exclusive access to award.', 'Dereferencing with * reaches the integer; the call changes the caller’s value.'],
-    'Changing score itself would reassign the reference; *score changes the value behind it.',
-    'Why do these two award calls work?', ['Both mutable borrows last forever', 'Their mutable borrows do not overlap', 'u32 has no borrowing rules'], 1,
-    'The first call finishes before the next mutable borrow begins.',
-    'Hold two mutable references and try to use both; read E0499.',
-    ['Dereference the parameter to reach its u32.', 'Add five to the referenced integer.']),
-  rust('borrowing', 'slices', 'Borrow a bounded sequence',
-    ['A slice is a reference to a sequence plus its length. &[u32] lets a function accept an array or part of a vector without taking ownership.', 'get returns Option rather than panicking at an invalid index. This makes bounds checking explicit, which is essential when reading an untrusted page file.'],
-    'fn first_or_zero(values: &[u32]) -> u32', '    values.first().copied().unwrap_or(0)',
-    'fn main() {\n    assert_eq!(first_or_zero(&[]), 0);\n    let values = vec![9, 8, 7];\n    assert_eq!(first_or_zero(&values[1..]), 8);\n    println!("{}", first_or_zero(&values));\n}', '9',
-    ['first returns Some(&9) for the full vector.', 'copied converts Option<&u32> into Option<u32>; unwrap_or handles an empty slice.'],
-    'values[0] panics for an empty slice. A parser must not assume input is long enough.',
-    'What should an empty slice produce here?', ['A panic', '0', 'An uninitialized integer'], 1,
-    'The explicit fallback in the contract is zero; the first assertion checks it.',
-    'Pass &values[2..2] and predict the result.',
-    ['Ask for the first element without indexing directly.', 'Copy the referenced integer and use zero for None.']),
-
-  rust('model', 'structs', 'Give a row a type',
-    ['A struct groups fields that belong together. Named fields make the meaning of an integer clear: an id and a score are not interchangeable concepts.', 'A method with &self borrows the row. Returning a formatted String creates new owned output without consuming the row.'],
-    '#[derive(Debug)]\nstruct Row { id: u32, name: String, score: u32 }\n\nfn label(row: &Row) -> String', '    format!("{} | {} | {}", row.id, row.name, row.score)',
-    'fn main() {\n    let row = Row { id: 1, name: "Ada".into(), score: 90 };\n    assert_eq!(label(&row), "1 | Ada | 90");\n    println!("{}", label(&row));\n}', '1 | Ada | 90',
-    ['Construct a Row with explicit field names.', 'Borrow it to format all three fields in a stable order.'],
-    'An owned String field means Row is not Copy by default; passing Row by value can move it.',
-    'Does label take ownership of row?', ['Yes', 'No, it takes &Row', 'Only of name'], 1,
-    'The parameter borrows the entire struct through a shared reference.',
-    'Create a second Row and print both labels.',
-    ['Use format! to return an owned String.', 'Read id, name, and score through the shared reference.']),
-  rust('model', 'enums', 'Represent alternatives',
-    ['An enum represents a choice between named variants, each with its own payload. match makes each state visible at the point where you handle it.', 'TinyDB’s page type is an enum: a leaf has rows and a next link, while a branch has separator keys and child page IDs. A single struct full of unrelated optional fields would allow more invalid combinations.'],
-    'enum Command { Count, Lookup(u32) }\n\nfn describe(command: Command) -> String', '    match command {\n        Command::Count => "count all rows".into(),\n        Command::Lookup(id) => format!("lookup {id}"),\n    }',
-    'fn main() {\n    assert_eq!(describe(Command::Count), "count all rows");\n    assert_eq!(describe(Command::Lookup(7)), "lookup 7");\n    println!("{}", describe(Command::Lookup(42)));\n}', 'lookup 42',
-    ['Lookup carries the integer needed by that command.', 'match extracts the payload only in the corresponding arm.'],
-    'A wildcard arm can hide newly added variants that should receive explicit behavior.',
-    'Where is the lookup id stored?', ['In every enum variant', 'Inside Lookup(u32)', 'In a global variable'], 1,
-    'Only the Lookup variant needs and carries that payload.',
-    'Add a Delete(u32) variant and update the exhaustive match.',
-    ['Match both Command variants explicitly.', 'Bind the Lookup payload to id in its match pattern.']),
-  rust('model', 'option', 'Missing is a value',
-    ['Option<T> is either Some(T) or None. A failed lookup is an ordinary outcome, not necessarily a program error.', 'This small ordered collection is a stepping stone to an index. The function returns a borrowed row, so the caller cannot keep it after the underlying collection goes away.'],
-    'fn find_name(rows: &[(u32, String)], wanted: u32) -> Option<&str>', '    rows.iter().find(|row| row.0 == wanted).map(|row| row.1.as_str())',
-    'fn main() {\n    let rows = vec![(1, String::from("Ada")), (2, String::from("Lin"))];\n    assert_eq!(find_name(&rows, 99), None);\n    assert_eq!(find_name(&rows, 2), Some("Lin"));\n    println!("{}", find_name(&rows, 1).unwrap_or("missing"));\n}', 'Ada',
-    ['find stops at the first matching row.', 'map borrows the matching String as &str; a missing result stays None.'],
-    'unwrap on a missing id panics. Match or provide a deliberate fallback instead.',
-    'What is the return value for id 99?', ['Some("")', 'None', 'An exception'], 1,
-    'No matching row is represented explicitly by the None variant.',
-    'Use a match at the call site to print a separate not-found message.',
-    ['Search the iterator for a matching first tuple field.', 'Map a matching row to its name slice.']),
-
-  rust('errors', 'result', 'Report a recoverable error',
-    ['Result<T, E> distinguishes success from a failure with context. Parsing a positive identifier must reject both malformed text and the disallowed value zero.', 'A type check alone is not a domain check: u32 accepts zero, while our database schema does not. Validate before changing state.'],
-    "fn parse_id(text: &str) -> Result<u32, &'static str>", '    match text.parse::<u32>() {\n        Ok(id) if id > 0 => Ok(id),\n        _ => Err("expected a positive u32"),\n    }',
-    'fn main() {\n    assert!(parse_id("0").is_err());\n    assert!(parse_id("-1").is_err());\n    assert!(parse_id("4294967296").is_err());\n    assert_eq!(parse_id("42"), Ok(42));\n    println!("{}", parse_id("42").unwrap());\n}', '42',
-    ['parse checks the numeric representation and range.', 'The guarded match arm adds the positive-id rule.'],
-    'Casting a signed negative integer to u32 does not validate it; it changes its representation.',
-    'Which value parses as u32 but fails our schema?', ['0', '-1', '4294967296'], 0,
-    'Zero fits the numeric type but violates the positive identifier requirement.',
-    'Add assertions for leading zeros and surrounding whitespace; document the behavior.',
-    ['First parse the text into u32.', 'Accept only Ok(id) where id > 0.']),
-  rust('errors', 'question-mark', 'Propagate with ?',
-    ['The ? operator returns early on an Err and unwraps an Ok for the next step. It makes a sequence of fallible operations readable without discarding their failures.', 'map_err adapts one error type into the type your function promises. Here the caller receives a short domain message instead of an integer parser’s error type.'],
-    "fn add_text(a: &str, b: &str) -> Result<u32, &'static str>", '    let a = a.parse::<u32>().map_err(|_| "bad number")?;\n    let b = b.parse::<u32>().map_err(|_| "bad number")?;\n    a.checked_add(b).ok_or("overflow")',
-    'fn main() {\n    assert_eq!(add_text("x", "2"), Err("bad number"));\n    assert_eq!(add_text("4294967295", "1"), Err("overflow"));\n    assert_eq!(add_text("19", "23"), Ok(42));\n    println!("{}", add_text("19", "23").unwrap());\n}', '42',
-    ['Each parse may return early through ?.', 'checked_add produces None on overflow; ok_or converts it to Result.'],
-    '? does not catch a panic, and it cannot silently convert every unrelated error type.',
-    'What happens after parsing a fails?', ['b is parsed anyway', 'The function returns Err immediately', 'The process exits'], 1,
-    'The ? operator returns the error from this function; its caller still chooses how to respond.',
-    'Give the two parse failures distinct messages and test each.',
-    ['Use map_err and ? after both parse calls.', 'Use checked_add rather than + to make overflow explicit.']),
-  rust('errors', 'atomic-change', 'Validate before you mutate',
-    ['A failed operation should leave the original value intact. Validate the replacement name before assigning it into the row.', 'This small rule scales to transactions: build a valid candidate, then publish it. Rust prevents memory errors, but it does not automatically give your application this state guarantee.'],
-    "fn rename(name: &mut String, replacement: &str) -> Result<(), &'static str>", '    if replacement.is_empty() || replacement.len() > 31 { return Err("invalid name"); }\n    *name = replacement.to_owned();\n    Ok(())',
-    'fn main() {\n    let mut name = String::from("Ada");\n    assert!(rename(&mut name, "").is_err());\n    assert_eq!(name, "Ada");\n    rename(&mut name, "Lin").unwrap();\n    assert_eq!(name, "Lin");\n    println!("{name}");\n}', 'Lin',
-    ['Reject invalid input before touching name.', 'Replace the owned String only on the successful path.'],
-    'Clearing name before validation destroys valid data when the replacement is rejected.',
-    'What should name contain after the rejected empty replacement?', ['An empty String', 'Ada', 'Lin'], 1,
-    'The operation failed, so the old value must remain unchanged.',
-    'Extend validation to reject ASCII control characters like a newline.',
-    ['Check the byte length before assigning.', 'Use replacement.to_owned() only after validation succeeds.']),
-
-  rust('collections', 'vectors', 'Keep sorted, unique rows',
-    ['Vec stores a growable sequence. binary_search returns either the position of an existing key or the insertion position that preserves sorted order.', 'The index is meaningful only while the vector is sorted. Preserve that invariant after every mutation rather than hoping each caller remembers to sort.'],
-    "fn insert_key(keys: &mut Vec<u32>, key: u32) -> Result<(), &'static str>", '    match keys.binary_search(&key) {\n        Ok(_) => Err("duplicate"),\n        Err(index) => { keys.insert(index, key); Ok(()) }\n    }',
-    'fn main() {\n    let mut keys = vec![1, 5];\n    insert_key(&mut keys, 3).unwrap();\n    assert!(insert_key(&mut keys, 3).is_err());\n    assert_eq!(keys, [1, 3, 5]);\n    println!("{keys:?}");\n}', '[1, 3, 5]',
-    ['Searching for 3 returns Err(1), its insertion position.', 'Insert at position 1; a later search finds it and rejects the duplicate.'],
-    'push would break sorted order for a key in the middle, making later binary searches unreliable.',
-    'What does Err(index) mean from binary_search?', ['The input is corrupt', 'Where to insert a missing value', 'The vector is empty'], 1,
-    'The error carries the insertion position needed to preserve ordering.',
-    'Insert keys smaller than the first and larger than the last.',
-    ['Match binary_search instead of doing a second scan.', 'Use Vec::insert at the missing key’s insertion position.']),
-  rust('collections', 'maps', 'Count with a map',
-    ['HashMap associates keys with values. entry handles the present and absent cases through one interface, and or_insert supplies an initial value.', 'A hash map does not promise iteration order. Tests and displayed output should not depend on an accidental order observed in one run.'],
-    'use std::collections::HashMap;\n\nfn counts(words: &[&str]) -> HashMap<String, u32>', '    let mut result = HashMap::new();\n    for word in words { *result.entry((*word).to_owned()).or_insert(0) += 1; }\n    result',
-    'fn main() {\n    let counts = counts(&["rust", "db", "rust"]);\n    assert_eq!(counts.get("rust"), Some(&2));\n    assert_eq!(counts.get("missing"), None);\n    println!("rust: {}", counts["rust"]);\n}', 'rust: 2',
-    ['The first rust entry starts at zero and becomes one.', 'The second rust entry updates the existing counter to two.'],
-    'Indexing counts["missing"] panics. get is the appropriate interface when absence is possible.',
-    'Does HashMap guarantee key-sorted iteration?', ['Yes', 'No', 'Only for strings'], 1,
-    'Use BTreeMap or sort a collected list when output order is part of the contract.',
-    'Print every count after sorting the keys.',
-    ['Create an empty HashMap and loop over the words.', 'Increment the mutable value returned by entry(...).or_insert(0).']),
-  rust('collections', 'iterators', 'Transform without taking ownership',
-    ['An iterator describes a sequence of steps. filter keeps matching items, map transforms them, and sum consumes the iterator to produce one value.', 'iter borrows elements, while into_iter on an owned Vec consumes it. Choose deliberately when a caller must keep using its collection.'],
-    'fn passing_total(scores: &[u32]) -> u32', '    scores.iter().copied().filter(|score| *score >= 50).sum()',
-    'fn main() {\n    let scores = vec![10, 50, 90];\n    assert_eq!(passing_total(&[]), 0);\n    assert_eq!(passing_total(&scores), 140);\n    println!("{} from {} scores", passing_total(&scores), scores.len());\n}', '140 from 3 scores',
-    ['copied turns borrowed integers into integer values.', 'filter retains 50 and 90; sum adds those values to 140.'],
-    'Iterator adapters are lazy. Constructing a map without consuming it does not perform its work.',
-    'Which operation actually consumes this pipeline?', ['iter', 'filter', 'sum'], 2,
-    'sum repeatedly asks the iterator for values and accumulates the result.',
-    'Replace sum with collect::<Vec<_>>() and inspect the retained values.',
-    ['Borrow scores with iter and copy each small integer.', 'Filter on >= 50, then sum.']),
-
-  rust('abstraction', 'generics', 'One algorithm, several types',
-    ['A generic function describes behavior shared by many types. Ord supplies an ordering contract, so the same maximum operation can compare integers or string slices.', 'Returning a reference avoids requiring Clone. The result is borrowed from the input slice and cannot outlive it.'],
-    'fn largest<T: Ord>(values: &[T]) -> Option<&T>', '    values.iter().max()',
-    'fn main() {\n    assert_eq!(largest::<u32>(&[]), None);\n    assert_eq!(largest(&[1, 9, 3]), Some(&9));\n    assert_eq!(largest(&["Ada", "Lin"]), Some(&"Lin"));\n    println!("{}", largest(&[1, 9, 3]).unwrap());\n}', '9',
-    ['The compiler checks the implementation for types implementing Ord.', 'max returns a reference to the largest element, or None for an empty iterator.'],
-    'Not every type has a total ordering. f64 does not implement Ord because of NaN.',
-    'Why does this function return Option?', ['Generic values cannot be returned', 'The input slice may be empty', 'Ordering always fails'], 1,
-    'An empty collection has no largest element; None represents that case.',
-    'Try largest with f64 values and read the trait-bound error.',
-    ['Iterate over borrowed elements.', 'The iterator method max already returns Option<&T>.']),
-  rust('abstraction', 'traits', 'Name a behavior with a trait',
-    ['A trait names behavior that multiple types can implement. A bound lets an algorithm call that behavior without knowing the concrete type.', 'Keep interfaces small. TinyDB separates the page representation, validation, and storage operations so each boundary has a specific contract.'],
-    'trait Identified { fn id(&self) -> u32; }\nstruct Person { id: u32 }\nimpl Identified for Person { fn id(&self) -> u32 { self.id } }\n\nfn same_id<T: Identified>(left: &T, right: &T) -> bool', '    left.id() == right.id()',
-    'fn main() {\n    assert!(same_id(&Person { id: 7 }, &Person { id: 7 }));\n    assert!(!same_id(&Person { id: 7 }, &Person { id: 8 }));\n    println!("{}", same_id(&Person { id: 1 }, &Person { id: 1 }));\n}', 'true',
-    ['Person implements the id method required by Identified.', 'same_id can call that method because of its trait bound.'],
-    'This signature requires both arguments to have the same concrete T; a shared trait alone does not make different types identical.',
-    'What operation does the bound permit?', ['Reading any private field by name', 'Calling id()', 'Cloning any T'], 1,
-    'The bound promises the trait method, and no additional behavior.',
-    'Implement Identified for a second type and call the function with two values of it.',
-    ['Call the trait method on both borrowed arguments.', 'Compare the returned integer IDs.']),
-  rust('abstraction', 'lifetimes', 'Describe where a borrow comes from',
-    ['A lifetime annotation describes a relationship between references. It does not extend how long data exists or allocate a longer-lived copy.', 'This function may return either input. Its return value is valid for a lifetime supported by both input borrows.'],
-    "fn longer<'a>(a: &'a str, b: &'a str) -> &'a str", '    if a.len() >= b.len() { a } else { b }',
-    'fn main() {\n    let first = String::from("Ada");\n    let second = String::from("Grace");\n    assert_eq!(longer(&first, &second), "Grace");\n    assert_eq!(longer("same", "size"), "same");\n    println!("{}", longer(&first, &second));\n}', 'Grace',
-    ['Both input references support the chosen lifetime a.', 'The function returns one input slice, without creating or owning text.'],
-    'Returning a reference to a local String would leave a dangling reference; annotations cannot make that valid.',
-    'Does writing a lifetime annotation keep a String alive longer?', ['Yes', 'No', 'Only for literals'], 1,
-    'The annotation lets the compiler check a relationship; ownership still determines when values are dropped.',
-    'Try returning a slice of a local String and inspect E0515.',
-    ['Compare byte lengths without moving either input.', 'Return a on ties and b only when it is longer.']),
-
-  rust('bytes', 'little-endian', 'Encode a number explicitly',
-    ['A file format must specify byte order instead of relying on a machine’s memory layout. Little-endian writes the least significant byte first.', 'to_le_bytes and from_le_bytes state the rule directly. Never serialize a Rust struct by copying its memory: padding, layout, and owned pointers are not a portable format.'],
-    'fn encode_id(id: u32) -> [u8; 4]', '    id.to_le_bytes()',
-    'fn main() {\n    assert_eq!(encode_id(0), [0, 0, 0, 0]);\n    assert_eq!(encode_id(0x12345678), [0x78, 0x56, 0x34, 0x12]);\n    assert_eq!(u32::from_le_bytes(encode_id(u32::MAX)), u32::MAX);\n    println!("{:?}", encode_id(258));\n}', '[2, 1, 0, 0]',
-    ['258 is 256 + 2.', 'The first byte holds 2 and the second holds 1, followed by two zero bytes.'],
-    'to_ne_bytes uses native byte order, which makes a cross-platform file contract ambiguous.',
-    'What is the first byte of little-endian 258?', ['1', '2', '0'], 1,
-    'The least significant byte comes first: 258 modulo 256 is 2.',
-    'Encode and decode u32::MAX and a value containing a zero byte in the middle.',
-    ['Use a standard integer conversion, not an unsafe memory cast.', 'to_le_bytes returns exactly four bytes.']),
-  rust('bytes', 'decode', 'Reject short input safely',
-    ['A decoder receives bytes, not promises. Check the length before converting a four-byte slice into an array.', 'Result carries a recoverable error back to the caller. Invalid input must not panic or partially update a database.'],
-    "fn decode_id(bytes: &[u8]) -> Result<u32, &'static str>", '    let first = bytes.get(..4).ok_or("short input")?;\n    let array: [u8; 4] = first.try_into().map_err(|_| "short input")?;\n    Ok(u32::from_le_bytes(array))',
-    'fn main() {\n    for length in 0..4 { assert!(decode_id(&[0, 0, 0, 0][..length]).is_err()); }\n    assert_eq!(decode_id(&[2, 1, 0, 0]), Ok(258));\n    println!("{}", decode_id(&[2, 1, 0, 0]).unwrap());\n}', '258',
-    ['get(..4) rejects each truncated prefix.', 'try_into creates the fixed array required by from_le_bytes.'],
-    'bytes[..4] panics if fewer than four bytes are available.',
-    'What should the decoder do for three bytes?', ['Read a fourth byte anyway', 'Return Err', 'Assume a zero byte'], 1,
-    'Truncation is invalid input and must be reported before indexing.',
-    'Add a decoder that requires exactly four bytes rather than allowing a suffix.',
-    ['Use get(..4) to check the slice bound.', 'Convert that checked slice into [u8; 4], then decode little-endian.']),
-  rust('bytes', 'tests', 'Test an invariant, not one example',
-    ['A round-trip test checks that decoding an encoded value returns the original. Boundary tests catch mistakes that a single friendly example misses.', 'In this browser, assertions in main run with the program. Native rustc --test runs the database’s larger test suite, including randomized operations compared with an independent ordered map.'],
-    'fn round_trip(values: &[u32]) -> bool', '    values.iter().all(|value| u32::from_le_bytes(value.to_le_bytes()) == *value)',
-    'fn main() {\n    assert!(round_trip(&[]));\n    assert!(round_trip(&[0, 1, 255, 256, 65535, u32::MAX]));\n    println!("round trips pass");\n}', 'round trips pass',
-    ['Test zero, byte boundaries, and the largest u32.', 'all returns true only if every encoded value decodes back to its original.'],
-    'A codec can pass its own round-trip tests while sharing the same wrong byte order in both directions. Check known bytes and another implementation too.',
-    'What extra test catches two codecs sharing the same endian mistake?', ['Repeat the same round trip', 'Check known bytes or another implementation', 'Only test zero'], 1,
-    'An independent fixture verifies the external contract, not just agreement between two related functions.',
-    'Break the decoder’s byte order and find the smallest test value that reveals it.',
-    ['Visit every input using iter().all(...).', 'Compare from_le_bytes(value.to_le_bytes()) with the original value.']),
+const order = [
+  'first-program', 'printing', 'bindings', 'mutable-values', 'numbers', 'compiler-messages',
+  'arithmetic', 'comparisons', 'branches', 'functions', 'parameters', 'return-values', 'assertions', 'loops', 'tuples', 'arrays',
+  'strings', 'formatting', 'moves', 'copy', 'clone', 'scope',
+  'references', 'mutable', 'text-slices', 'unicode', 'shared', 'borrowed-slices', 'static-text',
+  'structs', 'methods', 'enums', 'optional-values', 'option', 'slices',
+  'result-basics', 'result', 'checked-arithmetic', 'question-mark', 'atomic-change',
+  'vector-basics', 'closures', 'iterator-basics', 'iterators', 'vectors', 'imports', 'maps', 'sets',
+  'traits', 'generics', 'derive', 'lifetimes', 'aliases',
+  'little-endian', 'decode', 'tests', 'files', 'option-propagation', 'checksums',
+  'database-basics', 'sql-crud', 'row-validation', 'sql-strings', 'tdb1',
+  'page-layout', 'recursion', 'bplus-lookup', 'rebalance', 'source-primer',
+  'staging', 'rollback', 'commit-generation', 'journal', 'redo', 'browser-storage'
 ];
+const candidates = new Map([...foundations, ...bridges, ...revised].map(item => [item.id, item]));
+export const course = order.map(id => { const item = candidates.get(id); if (!item) throw new Error('Missing lesson ' + id); return item; });
+// First-use notes are part of direct instruction, before each runnable example.
+course.find(item => item.id === 'result-basics').explain.push('The if/else here is also an expression: its chosen arm produces Ok(id) or Err(message) as the function’s returned Result. Both arms produce the same Result type.');
+course.find(item => item.id === 'maps').explain.push('HashMap::new() creates the empty map. The compiler infers its key and value types from the declared return type and the later entry operations.');
+course.find(item => item.id === 'tdb1').explain.push('In the test setup, bytes.extend([0; 40]) appends forty zero bytes after the header. extend appends a whole sequence; [0; 40] repeats the array element using the notation from the arrays lesson.');
+course.find(item => item.id === 'tdb1').explain.push('The workspace command .export exchange.tdb writes a separate exchange file. .snapshot backup.rdb instead writes a copy in TinyDB’s paged format. Use a different filename from the active database; download the resulting file from the workspace file list.');
+course.find(item => item.id === 'database-basics').explain.push('In the lab, .tables lists table names, .schema describes their columns and rules, and .check validates the current database structure and reports its row/page counts. These are inspection commands, not SQL statements.');
+course.find(item => item.id === 'page-layout').explain = course.find(item => item.id === 'page-layout').explain.map(text => text.replace('The next lesson explains how branches and row-holding leaves form a tree.', 'The later tree-lookup lesson explains how branches and row-holding leaves form a tree.'));
+course.find(item => item.id === 'page-layout').explain.push('The lab command .pages lists actual page IDs, page types, and the keys they hold. Compare its output before and after the insert that exceeds a leaf’s capacity.');
+course.find(item => item.id === 'bplus-lookup').explain.push('In the lab, .index describes the index and its height, meaning the number of levels from root to leaf. WHERE id >= 3 AND id <= 7 combines two SQL limits with AND; it selects the inclusive range from three through seven.');
+course.find(item => item.id === 'journal').explain.push('Recovery happens automatically when the database file is reopened. The .recover inspection command reports the completed recovery generation; it is not required to trigger replay.');
+course.find(item => item.id === 'browser-storage').explain.unshift('A process is one running copy of a program. When it finishes normally, it returns an exit code: zero for success or a nonzero number for an error. A runtime trap means execution could not continue normally, such as a failed assertion in this browser build.');
+course.find(item => item.id === 'source-primer').explain.push('Some supplied code uses impl FnOnce(...) for a closure called at most once, or collect::<DbResult<Vec<_>>>() to gather successful iterator items while propagating the first error. The underscore asks Rust to infer the element type. These combine the closure, trait-bound, Result, and collection ideas already taught. Named enum-variant fields can be bound or renamed in a match, such as rows: mut target; the pattern borrows or moves the declared fields according to the same ownership rules.');
+course.find(item => item.id === 'source-primer').introduces.push('closure-trait', 'fallible-collect', 'type-placeholder', 'field-pattern');
+course.find(item => item.id === 'optional-values').introduces.push('if-let');
+course.find(item => item.id === 'sql-crud').introduces.push('discarded-binding');
+export const rustLessons = course.filter(item => !item.lab);
+export const databaseLessons = course.filter(item => item.lab);
+export const courseEdition = 2;
 
-export const ownershipSteps = [
-  { line: 'let name = String::from("Ada");', owner: 'name', access: 'name owns the text allocation.', state: 'One owner; the allocation is released when its owner drops.' },
-  { line: 'let view = &name;', owner: 'name', access: 'view reads through a shared borrow.', state: 'name still owns the text. Reading is allowed; mutation must wait until this borrow’s last use.' },
-  { line: 'println!("{view}");', owner: 'name', access: 'The final use of view finishes the borrow.', state: 'The reference has no later use, so its borrow no longer prevents mutation or a move.' },
-  { line: 'let mut next = name;', owner: 'next', access: 'Ownership moves from name to next.', state: 'The allocation was not cloned. Using name now causes E0382.' },
-  { line: 'next.push_str("!");', owner: 'next', access: 'next mutates the allocation it owns.', state: 'At the end of the scope, next drops and frees the text.' },
-];
-
-const lab = (lesson, script, extra) => ({ ...lesson, lab: { script, filename: `lab-${lesson.id}.rdb`, ...extra } });
-export const databaseLessons = [
-  lab(rust('database', 'row-validation', 'Define the row contract',
-    ['TinyDB has one people table: a positive unique u32 id, a UTF-8 name occupying 1–31 bytes with no ASCII control characters, and a u32 score. A small, fixed schema keeps storage work visible.', 'Validate a row before inserting it. The database also checks uniqueness; the name validator cannot establish that on its own. Run the SQL lab to use the real Rust database, then inspect its complete source.'],
-    'fn valid_name(name: &str) -> bool', '    !name.is_empty() && name.len() <= 31 && !name.bytes().any(|b| b < 32 || b == 127)',
-    'fn main() {\n    assert!(valid_name("café"));\n    assert!(!valid_name(""));\n    assert!(!valid_name("Ada\\n"));\n    assert!(!valid_name(&"é".repeat(16)));\n    println!("name validation passes");\n}', 'name validation passes',
-    ['Check byte length, because the file reserves bytes rather than Unicode characters.', 'Reject control bytes so a name cannot inject additional displayed rows.'],
-    'Sixteen é characters take 32 bytes and do not fit, despite being fewer than 31 characters.',
-    'Which check belongs in the database rather than this function?', ['Name length', 'Duplicate id', 'Control bytes'], 1,
-    'Uniqueness requires access to existing rows; validating text alone cannot check it.',
-    'Insert a duplicate id in the lab and verify that the original row remains.',
-    ['Use name.len() for UTF-8 byte length.', 'Reject bytes below 32 and the DEL byte 127.']),
-    "INSERT INTO people VALUES (1, 'Ada', 90);\nSELECT * FROM people;\n.schema\n.check"),
-  lab(rust('database', 'sql-strings', 'Parse SQL without splitting names',
-    ['The SQL lexer distinguishes keywords, numbers, punctuation, and quoted text. Splitting a statement on whitespace breaks names containing spaces; blindly splitting on semicolons breaks quoted strings.', 'TinyDB supports a deliberately small grammar, including INSERT, SELECT, UPDATE, DELETE, BEGIN, COMMIT, ROLLBACK, and EXPLAIN SELECT. A doubled single quote represents one quote inside a name. Complete SQL statements must fit on one line.'],
-    "fn decode_quoted(token: &str) -> Result<String, &'static str>", '    if !token.starts_with(\'\\\'\') || !token.ends_with(\'\\\'\') || token.len() < 2 { return Err("missing quotes"); }\n    let mut chars = token[1..token.len()-1].chars();\n    let mut result = String::new();\n    while let Some(ch) = chars.next() {\n        if ch == \'\\\'\' && chars.next() != Some(\'\\\'\') { return Err("unescaped quote"); }\n        result.push(ch);\n    }\n    Ok(result)',
-    'fn main() {\n    assert_eq!(decode_quoted("\'O\'\'Neil\'").unwrap(), "O\'Neil");\n    assert!(decode_quoted("\'O\'Neil\'").is_err());\n    assert!(decode_quoted("Ada").is_err());\n    println!("{}", decode_quoted("\'O\'\'Neil\'").unwrap());\n}', "O'Neil",
-    ['Strip the surrounding quotes only after checking they exist.', 'When a quote appears inside, require and consume its paired escape quote.'],
-    'This helper decodes one token; it is not a complete SQL parser. The reference implementation also enforces token order, limits, and trailing-input checks.',
-    'How is O\'Neil written as a SQL string?', ["'O''Neil'", "'O'Neil'", 'O_Neil'], 0,
-    'SQL doubles a quote inside a quoted string; the lexer returns one quote in the decoded name.',
-    'Try a name containing a semicolon and confirm it stays inside one INSERT.',
-    ['Check both outer quotes before slicing the token.', 'Consume two interior quote characters for each decoded quote.']),
-    "INSERT INTO people VALUES (1, 'O''Neil; Jr', 75);\nUPDATE people SET score = 80, name = 'O''Neil' WHERE id = 1;\nSELECT * FROM people WHERE id = 1;"),
-  lab(rust('database', 'tdb1', 'Exchange files with C Foundry',
-    ['TDB1 is the exchange format shared with C Foundry. Its eight-byte header is TDB1, version 1, row size 40, one byte of row count, and a zero reserved byte. It supports at most 128 rows.', 'Each row is a little-endian u32 id, 32 bytes for a zero-terminated UTF-8 name, and a little-endian u32 score. TinyDB’s normal RDB2 format stores indexed pages instead; .export creates a separate TDB1 file and .import accepts either format.'],
-    "fn legacy_count(bytes: &[u8]) -> Result<usize, &'static str>", '    if bytes.len() < 8 || &bytes[..4] != b"TDB1" || bytes[4] != 1 || bytes[5] != 40 || bytes[7] != 0 { return Err("bad header"); }\n    let count = bytes[6] as usize;\n    if count > 128 || bytes.len() != 8 + count * 40 { return Err("bad length"); }\n    Ok(count)',
-    'fn main() {\n    let mut bytes = vec![84, 68, 66, 49, 1, 40, 1, 0];\n    bytes.extend([0; 40]);\n    assert_eq!(legacy_count(&bytes), Ok(1));\n    assert!(legacy_count(&bytes[..47]).is_err());\n    println!("{} row header", legacy_count(&bytes).unwrap());\n}', '1 row header',
-    ['Read count from header byte 6, not a four-byte integer.', 'Require the exact file length; then validate each row separately in the full decoder.'],
-    'This exercise validates only the header. The complete decoder also rejects invalid names, zero IDs, and duplicate IDs.',
-    'Where does the first row’s score begin?', ['Byte 32', 'Byte 44', 'Byte 48'], 1,
-    'Eight header bytes plus 4 id bytes plus 32 name bytes puts the score at file offset 44.',
-    'Download exchange.tdb from the workspace and import it into C Foundry’s TinyDB.',
-    ['Validate the eight-byte header before reading count.', 'Check bytes.len() == 8 + count * 40 and count <= 128.']),
-    "INSERT INTO people VALUES (1, 'Ada', 90);\n.export exchange.tdb\nSELECT * FROM people;"),
-
-  lab(rust('pages', 'page-layout', 'Address fixed-size pages',
-    ['RDB2 divides the file into 256-byte pages. Page 0 is a header; other pages are leaves, branches, or reusable free space. Page IDs become byte offsets by multiplication.', 'A leaf holds at most four 40-byte rows. Small capacities are intentional: a few inserts reveal splits that would be hard to observe with production-sized pages. This teaching database loads bounded pages into memory and rewrites a snapshot at commit; it is not a disk buffer manager.'],
-    'fn page_offset(id: usize, file_len: usize) -> Option<usize>', '    let start = id.checked_mul(256)?;\n    let end = start.checked_add(256)?;\n    if end <= file_len { Some(start) } else { None }',
-    'fn main() {\n    assert_eq!(page_offset(0, 512), Some(0));\n    assert_eq!(page_offset(1, 512), Some(256));\n    assert_eq!(page_offset(2, 512), None);\n    assert_eq!(page_offset(usize::MAX, 512), None);\n    println!("{}", page_offset(1, 512).unwrap());\n}', '256',
-    ['Use checked multiplication to reject arithmetic overflow.', 'Require the entire page, not just its first byte, to be inside the file.'],
-    'Checking start < file_len accepts a truncated last page.',
-    'Is page 1 valid in a 300-byte file?', ['Yes', 'No', 'Only if it is empty'], 1,
-    'Page 1 spans bytes 256 through 511, so the file must contain at least 512 bytes.',
-    'Run .pages before and after the fifth inserted row; compare the root and leaf pages.',
-    ['Compute both start and end with checked arithmetic.', 'Only return start when the whole page fits.']),
-    "INSERT INTO people VALUES (1, 'A', 1);\nINSERT INTO people VALUES (2, 'B', 2);\nINSERT INTO people VALUES (3, 'C', 3);\nINSERT INTO people VALUES (4, 'D', 4);\n.pages\nINSERT INTO people VALUES (5, 'E', 5);\n.pages\n.check"),
-  lab(rust('pages', 'bplus-lookup', 'Seek through a B+ tree',
-    ['A branch stores separators and child page IDs. Each separator equals the smallest key in its right child. To search for a key, choose the child after every separator less than or equal to it.', 'Leaves contain the actual rows, sorted by unique id. A point lookup follows one root-to-leaf path; a range query seeks its lower bound and then walks linked leaves. EXPLAIN reports the actual search path in the workspace.'],
-    'fn child_index(separators: &[u32], key: u32) -> usize', '    separators.partition_point(|separator| *separator <= key)',
-    'fn main() {\n    assert_eq!(child_index(&[10, 20], 9), 0);\n    assert_eq!(child_index(&[10, 20], 10), 1);\n    assert_eq!(child_index(&[10, 20], 20), 2);\n    println!("child {}", child_index(&[10, 20], 15));\n}', 'child 1',
-    ['For 15, separator 10 belongs to the left of the chosen child.', 'Separator 20 is greater than 15, so search stops before it.'],
-    'Using < instead of <= sends a key equal to a separator to the wrong child.',
-    'With separators [10, 20], where does key 20 go?', ['Child 0', 'Child 1', 'Child 2'], 2,
-    'Equality goes right because the separator is the right child’s smallest key.',
-    'Compare EXPLAIN for a missing key, a present key, and a bounded range.',
-    ['Count the separators that are <= the requested key.', 'partition_point finds that boundary in sorted separators.']),
-    "INSERT INTO people VALUES (1, 'A', 1);\nINSERT INTO people VALUES (3, 'C', 3);\nINSERT INTO people VALUES (5, 'E', 5);\nINSERT INTO people VALUES (7, 'G', 7);\nINSERT INTO people VALUES (9, 'I', 9);\nEXPLAIN SELECT * FROM people WHERE id = 7;\nSELECT * FROM people WHERE id >= 3 AND id <= 7;\n.index"),
-  lab(rust('pages', 'rebalance', 'Split, merge, and preserve invariants',
-    ['When a leaf overflows, split its sorted rows into two leaves, link the new right leaf into the leaf chain, and insert its first key into the parent. A parent can overflow too, causing a branch split or a new root.', 'Deletion must restore minimum occupancy by borrowing from a sibling or merging pages. TinyDB updates separators, reuses freed page IDs, and collapses a one-child root. .check validates ordering, occupancy, equal leaf depth, reachability, and leaf links.'],
-    'fn split_keys(mut keys: Vec<u32>) -> (Vec<u32>, Vec<u32>, u32)', '    let right = keys.split_off(keys.len() / 2);\n    let separator = right[0];\n    (keys, right, separator)',
-    'fn main() {\n    let (left, right, separator) = split_keys(vec![1, 3, 5, 7, 9]);\n    assert_eq!(left, [1, 3]);\n    assert_eq!(right, [5, 7, 9]);\n    assert_eq!(separator, 5);\n    println!("{left:?} | {separator} | {right:?}");\n}', '[1, 3] | 5 | [5, 7, 9]',
-    ['The fifth row overflows a leaf with capacity four.', 'Keep two rows left and move three right; promote the first right key as the separator.'],
-    'A B+ leaf separator remains in the right leaf as data. Removing it loses a row. This focused helper assumes a nonempty overflow vector.',
-    'After this leaf split, does key 5 remain in a leaf?', ['Yes, in the right leaf', 'No, it exists only in the branch', 'It is discarded'], 0,
-    'Branch separators guide searches; actual rows remain in the leaves.',
-    'Delete the largest two keys in the lab, then inspect root collapse and free pages.',
-    ['Use split_off at the middle index.', 'The separator is right[0]; do not remove it.']),
-    "INSERT INTO people VALUES (1, 'A', 1);\nINSERT INTO people VALUES (2, 'B', 2);\nINSERT INTO people VALUES (3, 'C', 3);\nINSERT INTO people VALUES (4, 'D', 4);\nINSERT INTO people VALUES (5, 'E', 5);\n.pages\nDELETE FROM people WHERE id = 5;\nDELETE FROM people WHERE id = 4;\n.pages\n.check"),
-
-  lab(rust('transactions', 'staging', 'Stage changes before publishing',
-    ['A transaction groups changes into one publish decision. TinyDB clones the current database into a staged candidate on BEGIN; reads in that session see the staged rows.', 'This bounded teaching design favors clarity over throughput: it copies state and writes a full snapshot. It provides no concurrent SQL sessions or MVCC. In the browser, BEGIN and its COMMIT or ROLLBACK must be in the same script because each Run starts a fresh process.'],
-    'fn stage(original: &[u32], value: u32) -> Vec<u32>', '    let mut candidate = original.to_vec();\n    candidate.push(value);\n    candidate',
-    'fn main() {\n    let committed = vec![1, 2];\n    let candidate = stage(&committed, 3);\n    assert_eq!(committed, [1, 2]);\n    assert_eq!(candidate, [1, 2, 3]);\n    println!("committed {committed:?}; staged {candidate:?}");\n}', 'committed [1, 2]; staged [1, 2, 3]',
-    ['Copy committed state into a candidate.', 'Apply the new value to the candidate while keeping committed unchanged.'],
-    'Ending the browser input with an open transaction rolls it back; a later Run cannot continue that transaction.',
-    'What does SELECT inside an active TinyDB transaction see?', ['Only committed rows', 'Its own staged changes', 'Another tab’s private changes'], 1,
-    'The session reads its staged candidate until it commits or rolls back.',
-    'Remove COMMIT from the lab, run it, then SELECT again in a second Run.',
-    ['Create an owned Vec from the borrowed slice.', 'Append to the candidate, not the original.']),
-    "BEGIN;\nINSERT INTO people VALUES (1, 'Ada', 90);\nSELECT COUNT(*) FROM people;\nCOMMIT;\nSELECT * FROM people;"),
-  lab(rust('transactions', 'rollback', 'Rollback discards the candidate',
-    ['ROLLBACK drops staged state and preserves committed state. It must undo all successful changes in that transaction, not merely the last statement.', 'A failed SQL statement leaves its previous staged state intact. TinyDB keeps the transaction active after a statement error so the learner can inspect it and choose rollback. It does not implement PostgreSQL’s aborted-transaction behavior.'],
-    'fn rollback(staged: &mut Option<Vec<u32>>)', '    *staged = None;',
-    'fn main() {\n    let committed = vec![1];\n    let mut staged = Some(vec![1, 2, 3]);\n    rollback(&mut staged);\n    assert!(staged.is_none());\n    assert_eq!(committed, [1]);\n    println!("{committed:?}; staged: {staged:?}");\n}', '[1]; staged: None',
-    ['Setting Option to None drops the staged Vec.', 'The separate committed Vec is untouched.'],
-    'Printing ROLLBACK without discarding staged state would be a user-interface illusion, not a transaction.',
-    'Does rollback remove rows committed before BEGIN?', ['Yes', 'No', 'Only if they have small ids'], 1,
-    'Rollback discards this transaction’s candidate; previously committed state remains.',
-    'Stage an update and a delete, then rollback and inspect both original rows.',
-    ['Replace the Option itself, through the mutable reference.', 'Assign None to *staged.']),
-    "INSERT INTO people VALUES (1, 'Ada', 90);\nBEGIN;\nUPDATE people SET score = 99 WHERE id = 1;\nINSERT INTO people VALUES (2, 'Lin', 80);\nSELECT * FROM people;\nROLLBACK;\nSELECT * FROM people;"),
-  lab(rust('transactions', 'commit-generation', 'Commit one new generation',
-    ['COMMIT validates and publishes the entire candidate as the next database generation. A write outside an explicit transaction autocommits through the same journal protocol.', 'A generation records successful commits, not the number of rows or SQL statements. Multiple changes in one transaction produce one increment. Snapshot generations and browser workspace revisions are separate counters with different purposes.'],
-    'fn next_generation(current: u64) -> Option<u64>', '    current.checked_add(1)',
-    'fn main() {\n    assert_eq!(next_generation(0), Some(1));\n    assert_eq!(next_generation(41), Some(42));\n    assert_eq!(next_generation(u64::MAX), None);\n    println!("generation {}", next_generation(41).unwrap());\n}', 'generation 42',
-    ['Use checked_add so generation wraparound cannot make old state look current.', 'The full commit validates the candidate, writes the journal, installs the snapshot, and cleans up.'],
-    'Updating the in-memory committed value before durable publication can report success for data that was never saved.',
-    'How many generation increments do two INSERTs in one committed transaction produce?', ['0', '1', '2'], 1,
-    'The publish unit is the transaction; both inserts are part of one new generation.',
-    'Compare .pages generation changes for two autocommits and two inserts inside one transaction.',
-    ['Do not use wrapping_add for a persistent generation counter.', 'Return checked_add(1) directly.']),
-    "BEGIN;\nINSERT INTO people VALUES (1, 'Ada', 90);\nINSERT INTO people VALUES (2, 'Lin', 80);\nCOMMIT;\n.pages\n.check"),
-
-  lab(rust('recovery', 'journal', 'Record intent before installing pages',
-    ['TinyDB writes an RWL2 journal containing a full validated after-image. First it writes a prepared journal, then a committed journal, then installs the RDB2 snapshot, and finally removes the journal. The committed marker is the redo decision.', 'The .crash command is a deterministic lab interruption, not a real browser power cut. It exits after the selected stage and preserves the virtual files, which the host saves together. Native writes sync files and their parent directory; the browser shim has no physical fsync guarantee.'],
-    "fn recovery_action(committed: bool) -> &'static str", '    if committed { "redo" } else { "discard" }',
-    'fn main() {\n    assert_eq!(recovery_action(false), "discard");\n    assert_eq!(recovery_action(true), "redo");\n    println!("prepared: {}; committed: {}", recovery_action(false), recovery_action(true));\n}', 'prepared: discard; committed: redo',
-    ['A prepared after-image does not establish a commit.', 'A valid committed after-image must be installed or verified as already installed.'],
-    'A malformed or conflicting journal is retained and reported as an error; guessing whether it committed could destroy data.',
-    'After interruption before the commit marker, which state should reopen retain?', ['The previous committed state', 'The prepared new state', 'An empty database'], 0,
-    'Without a commit marker, recovery discards the prepared journal and keeps the previous generation.',
-    'Run the interruption script, then replace it with SELECT * FROM people; and Run again.',
-    ['Choose the action based on the journal’s committed marker.', 'Return redo for true and discard for false.']),
-    ".crash prepare\nINSERT INTO people VALUES (1, 'Ada', 90);", { recoveryScript: 'SELECT * FROM people;\n.pages' }),
-  lab(rust('recovery', 'redo', 'Replay once, verify on repetition',
-    ['Recovery must be idempotent: running it twice has the same effect as running it once. A committed journal targeting generation N can install over N−1; if N is already installed, its bytes must match the journal snapshot before cleanup.', 'A checksum detects accidental byte changes, not malicious rewriting. RDB2 and RWL2 use FNV-1a checksums together with structural validation, bounded lengths, and generation checks. They are teaching formats, not authenticated storage.'],
-    "fn redo_decision(current: u64, base: u64, target: u64, identical: bool) -> Result<&'static str, &'static str>", '    if base.checked_add(1) != Some(target) { return Err("bad generation"); }\n    if current == base { Ok("install") }\n    else if current == target && identical { Ok("already installed") }\n    else { Err("conflict") }',
-    'fn main() {\n    assert_eq!(redo_decision(4, 4, 5, false), Ok("install"));\n    assert_eq!(redo_decision(5, 4, 5, true), Ok("already installed"));\n    assert!(redo_decision(5, 4, 5, false).is_err());\n    assert!(redo_decision(8, 4, 5, true).is_err());\n    println!("{}", redo_decision(5, 4, 5, true).unwrap());\n}', 'already installed',
-    ['The base generation permits installation.', 'An already-installed target permits cleanup only after exact snapshot comparison.'],
-    'Accepting matching generation numbers without matching bytes could conceal a conflicting snapshot.',
-    'If generation matches but snapshot bytes differ, should recovery remove the journal?', ['Yes', 'No', 'Only on Android'], 1,
-    'It must report a conflict and preserve evidence for inspection.',
-    'Try .crash commit and .crash install in separate lab files, then reopen each twice.',
-    ['Validate target == base + 1 using checked arithmetic.', 'Handle base, identical target, and conflict as three explicit cases.']),
-    ".crash commit\nINSERT INTO people VALUES (1, 'Ada', 90);", { recoveryScript: 'SELECT * FROM people;\n.recover\n.check' }),
-  lab(rust('recovery', 'browser-storage', 'Save files without overwriting another tab',
-    ['Each browser Run gets a private virtual filesystem. After a normal exit, the host saves the complete resulting file set in one IndexedDB transaction. Traps, Stop, and timeouts keep the previous saved files; an ordinary nonzero exit can still contain earlier successful commits.', 'The save compares the revision read at startup with the current revision inside the same read/write transaction. A stale tab cannot overwrite newer files. Its unsaved files remain downloadable. Browser storage may be evicted or denied, so export files you want to keep.'],
-    "fn compare_revision(expected: u64, current: u64) -> Result<u64, &'static str>", '    if expected != current { return Err("stale workspace"); }\n    current.checked_add(1).ok_or("revision overflow")',
-    'fn main() {\n    assert_eq!(compare_revision(3, 3), Ok(4));\n    assert_eq!(compare_revision(3, 4), Err("stale workspace"));\n    assert!(compare_revision(u64::MAX, u64::MAX).is_err());\n    println!("{}", compare_revision(3, 3).unwrap());\n}', '4',
-    ['Read and compare the current revision inside the atomic storage transaction.', 'Only a matching revision can publish the next complete file set.'],
-    'Checking the revision in a separate read transaction creates a race between checking and saving.',
-    'A second tab saved newer files. What should the stale tab do?', ['Overwrite them', 'Keep its candidate for download and require reload', 'Silently merge binary pages'], 1,
-    'The workspace blocks further writes until saved state is reloaded; it does not invent a binary merge.',
-    'Open the workspace in two tabs, save in one, then attempt a write in the other.',
-    ['Reject when expected and current differ.', 'Increment only the matching revision with checked arithmetic.']),
-    "INSERT INTO people VALUES (1, 'Ada', 90);\n.snapshot backup.rdb\n.export exchange.tdb\nSELECT * FROM people;"),
-];
-export const course = [...rustLessons, ...databaseLessons];
+// Editorial checks use real earlier lesson IDs, not completion locks. Learners
+// can revisit any prerequisite directly and experienced readers can still jump.
+export function validateSequence(lessons = course) {
+  const seen = new Set();
+  for (const item of lessons) {
+    if (seen.has(item.id)) throw new Error('Duplicate lesson ' + item.id);
+    for (const required of item.prerequisites) if (!seen.has(required)) throw new Error(`${item.id} requires untaught lesson ${required}`);
+    if (!item.objective || !item.introduces?.length || item.explain.length < 3) throw new Error('Incomplete learning design: ' + item.id);
+    seen.add(item.id);
+  }
+  return true;
+}
+validateSequence();

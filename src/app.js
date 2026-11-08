@@ -3,7 +3,7 @@ import './themes.css';
 import { examples, matchesOutput } from './examples.js';
 import { startRun } from './runner.js';
 import { insertCode } from './editing.js';
-import { course } from './course-data.js';
+import { course, courseEdition } from './course-data.js';
 import { initCourse, markPractice } from './course.js';
 import { initDatabase } from './database.js';
 import { loadCompiler } from './compiler.js';
@@ -254,11 +254,11 @@ document.addEventListener('keydown', (event) => {
 if (!navigator.platform?.includes('Mac')) document.querySelector('kbd').textContent = 'Ctrl ↵';
 const openPractice = (lesson, mode) => {
   if (busy) { location.hash = '#practice'; status('Stop the current run before opening another program.'); return; }
-  current = { id: `course:${lesson.id}:${mode}`, courseId: lesson.id, practiceMode: mode,
+  current = { id: `course:v${courseEdition}:${lesson.id}:${mode}`, courseId: lesson.id, practiceMode: mode,
     title: lesson.title, concept: mode === 'exercise' ? 'PRACTICE · IMPLEMENT THE FUNCTION' : 'WORKED RUST PROGRAM',
-    description: mode === 'exercise' ? 'Replace todo! with your implementation. The assertions in main check the result and boundary cases.' : 'Run the complete program, then change it and inspect the result.',
+    description: mode === 'exercise' ? lesson.practiceInstruction : 'Run the complete program, then change it and inspect the result.',
     source: mode === 'exercise' ? lesson.starter : lesson.solution, stdin: '', expected: lesson.expected,
-    goal: 'All supplied assertions must pass and output must match the lesson example.', note: lesson.pitfall };
+    goal: lesson.checkType === 'assertions' ? 'Keep the supplied assertions and match the documented output.' : 'Match the documented output for this exercise.', note: lesson.pitfall };
   renderLesson(); setBusy(false);
   const target = `#practice/${lesson.id}/${mode}`;
   if (location.hash !== target) location.hash = target;
@@ -285,7 +285,7 @@ function route() {
   if (view === 'practice') document.title = 'Rust editor — Rust Foundry';
   if (view === 'practice' && id && id !== 'tinydb-source') {
     const lesson = course.find(x => x.id === id);
-    if (lesson && ['worked', 'exercise', 'reference'].includes(mode) && current.id !== `course:${id}:${mode}`) openPractice(lesson, mode);
+    if (lesson && ['worked', 'exercise', 'reference'].includes(mode) && current.id !== `course:v${courseEdition}:${id}:${mode}`) openPractice(lesson, mode);
   }
   if (view === 'practice' && id === 'tinydb-source' && current.id !== 'tinydb-source:' + mode && !busy) {
     const project = /^(0[1-8]-[a-z-]+|reference)$/.test(mode || '') ? mode : 'reference';

@@ -2,14 +2,25 @@
 
 [Open Rust Foundry](https://snowch.github.io/rust-foundry/)
 
-A browser-only Rust course with **12 chapters, 36 authored lessons, and eight
-TinyDB implementation projects**. Start with values, ownership, borrowing,
+A browser-only Rust course with **13 chapters, 75 authored lessons, and eight
+optional TinyDB implementation projects**. Start with a three-line program,
+printing, values, calculations, functions, and checks before ownership, borrowing,
 structs, enums, errors, collections, traits, and byte codecs. Then build a
 working database with SQL, paged storage, a B+ tree, transactions, and recovery.
 Every lesson includes a complete runnable program, expected output, a
 walkthrough, a pitfall, a prediction question with feedback, an experiment,
-progressive hints, and a TODO exercise with assertions and a reference solution.
+progressive hints, and a focused exercise with a reference solution. Early
+exercises change ordinary code and compare output. Assertions and TODO markers
+appear only after they are explicitly taught. Every lesson names its goal and
+links to earlier prerequisites; sequence checks reject forward dependencies and
+common forms of syntax appearing before their introductory lesson.
 Explicit reading completion and passing an exercise are tracked separately.
+
+The [curriculum review](docs/curriculum-review.md) records the whole-course audit
+using the open Curriculum Designer skill, including identified gaps, revisions,
+and the complete prerequisite map. No prior programming, Rust, or SQL knowledge
+is required at the course entry point. The revised edition stores progress and
+drafts separately; previous-edition work is retained and downloadable.
 
 Examples, editable practice code, output, and compiler messages live directly
 inside each lesson. Running them keeps the current lesson URL and reading
@@ -17,7 +28,8 @@ context. A sticky chapter/lesson indicator and lesson chooser show your place;
 the chapter outline highlights the current lesson and distinguishes reading
 from practice progress. Previous/next links identify chapter boundaries, and
 the overview offers a resume link. Existing full-editor course drafts are
-adopted by the inline cards. Progress updates preserve editor nodes and results.
+retained as downloadable previous-edition work beside the revised cards.
+Progress updates preserve editor nodes and results.
 
 The **TinyDB workspace** runs a bundled 842 KB Rust/Wasm program; it does not
 download the full compiler. It saves real files in IndexedDB with a revision
@@ -197,8 +209,10 @@ Tests also require stable `rustc` (or set `RUSTC`), a C compiler, curl, Python
 Playwright, and Chromium. The native checks run randomized tree invariants,
 transaction/recovery failpoints, corruption rejection, and C ↔ Rust exchange
 against a SHA-pinned copy of C Foundry's actual source downloaded only for tests.
-The website does not fetch that source. All 36 reference programs execute their
-assertions, and TODO starters must fail. Browser checks cover every lesson,
+The website does not fetch that source. All 75 reference programs execute with
+their expected output, and supplied starters require a genuine change. Syntax
+and prerequisite guards cover early-use regressions such as assertions, Option,
+closures, generic functions, and lifetime annotations. Browser checks cover every lesson,
 separate progress, persistent files, journal recovery, downloads/imports,
 stale-tab CAS, quota fallback, and executing learner-edited TinyDB source.
 

@@ -1,7 +1,7 @@
-import { course, chapters, ownershipSteps } from './course-data.js';
+import { course, chapters, ownershipSteps, courseEdition } from './course-data.js';
 import { element as el, button, codeBlock, download } from './dom.js';
 import { createLessonRunner } from './lesson-runner.js';
-const prefix = 'rust-foundry-course-v1:';
+const prefix = `rust-foundry-course-v${courseEdition}:`;
 const volatile = new Map();
 const read = key => { if (volatile.has(key)) return volatile.get(key); try { return localStorage.getItem(prefix + key) === 'true'; } catch { return false; } };
 const write = (key, value) => { volatile.set(key, value); try { localStorage.setItem(prefix + key, String(value)); return true; } catch { return false; } };
@@ -14,7 +14,7 @@ export function initCourse({ openLab, canRun, unsupported }) {
   const members = chapter => course.filter(x => x.chapter === chapter);
   const tally = (lessons, kind) => lessons.filter(x => read(`${kind}:${x.id}`)).length;
   function updateProgress() {
-    root.querySelectorAll('.progress-copy').forEach(node => { node.textContent = `${tally(course, 'read')} / 36 read · ${tally(course, 'practice')} / 36 practice checks passed. Saved on this browser when storage permits.`; });
+    root.querySelectorAll('.progress-copy').forEach(node => { node.textContent = `${tally(course, 'read')} / ${course.length} read · ${tally(course, 'practice')} / ${course.length} practice checks passed in this edition. Saved on this browser when storage permits.`; });
     root.querySelectorAll('[data-chapter-progress]').forEach(node => {
       const lessons = members(node.dataset.chapterProgress);
       node.textContent = `${tally(lessons, 'read')} / ${lessons.length} read · ${tally(lessons, 'practice')} / ${lessons.length} practiced`;
@@ -46,7 +46,7 @@ export function initCourse({ openLab, canRun, unsupported }) {
     const copy = el('p', undefined, 'chapter-progress-copy'); copy.dataset.chapterProgress = chapter.id;
     const meter = el('progress'); meter.max = members(chapter.id).length; meter.dataset.chapterMeter = chapter.id; meter.setAttribute('aria-label', 'Chapter reading progress');
     navigation.append(el('p', `CHAPTER ${chapter.number}`, 'eyebrow'), el('h2', chapter.title), copy, meter, chapterLinks(chapter, active.id), el('p', '', 'progress-copy'));
-    const all = el('details', undefined, 'all-chapters'); all.append(el('summary', 'All 12 chapters'));
+    const all = el('details', undefined, 'all-chapters'); all.append(el('summary', `All ${chapters.length} chapters`));
     const chaptersNav = el('nav'); chaptersNav.setAttribute('aria-label', 'All course chapters');
     for (const item of chapters) {
       const a = link(`${item.number}. ${item.title}`, '#course/' + members(item.id)[0].id);
@@ -57,23 +57,38 @@ export function initCourse({ openLab, canRun, unsupported }) {
   function position(chapter, lesson) {
     const index = members(chapter.id).indexOf(lesson);
     const bar = el('nav', undefined, 'lesson-position'); bar.setAttribute('aria-label', 'Your course position');
-    const copy = el('div'); copy.append(el('p', `Chapter ${Number(chapter.number)} of 12 · Lesson ${index + 1} of ${members(chapter.id).length}`, 'chapter-position'), el('p', chapter.title, 'position-title'));
+    const copy = el('div'); copy.append(el('p', `Chapter ${Number(chapter.number)} of ${chapters.length} · Lesson ${index + 1} of ${members(chapter.id).length}`, 'chapter-position'), el('p', chapter.title, 'position-title'));
     const selection = el('label', 'Current lesson', 'position-select-label'), select = el('select'); select.setAttribute('aria-label', 'Lesson in this chapter');
     for (const [i, member] of members(chapter.id).entries()) { const option = el('option', `${i + 1}. ${member.title}`); option.value = member.id; option.selected = member.id === lesson.id; select.append(option); }
     select.onchange = () => { location.hash = '#course/' + select.value; }; selection.append(select); bar.append(copy, selection); return bar;
   }
   function overview() {
     const intro = el('article', undefined, 'course-overview');
-    intro.append(el('p', 'Learn real Rust on your phone or tablet. Read a short explanation, run and edit the example right in the lesson, then practise with assertions and hints. The final chapters build TinyDB: storage pages, a B+ tree, transactions, and recovery.'));
+    intro.append(el('p', 'Start with a three-line program. No previous programming, Rust, or SQL knowledge is required. Each lesson explains its new notation, shows what you will do, and links to the earlier ideas it uses. Early practice changes simple output; assertions and unfinished-function markers appear only after their own lesson.'), el('p', 'Run and edit each example here in the lesson. Later chapters build from records and files to TinyDB pages, indexing, transactions, and recovery. You can move at your own pace or revisit a prerequisite whenever needed.'));
     let previous;
     try { previous = course.find(x => x.id === localStorage.getItem(prefix + 'last-lesson')); } catch { /* Optional resume storage. */ }
     const resume = el('section', undefined, 'resume-card');
-    resume.append(el('p', previous ? 'PICK UP WHERE YOU LEFT OFF' : 'START HERE', 'eyebrow'), link(previous ? `Continue: ${previous.title} →` : 'Start: Give values names →', '#course/' + (previous || course[0]).id, 'button primary'), el('p', 'Examples run here in the lesson. The compiler downloads only on your first Run.')); intro.append(resume);
+    resume.append(el('p', previous ? 'PICK UP WHERE YOU LEFT OFF' : 'START HERE', 'eyebrow'), link(`${previous ? 'Continue' : 'Start'}: ${(previous || course[0]).title} →`, '#course/' + (previous || course[0]).id, 'button primary'), el('p', 'Examples run here in the lesson. The compiler downloads only on your first Run.')); intro.append(resume);
+    intro.append(previousEdition());
     for (const chapter of chapters) {
       const card = el('section', undefined, 'chapter-card'), count = el('p', undefined, 'chapter-progress-copy'); count.dataset.chapterProgress = chapter.id;
       card.append(el('h2', `${chapter.number} · ${chapter.title}`), el('p', chapter.summary), count, chapterLinks(chapter)); intro.append(card);
     }
     const archive = link('Download all starters, references, and TinyDB projects ↓', './course/rust-foundry-course.zip'); archive.download = ''; intro.append(archive); root.append(intro);
+  }
+  function previousEdition() {
+    const box = el('details', undefined, 'previous-edition');
+    box.append(el('summary', 'About this revised edition and previous work'));
+    box.append(el('p', 'The course now starts with smaller steps and explicitly teaches the foundations used later. Reading and practice marks belong to this revised edition; earlier marks and drafts have not been deleted. Previous drafts are downloadable beside their corresponding revised code cards.'));
+    const previous = {};
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('rust-foundry-course-v1:') || key.startsWith('rust-foundry-lesson-draft-v1:') || key === 'rust-foundry-mvp-v1') previous[key] = localStorage.getItem(key);
+      }
+    } catch { /* A blocked browser still offers the new course. */ }
+    if (Object.keys(previous).length) box.append(button('Download previous-edition work .json', () => download(JSON.stringify(previous, null, 2), 'rust-foundry-previous-edition.json', 'application/json')));
+    return box;
   }
   function render(id) {
     const next = course.find(x => x.id === id);
@@ -93,6 +108,17 @@ export function initCourse({ openLab, canRun, unsupported }) {
     try { localStorage.setItem(prefix + 'last-lesson', lesson.id); } catch { /* Optional resume state. */ }
     root.append(position(chapter, lesson));
     const body = el('div', undefined, 'course-body'), article = el('article', undefined, 'reading'); body.append(outline(chapter), article); root.append(body);
+    const goal = el('section', undefined, 'lesson-goal');
+    goal.append(el('p', 'WHAT YOU WILL DO', 'eyebrow'), el('p', lesson.objective));
+    if (!lesson.prerequisites.length) goal.append(el('p', 'Start here. No earlier programming, Rust, or SQL knowledge is needed.', 'entry-requirement'));
+    else {
+      const requirements = el('details', undefined, 'lesson-prerequisites');
+      requirements.append(el('summary', `Before this lesson · ${lesson.prerequisites.length} earlier ${lesson.prerequisites.length === 1 ? 'topic' : 'topics'}`), el('p', 'This lesson builds on the linked explanations. Revisit any that are unfamiliar; completing them is not a navigation lock.'));
+      const list = el('ul');
+      for (const required of lesson.prerequisites) { const dependency = course.find(item => item.id === required); const li = el('li'); li.append(link(dependency.title, '#course/' + required)); list.append(li); }
+      requirements.append(list); goal.append(requirements);
+    }
+    article.append(goal);
     lesson.explain.forEach(text => article.append(el('p', text)));
     const createRunner = mode => {
       const runner = createLessonRunner({ lesson, mode, unsupported, canRun: () => !runners.some(item => item.isBusy()) && canRun(), onPass: () => markPractice(lesson.id) }); runners.push(runner); return runner;
@@ -101,7 +127,7 @@ export function initCourse({ openLab, canRun, unsupported }) {
     article.append(el('h2', 'Run and explore'), el('p', 'Predict what this program will do. Run it here, compare your output, then change one thing and run it again.'), worked.root);
     const expected = el('details', undefined, 'expected-output'); expected.append(el('summary', 'Expected output · compare after your run'), codeBlock(lesson.expected)); article.append(expected);
     const steps = el('ol'); lesson.walkthrough.forEach(text => steps.append(el('li', text))); article.append(el('h2', 'Walk through it'), steps, el('h3', 'Watch for this'), el('p', lesson.pitfall, 'callout'));
-    if (lesson.chapter === 'ownership' || lesson.chapter === 'borrowing') {
+    if (lesson.showOwnershipWalkthrough) {
       const walk = el('section', undefined, 'ownership-walk'); let step = 0;
       const update = () => {
         const state = ownershipSteps[step]; walk.replaceChildren(el('h3', 'Follow ownership, step by step'), el('p', 'This is an annotated example, independent of your edited program.'), el('p', `Step ${step + 1} / ${ownershipSteps.length} · owner: ${state.owner}`), codeBlock(state.line), el('p', state.access), el('p', state.state));
@@ -112,7 +138,9 @@ export function initCourse({ openLab, canRun, unsupported }) {
     const feedback = el('p'); feedback.setAttribute('role', 'status');
     lesson.choices.forEach((choice, i) => quiz.append(button(choice, () => { feedback.textContent = `${i === lesson.answer ? 'Correct.' : 'Try again.'} ${lesson.feedback}`; feedback.className = i === lesson.answer ? 'passed' : 'check-neutral'; }))); quiz.append(feedback); article.append(quiz);
     const practice = el('section', undefined, 'lesson-practice'); practice.id = 'lesson-practice';
-    practice.append(el('h2', 'Your turn'), el('p', 'Implement the function in the starter. Keep the assertions in main: they check boundaries as well as the displayed result. Run the checks here when you are ready.'));
+    practice.append(el('h2', 'Your turn'), el('p', lesson.practiceInstruction));
+    if (lesson.checkType === 'assertions') practice.append(el('p', 'Keep the supplied assertions: they check additional inputs as well as the displayed example.'));
+    else practice.append(el('p', 'For this exercise, the check compares your displayed output with the expected output.'));
     const exercise = createRunner('exercise'); practice.append(exercise.root);
     const practiceStatus = el('p', undefined, 'practice-pass-status'); practiceStatus.dataset.practiceStatus = lesson.id; practice.append(practiceStatus);
     lesson.hints.forEach((hint, i) => { const details = el('details', undefined, 'hint'); details.append(el('summary', `Hint ${i + 1}`), el('p', hint)); practice.append(details); });

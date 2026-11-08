@@ -1,12 +1,12 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
-import { course } from '../src/course-data.js';
+import { course, chapters } from '../src/course-data.js';
 import { zipFiles } from '../src/archive.js';
 const encode = text => new TextEncoder().encode(text);
 const files = [];
 for (const lesson of course) {
   files.push([`lessons/${lesson.id}/starter.rs`, encode(lesson.starter)], [`lessons/${lesson.id}/reference.rs`, encode(lesson.solution)]);
   if (lesson.lab) files.push([`lessons/${lesson.id}/lab.sql`, encode(lesson.lab.script + '\n')]);
-  files.push([`lessons/${lesson.id}/README.txt`, encode(`${lesson.title}\n\n${lesson.explain.join('\n\n')}\n\nExpected output:\n${lesson.expected}\nExercise: replace todo!; keep the supplied assertions.\n\n${lesson.hints.map((x, i) => `Hint ${i + 1}: ${x}`).join('\n')}\n\nExperiment: ${lesson.experiment}\n`)]);
+  files.push([`lessons/${lesson.id}/README.txt`, encode(`${lesson.title}\n\nGoal: ${lesson.objective}\nBefore this lesson: ${lesson.prerequisites.length ? lesson.prerequisites.map(id => course.find(item => item.id === id).title).join('; ') : 'No previous programming, Rust, or SQL knowledge'}\n\n${lesson.explain.join('\n\n')}\n\nExpected output:\n${lesson.expected}\nExercise: ${lesson.practiceInstruction}\n\n${lesson.hints.map((x, i) => `Hint ${i + 1}: ${x}`).join('\n')}\n\nExperiment: ${lesson.experiment}\n`)]);
 }
 const source = await readFile('native/tinydb.rs', 'utf8');
 const projects = [
@@ -36,7 +36,8 @@ for (const [id, signature, hint] of projects) {
   manifest.push({ id, hint, signature: signature.trim(), file: `${id}.rs` });
 }
 files.push(['tinydb/reference.rs', encode(source)], ['tinydb/FORMAT.md', encode(await readFile('docs/tinydb-format.md', 'utf8'))]);
-files.push(['README.txt', encode('Rust Foundry — 36 lessons and 8 TinyDB projects\n\nStart with the lesson explanations at https://snowch.github.io/rust-foundry/#course\nEach lesson includes a runnable reference and a TODO starter with assertions in main.\nRun: rustc --edition 2021 starter.rs -o lesson && ./lesson\nTinyDB projects each remove one real function from the complete implementation. The reference includes the native invariant suite. See each project README.\n\nNo Cargo dependencies are required. Browser compiler version is experimental and pinned; native tests use stable Rust. Files and source stay local when using the website.\n')]);
+files.push(['README.txt', encode(`Rust Foundry — ${chapters.length} chapters, ${course.length} lessons and 8 optional TinyDB projects\n\nStart at https://snowch.github.io/rust-foundry/#course/first-program\nNo programming, Rust, or SQL knowledge is assumed. Each lesson lists its goal and earlier prerequisites. Early exercises change ordinary source and compare output; assertions and TODO markers are used only after their introduction.\nRun: rustc --edition 2021 starter.rs -o lesson && ./lesson\nTinyDB projects each remove one real function from the complete implementation. They are optional extensions after the relevant core lessons and source primer. The reference includes the native invariant suite. See each project README.\n\nNo Cargo dependencies are required. Browser compiler version is experimental and pinned; native tests use stable Rust. Files and source stay local when using the website.\n`)]);
 await writeFile('public/course/projects.json', JSON.stringify(manifest, null, 2) + '\n');
 await writeFile('public/course/rust-foundry-course.zip', zipFiles(files));
+await writeFile('public/course/sequence.json', JSON.stringify({ edition: 2, chapters, lessons: course.map(({ id, chapter, title, objective, prerequisites, introduces }) => ({ id, chapter, title, objective, prerequisites, introduces })) }, null, 2) + '\n');
 console.log(`Exported ${course.length} lessons, ${projects.length} TinyDB projects, and ${files.length} archive entries.`);

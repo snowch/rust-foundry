@@ -6,7 +6,8 @@
   "scripts": {
     "test": "node --test test/*.test.mjs",
     "dev": "vite",
-    "build": "node scripts/export-course.mjs && vite build",
+    "build": "node scripts/review-curriculum.mjs && node scripts/export-course.mjs && vite build",
+    "course:review": "node scripts/review-curriculum.mjs",
     "tinydb:build": "node scripts/build-tinydb.mjs",
     "test:native": "node scripts/test-native.mjs",
     "serve": "node scripts/serve.mjs",

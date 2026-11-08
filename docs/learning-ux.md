@@ -16,7 +16,7 @@ for open-ended programs and complete TinyDB projects.
 ## Make the course hierarchy visible
 
 - Keep the chapter number/title and local lesson number visible while scrolling.
-- Offer a native lesson chooser with all three lessons in the current chapter.
+- Offer a native lesson chooser with every lesson in the current chapter.
 - Highlight the current lesson with both an accessible current-page state and
   the words “You are here” in the chapter outline.
 - Show chapter progress separately from overall course progress.
@@ -27,14 +27,18 @@ for open-ended programs and complete TinyDB projects.
 
 Running a worked or reference program does not complete reading or practice.
 Practice passes only after a successful process exit and matching the supplied
-expected output; its assertion driver is visible to the learner. Reading
+expected output. Early starters change ordinary code; assertion-based checks
+and TODO markers appear only after their own introductory lesson. Reading
 completion remains an explicit choice. These are learning aids, not a secure
 assessment system.
 
 Updating progress, including changes from another tab, changes only progress
 labels. It must not rebuild active editors, clear feedback, or move the reader.
-Inline drafts use separate keys per lesson and mode and adopt earlier drafts
-from the full editor. Unavailable storage is reported next to the draft.
+Inline drafts use separate keys per edition, lesson, and mode. Earlier-edition
+drafts are retained as downloads and never replace the revised beginner
+examples. Unavailable storage is reported next to the draft. Lesson objectives
+and prerequisite links appear before each worked example; the complete audit
+is recorded in [curriculum-review.md](curriculum-review.md).
 
 ## Phone and tablet interaction
 

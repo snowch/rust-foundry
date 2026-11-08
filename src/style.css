@@ -142,6 +142,7 @@ summary{cursor:pointer;min-height:44px;align-content:center;font-size:17px;color
 .course-view{max-width:1440px}.course-heading{max-width:none}
 .course-breadcrumb{font-size:16px;color:#b9c8d1;line-height:1.7}.course-breadcrumb a{color:#edb99b;min-height:44px;display:inline-block;padding:8px 0}
 .course-heading .progress-copy{color:#b6c3cc}
+.lesson-goal{padding:16px 18px;border:1px solid #526259;border-radius:7px;background:#1c2824;margin:0 0 26px}.reading .lesson-goal>p{margin:6px 0;font-size:17px}.reading .lesson-goal>.eyebrow{font-size:14px;color:var(--orange)}.lesson-prerequisites{margin-top:12px;border-top:1px solid #526259;padding-top:6px}.lesson-prerequisites p{font-size:16px}.lesson-prerequisites ul{padding-left:22px}.previous-edition{padding:14px 18px;border:1px solid #526259;border-radius:7px;margin:24px 0}.previous-edition p{font-size:17px;line-height:1.8}.previous-draft p{font-size:16px!important}
 .course-outline .progress-copy{font-size:14px!important;line-height:1.75;color:#b7c7c6;border-top:1px solid #425158;padding-top:14px}
 .lesson-position{position:sticky;top:0;z-index:8;display:flex;align-items:center;gap:24px;justify-content:space-between;border:1px solid #526259;border-radius:8px;padding:13px 18px;background:#1c2828;box-shadow:0 4px 16px #0005;margin:24px 0}
 .chapter-position{font:15px/1.6 var(--mono);margin:0;color:#efb491}.position-title{margin:3px 0 0;color:#e0e8e4;font-size:18px}

@@ -29,7 +29,11 @@ if not base:
     threading.Thread(target=server.serve_forever, daemon=True).start()
     base = f'http://127.0.0.1:{server.server_port}/rust-foundry/'
 
-lessons = json.loads(subprocess.check_output(['node', '--input-type=module', '-e', 'import {course} from "./src/course-data.js"; console.log(JSON.stringify(course));'], cwd=root))
+catalog = json.loads(subprocess.check_output(['node', '--input-type=module', '-e', 'import {course,chapters} from "./src/course-data.js"; console.log(JSON.stringify({course,chapters}));'], cwd=root))
+
+lessons, chapters = catalog['course'], catalog['chapters']
+by_id = {lesson['id']: lesson for lesson in lessons}
+first_size = sum(lesson['chapter'] == lessons[0]['chapter'] for lesson in lessons)
 
 def route(page, fragment):
     page.evaluate('(fragment) => location.hash = fragment', fragment)
@@ -51,6 +55,20 @@ with sync_playwright() as p:
         options['proxy'] = {'server': os.environ.get('HTTPS_PROXY') or os.environ.get('HTTP_PROXY'), 'bypass': '127.0.0.1,localhost'}
     browser = p.chromium.launch(**options)
     context = browser.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True, accept_downloads=True)
+    context.add_init_script('''
+      try {
+      if ((location.protocol === 'http:' || location.protocol === 'https:') && !localStorage.getItem('learning-review-seed')) {
+        const old = `fn greeting() -> &'static str { "Hello, Rust!" }
+fn main() { println!("{}", greeting()); }
+`;
+        localStorage.setItem('rust-foundry-lesson-draft-v1:bindings:worked', old);
+        localStorage.setItem('rust-foundry-course-v1:read:bindings', 'true');
+        localStorage.setItem('rust-foundry-course-v1:practice:bindings', 'true');
+        localStorage.setItem('rust-foundry-mvp-v1', JSON.stringify({sources: {'course:bindings:worked': old}}));
+        localStorage.setItem('learning-review-seed', 'true');
+      }
+      } catch { /* Initial about:blank documents do not expose local storage. */ }
+    ''')
     page = context.new_page()
     errors, compiler_requests = [], []
     context.on('page', lambda tab: tab.on('pageerror', lambda error: errors.append(str(error))))
@@ -67,9 +85,12 @@ with sync_playwright() as p:
         page.locator('.prediction button').nth(lesson['answer']).click()
         expect(page.locator('.prediction [role="status"]')).to_contain_text('Correct.')
         assert page.locator('.inline-runner[data-mode="worked"] textarea').input_value().strip() == lesson['source'].strip()
+        expect(page.locator('.lesson-goal')).to_contain_text(lesson['objective'])
+        actual_prerequisites = page.locator('.lesson-prerequisites a').evaluate_all('(links) => links.map(link => link.hash.slice(8))')
+        assert actual_prerequisites == lesson['prerequisites'], lesson['id']
         chapter_index = next(i for i, value in enumerate(lessons) if value['chapter'] == lesson['chapter'])
-        expect(page.locator('.chapter-position')).to_contain_text(f'Lesson {lessons.index(lesson) - chapter_index + 1} of 3')
-        expect(page.locator('.progress-copy')).to_contain_text('0 / 36 read')
+        expect(page.locator('.chapter-position')).to_contain_text(f'Lesson {lessons.index(lesson) - chapter_index + 1} of {sum(item["chapter"] == lesson["chapter"] for item in lessons)}')
+        expect(page.locator('.progress-copy')).to_contain_text(f'0 / {len(lessons)} read')
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), lesson['id']
     assert compiler_requests == [], 'Reading downloaded the compiler.'
     # Bring an earlier full-editor draft into the lesson, then keep inline edits across navigation.
@@ -77,27 +98,33 @@ with sync_playwright() as p:
     page.evaluate('''source => { const key = 'rust-foundry-mvp-v1'; const saved = JSON.parse(localStorage.getItem(key) || '{}'); saved.sources ||= {}; saved.sources['course:copy:worked'] = source; localStorage.setItem(key, JSON.stringify(saved)); }''', legacy)
     route(page, '#course/copy')
     legacy_editor = page.locator('#lesson-code-copy-worked')
-    expect(legacy_editor).to_have_value(legacy)
+    expect(legacy_editor).to_have_value(by_id['copy']['source'])
+    old_draft = page.locator('.inline-runner[data-mode="worked"] .previous-draft')
+    old_draft.locator('summary').click()
+    with page.expect_download() as transfer:
+        old_draft.get_by_role('button', name='Download previous draft .rs').click()
+    assert pathlib.Path(transfer.value.path()).read_text() == legacy
+    assert page.evaluate('JSON.parse(localStorage.getItem("rust-foundry-mvp-v1")).sources["course:copy:worked"]') == legacy
     edited = 'fn main() { println!("Kept inline"); }\n'
     legacy_editor.fill(edited)
     route(page, '#course/functions')
-    expect(page.locator('#course-view h1')).to_have_text('Functions have contracts')
+    expect(page.locator('#course-view h1')).to_have_text(by_id['functions']['title'])
     route(page, '#course/copy')
     expect(page.locator('#lesson-code-copy-worked')).to_have_value(edited)
     page.locator('.inline-runner[data-mode="worked"]').get_by_role('button', name='Reset code', exact=True).click()
-    route(page, '#course/moves')
-    expect(page.locator('#course-view h1')).to_have_text('Follow a moved String')
+    route(page, '#course/references')
+    expect(page.locator('#course-view h1')).to_have_text(by_id['references']['title'])
     page.get_by_role('button', name='Next step', exact=True).click()
     expect(page.locator('.ownership-walk')).to_contain_text('view reads through a shared borrow')
     page.get_by_role('button', name='Mark reading complete', exact=True).click()
-    expect(page.locator('.progress-copy')).to_contain_text('1 / 36 read')
-    expect(page.locator('.progress-copy')).to_contain_text('0 / 36 practice')
+    expect(page.locator('.progress-copy')).to_contain_text(f'1 / {len(lessons)} read')
+    expect(page.locator('.progress-copy')).to_contain_text(f'0 / {len(lessons)} practice')
     # Storage events reconcile reading completion in another tab.
     second = context.new_page()
-    second.goto(base + '#course/moves', wait_until='domcontentloaded')
+    second.goto(base + '#course/references', wait_until='domcontentloaded')
     expect(second.get_by_role('button', name='✓ Read · mark unread', exact=True)).to_be_visible()
     second.get_by_role('button', name='✓ Read · mark unread', exact=True).click()
-    expect(page.locator('.progress-copy')).to_contain_text('0 / 36 read')
+    expect(page.locator('.progress-copy')).to_contain_text(f'0 / {len(lessons)} read')
     second.close()
     # TinyDB first run downloads only its small Wasm program.
     route(page, '#workspace')
@@ -164,7 +191,7 @@ with sync_playwright() as p:
     screenshot_dir.mkdir(parents=True, exist_ok=True)
     for width, height in [(320, 700), (390, 844), (768, 1024), (1024, 768), (1280, 800)]:
         page.set_viewport_size({'width': width, 'height': height})
-        for fragment in ['#workspace', '#course/bplus-lookup', '#course/moves']:
+        for fragment in ['#workspace', '#course/bplus-lookup', '#course/references']:
             route(page, fragment)
             expect(page.locator('#database-view' if fragment == '#workspace' else '#course-view')).to_be_visible()
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), (width, fragment)
@@ -173,7 +200,7 @@ with sync_playwright() as p:
             route(page, '#workspace')
             page.screenshot(path=str(screenshot_dir / f'workspace-{width}.png'), full_page=True)
     # Compile a real exercise: the starter fails, the reference passes; reading stays separate.
-    route(page, '#course/bindings')
+    route(page, '#course/first-program')
     worked = page.locator('.inline-runner[data-mode="worked"]')
     worked.get_by_role('button', name='Run example', exact=True).click()
     worked.get_by_role('button', name='Stop', exact=True).click()
@@ -182,8 +209,8 @@ with sync_playwright() as p:
     expect(worked.get_by_role('button', name='Run example', exact=True)).to_be_enabled(timeout=300_000)
     expect(worked.locator('.inline-output')).to_have_text(lessons[0]['expected'])
     expect(worked.locator('.inline-status')).to_contain_text('Example finished')
-    expect(page.locator('.progress-copy')).to_contain_text('0 / 36 read · 0 / 36 practice')
-    assert page.url.endswith('#course/bindings')
+    expect(page.locator('.progress-copy')).to_contain_text(f'0 / {len(lessons)} read · 0 / {len(lessons)} practice')
+    assert page.url.endswith('#course/first-program')
     request_count = len(compiler_requests)
     worked.locator('textarea').fill('fn main() { println!("An inline edit"); }')
     worked.get_by_role('button', name='Run example', exact=True).click()
@@ -197,42 +224,43 @@ with sync_playwright() as p:
     worked.get_by_role('button', name='Reset code', exact=True).click()
     page.get_by_role('button', name='Try the exercise ↓', exact=True).click()
     practice = page.locator('.inline-runner[data-mode="exercise"]')
-    assert 'todo!' in practice.locator('textarea').input_value()
+    assert 'todo!' not in practice.locator('textarea').input_value()
+    assert 'assert' not in practice.locator('textarea').input_value()
     practice.get_by_role('button', name='Run checks', exact=True).click()
     expect(practice.get_by_role('button', name='Run checks', exact=True)).to_be_enabled(timeout=300_000)
-    expect(practice.locator('.inline-status')).to_contain_text('todo!')
-    assert page.url.endswith('#course/bindings'), 'Running code left the lesson.'
-    assert page.evaluate('localStorage.getItem("rust-foundry-course-v1:practice:bindings")') is None
+    expect(practice.locator('.inline-status')).to_contain_text('output differs')
+    assert page.url.endswith('#course/first-program'), 'Running code left the lesson.'
+    assert page.evaluate('localStorage.getItem("rust-foundry-course-v2:practice:first-program")') is None
     practice.locator('textarea').fill(lessons[0]['solution'])
     practice.get_by_role('button', name='Run checks', exact=True).click()
     expect(practice.locator('.inline-status')).to_contain_text('Practice checks passed', timeout=30_000)
     expect(practice.locator('.inline-output')).to_have_text(lessons[0]['expected'])
-    assert page.url.endswith('#course/bindings')
-    expect(page.locator('.progress-copy')).to_contain_text('0 / 36 read · 1 / 36 practice')
+    assert page.url.endswith('#course/first-program')
+    expect(page.locator('.progress-copy')).to_contain_text(f'0 / {len(lessons)} read · 1 / {len(lessons)} practice')
     # Progress updates must retain editor nodes, their drafts, and execution feedback.
     page.evaluate('window.practiceEditor = document.querySelector(".inline-runner[data-mode=exercise] textarea")')
     page.get_by_role('button', name='Mark reading complete', exact=True).click()
     assert page.evaluate('window.practiceEditor === document.querySelector(".inline-runner[data-mode=exercise] textarea")')
     expect(practice.locator('.inline-output')).to_have_text(lessons[0]['expected'])
-    expect(page.locator('.chapter-progress-copy')).to_contain_text('1 / 3 read · 1 / 3 practiced')
+    expect(page.locator('.chapter-progress-copy')).to_contain_text(f'1 / {first_size} read · 1 / {first_size} practiced')
     # Leaving a running lesson stops its worker; the new lesson can run immediately.
     worked.locator('textarea').fill('fn main() { loop { std::hint::spin_loop(); } }')
     worked.get_by_role('button', name='Run example', exact=True).click()
     expect(worked.locator('.inline-status')).to_have_text('Running locally…', timeout=30_000)
     # Chapter navigation uses local lesson numbers and explains chapter transitions.
-    page.get_by_label('Lesson in this chapter', exact=True).select_option('branches')
-    expect(page.locator('.chapter-position')).to_have_text('Chapter 1 of 12 · Lesson 3 of 3')
+    page.get_by_label('Lesson in this chapter', exact=True).select_option('compiler-messages')
+    expect(page.locator('.chapter-position')).to_have_text(f'Chapter 1 of {len(chapters)} · Lesson {first_size} of {first_size}')
     next_program = page.locator('.inline-runner[data-mode="worked"]')
     next_program.get_by_role('button', name='Run example', exact=True).click()
-    expect(next_program.locator('.inline-output')).to_have_text('pass\n', timeout=30_000)
+    expect(next_program.locator('.inline-output')).to_have_text('Fixed\n', timeout=30_000)
     expect(next_program.get_by_role('button', name='Run example', exact=True)).to_be_enabled()
     page.locator('.adjacent-next').click()
-    expect(page.locator('.chapter-position')).to_have_text('Chapter 2 of 12 · Lesson 1 of 3')
+    expect(page.locator('.chapter-position')).to_have_text(f'Chapter 2 of {len(chapters)} · Lesson 1 of {sum(item["chapter"] == "flow" for item in lessons)}')
     page.locator('.adjacent-previous').click()
-    expect(page.locator('.chapter-position')).to_have_text('Chapter 1 of 12 · Lesson 3 of 3')
+    expect(page.locator('.chapter-position')).to_have_text(f'Chapter 1 of {len(chapters)} · Lesson {first_size} of {first_size}')
     route(page, '#course')
-    expect(page.locator('.resume-card')).to_contain_text('Continue: Choose with an expression')
-    route(page, '#course/bindings')
+    expect(page.locator('.resume-card')).to_contain_text('Continue: Read a compiler message')
+    route(page, '#course/first-program')
     expect(page.locator('.inline-runner[data-mode="exercise"] textarea')).to_have_value(lessons[0]['solution'])
     # The full source really compiles; installing edits must change workspace behavior.
     route(page, '#workspace')

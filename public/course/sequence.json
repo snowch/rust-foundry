@@ -1,0 +1,1247 @@
+{
+  "edition": 2,
+  "chapters": [
+    {
+      "id": "start",
+      "number": "01",
+      "title": "Start with a running program",
+      "summary": "Printing, named values, simple types, and compiler feedback."
+    },
+    {
+      "id": "flow",
+      "number": "02",
+      "title": "Give instructions structure",
+      "summary": "Calculations, choices, functions, checks, and fixed sequences."
+    },
+    {
+      "id": "ownership",
+      "number": "03",
+      "title": "Work with owned text",
+      "summary": "Strings, moves, copies, explicit clones, and scope."
+    },
+    {
+      "id": "borrowing",
+      "number": "04",
+      "title": "Borrow existing values",
+      "summary": "Shared and exclusive access, text views, bytes, and slices."
+    },
+    {
+      "id": "model",
+      "number": "05",
+      "title": "Model records and alternatives",
+      "summary": "Structs, methods, enums, optional values, and checked lookup."
+    },
+    {
+      "id": "errors",
+      "number": "06",
+      "title": "Report and preserve failure",
+      "summary": "Results, numeric parsing, checked arithmetic, and propagation."
+    },
+    {
+      "id": "collections",
+      "number": "07",
+      "title": "Work with growing collections",
+      "summary": "Vectors, closures, iterators, maps, and sets."
+    },
+    {
+      "id": "abstraction",
+      "number": "08",
+      "title": "Name reusable contracts",
+      "summary": "Traits, generic functions, derives, lifetimes, and type aliases."
+    },
+    {
+      "id": "bytes",
+      "number": "09",
+      "title": "Store and validate bytes",
+      "summary": "Portable codecs, tests, files, checked sizes, and checksums."
+    },
+    {
+      "id": "database",
+      "number": "10",
+      "title": "Build a table and command language",
+      "summary": "Database vocabulary, CRUD, validation, parsing, and exchange files."
+    },
+    {
+      "id": "pages",
+      "number": "11",
+      "title": "Organise and index pages",
+      "summary": "Page addresses, B+ tree lookup, splits, and source navigation."
+    },
+    {
+      "id": "transactions",
+      "number": "12",
+      "title": "Publish changes together",
+      "summary": "Staged state, rollback, commit, and generations."
+    },
+    {
+      "id": "recovery",
+      "number": "13",
+      "title": "Recover and retain work",
+      "summary": "Journals, idempotent replay, and browser persistence."
+    }
+  ],
+  "lessons": [
+    {
+      "id": "first-program",
+      "chapter": "start",
+      "title": "Your first Rust program",
+      "objective": "Run a three-line program and change the message it displays.",
+      "prerequisites": [],
+      "introduces": [
+        "program",
+        "main-frame",
+        "print-line",
+        "quoted-text",
+        "statement"
+      ]
+    },
+    {
+      "id": "printing",
+      "chapter": "start",
+      "title": "Run instructions in order",
+      "objective": "Predict and print two lines in the order they are written.",
+      "prerequisites": [
+        "first-program"
+      ],
+      "introduces": [
+        "execution-order",
+        "newline"
+      ]
+    },
+    {
+      "id": "bindings",
+      "chapter": "start",
+      "title": "Give values names",
+      "objective": "Store a value with let and display it by name.",
+      "prerequisites": [
+        "printing"
+      ],
+      "introduces": [
+        "binding",
+        "let",
+        "format-placeholder"
+      ]
+    },
+    {
+      "id": "mutable-values",
+      "chapter": "start",
+      "title": "Change a value with mut",
+      "objective": "Update a numeric binding deliberately using let mut.",
+      "prerequisites": [
+        "bindings"
+      ],
+      "introduces": [
+        "integer-value",
+        "mutability",
+        "assignment",
+        "add-assign"
+      ]
+    },
+    {
+      "id": "numbers",
+      "chapter": "start",
+      "title": "Say what kind of number you mean",
+      "objective": "Read and write explicit integer type annotations.",
+      "prerequisites": [
+        "mutable-values"
+      ],
+      "introduces": [
+        "type",
+        "type-annotation",
+        "u32",
+        "u8",
+        "usize",
+        "u64",
+        "numeric-limits"
+      ]
+    },
+    {
+      "id": "compiler-messages",
+      "chapter": "start",
+      "title": "Read a compiler message",
+      "objective": "Locate and repair a spelling error without rewriting the program.",
+      "prerequisites": [
+        "numbers"
+      ],
+      "introduces": [
+        "compiler-message",
+        "case-sensitive",
+        "comment"
+      ]
+    },
+    {
+      "id": "arithmetic",
+      "chapter": "flow",
+      "title": "Calculate before printing",
+      "objective": "Evaluate simple integer arithmetic and recognise division’s remainder.",
+      "prerequisites": [
+        "numbers"
+      ],
+      "introduces": [
+        "arithmetic",
+        "integer-division",
+        "remainder",
+        "grouping"
+      ]
+    },
+    {
+      "id": "comparisons",
+      "chapter": "flow",
+      "title": "Ask a true-or-false question",
+      "objective": "Create and combine boolean comparisons.",
+      "prerequisites": [
+        "arithmetic"
+      ],
+      "introduces": [
+        "bool",
+        "comparison",
+        "boolean-operators"
+      ]
+    },
+    {
+      "id": "branches",
+      "chapter": "flow",
+      "title": "Choose which instruction runs",
+      "objective": "Use if and else to choose between two instructions.",
+      "prerequisites": [
+        "comparisons"
+      ],
+      "introduces": [
+        "if-else"
+      ]
+    },
+    {
+      "id": "functions",
+      "chapter": "flow",
+      "title": "Reuse a group of instructions",
+      "objective": "Define a named function and call it twice.",
+      "prerequisites": [
+        "branches"
+      ],
+      "introduces": [
+        "function-definition",
+        "function-call"
+      ]
+    },
+    {
+      "id": "parameters",
+      "chapter": "flow",
+      "title": "Pass a value into a function",
+      "objective": "Call the same function with different u32 inputs.",
+      "prerequisites": [
+        "functions",
+        "numbers"
+      ],
+      "introduces": [
+        "parameter",
+        "argument"
+      ]
+    },
+    {
+      "id": "return-values",
+      "chapter": "flow",
+      "title": "Return a calculated value",
+      "objective": "Use a function’s return value in a later calculation.",
+      "prerequisites": [
+        "parameters",
+        "arithmetic"
+      ],
+      "introduces": [
+        "return-type",
+        "tail-expression",
+        "unit"
+      ]
+    },
+    {
+      "id": "assertions",
+      "chapter": "flow",
+      "title": "Check a result with an assertion",
+      "objective": "Read an assertion failure and check a function on more than one input.",
+      "prerequisites": [
+        "return-values"
+      ],
+      "introduces": [
+        "assertion",
+        "assert-eq",
+        "panic",
+        "todo-marker"
+      ]
+    },
+    {
+      "id": "loops",
+      "chapter": "flow",
+      "title": "Repeat work with a loop",
+      "objective": "Accumulate values from a small numeric range.",
+      "prerequisites": [
+        "assertions",
+        "mutable-values"
+      ],
+      "introduces": [
+        "for-loop",
+        "range",
+        "while-loop",
+        "break",
+        "early-return"
+      ]
+    },
+    {
+      "id": "tuples",
+      "chapter": "flow",
+      "title": "Return two values together",
+      "objective": "Create, unpack, and inspect a pair of values.",
+      "prerequisites": [
+        "loops"
+      ],
+      "introduces": [
+        "tuple",
+        "destructuring",
+        "tuple-fields",
+        "debug-format"
+      ]
+    },
+    {
+      "id": "arrays",
+      "chapter": "flow",
+      "title": "Store a fixed-size sequence",
+      "objective": "Read an array by its zero-based position.",
+      "prerequisites": [
+        "tuples"
+      ],
+      "introduces": [
+        "array",
+        "index",
+        "length",
+        "array-type"
+      ]
+    },
+    {
+      "id": "strings",
+      "chapter": "ownership",
+      "title": "Own a piece of editable text",
+      "objective": "Create a String and append text to it.",
+      "prerequisites": [
+        "arrays",
+        "parameters"
+      ],
+      "introduces": [
+        "String",
+        "constructor",
+        "associated-path",
+        "method-call",
+        "owned-text"
+      ]
+    },
+    {
+      "id": "formatting",
+      "chapter": "ownership",
+      "title": "Build formatted text as a value",
+      "objective": "Use format! to create a String without printing it.",
+      "prerequisites": [
+        "strings"
+      ],
+      "introduces": [
+        "format-string",
+        "format-macro",
+        "macro"
+      ]
+    },
+    {
+      "id": "moves",
+      "chapter": "ownership",
+      "title": "Follow a moved String",
+      "objective": "Trace ownership through a String parameter and returned value.",
+      "prerequisites": [
+        "formatting"
+      ],
+      "introduces": [
+        "move",
+        "ownership-transfer"
+      ]
+    },
+    {
+      "id": "copy",
+      "chapter": "ownership",
+      "title": "Small values can Copy",
+      "objective": "Distinguish copying a u32 from moving an owned String.",
+      "prerequisites": [
+        "moves",
+        "tuples"
+      ],
+      "introduces": [
+        "Copy"
+      ]
+    },
+    {
+      "id": "clone",
+      "chapter": "ownership",
+      "title": "Clone deliberately",
+      "objective": "Make an explicit independent copy of owned text.",
+      "prerequisites": [
+        "copy"
+      ],
+      "introduces": [
+        "Clone",
+        "clone-method"
+      ]
+    },
+    {
+      "id": "scope",
+      "chapter": "ownership",
+      "title": "Notice where a name is usable",
+      "objective": "Identify the block that owns a local value.",
+      "prerequisites": [
+        "clone"
+      ],
+      "introduces": [
+        "scope",
+        "drop",
+        "shadowing"
+      ]
+    },
+    {
+      "id": "references",
+      "chapter": "borrowing",
+      "title": "Read a String without taking it",
+      "objective": "Pass shared access to a function while the caller keeps ownership.",
+      "prerequisites": [
+        "scope"
+      ],
+      "introduces": [
+        "shared-reference",
+        "borrow",
+        "borrowed-parameter"
+      ]
+    },
+    {
+      "id": "mutable",
+      "chapter": "borrowing",
+      "title": "Change through one mutable borrow",
+      "objective": "Change a caller’s integer through one exclusive reference.",
+      "prerequisites": [
+        "references",
+        "mutable-values"
+      ],
+      "introduces": [
+        "mutable-reference",
+        "dereference",
+        "exclusive-borrow"
+      ]
+    },
+    {
+      "id": "text-slices",
+      "chapter": "borrowing",
+      "title": "Read a view of text with &str",
+      "objective": "Use one borrowed-text parameter with a literal and an owned String.",
+      "prerequisites": [
+        "references"
+      ],
+      "introduces": [
+        "str",
+        "text-slice",
+        "as-str"
+      ]
+    },
+    {
+      "id": "unicode",
+      "chapter": "borrowing",
+      "title": "Distinguish bytes from letters",
+      "objective": "Explain why UTF-8 text can occupy more bytes than visible letters.",
+      "prerequisites": [
+        "text-slices",
+        "numbers"
+      ],
+      "introduces": [
+        "byte",
+        "UTF-8",
+        "character",
+        "char",
+        "text-escapes",
+        "byte-iteration"
+      ]
+    },
+    {
+      "id": "shared",
+      "chapter": "borrowing",
+      "title": "Read through a shared borrow",
+      "objective": "Measure a borrowed text view in UTF-8 bytes.",
+      "prerequisites": [
+        "unicode"
+      ],
+      "introduces": [
+        "borrowed-byte-length"
+      ]
+    },
+    {
+      "id": "borrowed-slices",
+      "chapter": "borrowing",
+      "title": "Borrow part of an array",
+      "objective": "Pass a checked, known-valid array range as a borrowed slice.",
+      "prerequisites": [
+        "arrays",
+        "mutable"
+      ],
+      "introduces": [
+        "slice",
+        "slice-range",
+        "slice-iteration"
+      ]
+    },
+    {
+      "id": "static-text",
+      "chapter": "borrowing",
+      "title": "Read the lifetime of a text literal",
+      "objective": "Recognise why a function can return a view of literal text.",
+      "prerequisites": [
+        "text-slices",
+        "scope"
+      ],
+      "introduces": [
+        "lifetime",
+        "static-reference"
+      ]
+    },
+    {
+      "id": "structs",
+      "chapter": "model",
+      "title": "Give a row a type",
+      "objective": "Construct and read a record with named fields.",
+      "prerequisites": [
+        "borrowed-slices",
+        "static-text",
+        "formatting"
+      ],
+      "introduces": [
+        "struct",
+        "field",
+        "struct-construction"
+      ]
+    },
+    {
+      "id": "methods",
+      "chapter": "model",
+      "title": "Write a method for a struct",
+      "objective": "Define a method that reads a struct through &self.",
+      "prerequisites": [
+        "structs"
+      ],
+      "introduces": [
+        "impl",
+        "self",
+        "Self",
+        "method-definition"
+      ]
+    },
+    {
+      "id": "enums",
+      "chapter": "model",
+      "title": "Represent alternatives",
+      "objective": "Handle each named alternative of an enum with match.",
+      "prerequisites": [
+        "methods"
+      ],
+      "introduces": [
+        "enum",
+        "variant",
+        "match",
+        "pattern",
+        "wildcard-pattern"
+      ]
+    },
+    {
+      "id": "optional-values",
+      "chapter": "model",
+      "title": "Represent a missing value",
+      "objective": "Handle both Some and None with match.",
+      "prerequisites": [
+        "enums"
+      ],
+      "introduces": [
+        "Option",
+        "Some",
+        "None",
+        "type-argument",
+        "optional-fallback",
+        "if-let"
+      ]
+    },
+    {
+      "id": "option",
+      "chapter": "model",
+      "title": "Missing is a value",
+      "objective": "Return an optional borrowed name from a small record search.",
+      "prerequisites": [
+        "optional-values",
+        "borrowed-slices"
+      ],
+      "introduces": [
+        "optional-reference",
+        "borrowed-return"
+      ]
+    },
+    {
+      "id": "slices",
+      "chapter": "model",
+      "title": "Borrow a bounded sequence",
+      "objective": "Handle an empty slice without indexing past its bounds.",
+      "prerequisites": [
+        "option"
+      ],
+      "introduces": [
+        "first-method",
+        "checked-access"
+      ]
+    },
+    {
+      "id": "result-basics",
+      "chapter": "errors",
+      "title": "Separate success from failure",
+      "objective": "Return and inspect a Result with a meaningful error.",
+      "prerequisites": [
+        "slices",
+        "static-text"
+      ],
+      "introduces": [
+        "Result",
+        "Ok",
+        "Err",
+        "error-value",
+        "result-unwrapping"
+      ]
+    },
+    {
+      "id": "result",
+      "chapter": "errors",
+      "title": "Report a recoverable error",
+      "objective": "Parse a positive numeric ID and distinguish parsing from validation.",
+      "prerequisites": [
+        "result-basics"
+      ],
+      "introduces": [
+        "parse",
+        "method-type-argument",
+        "match-guard",
+        "numeric-overflow"
+      ]
+    },
+    {
+      "id": "checked-arithmetic",
+      "chapter": "errors",
+      "title": "Turn overflow into a result",
+      "objective": "Convert a failed checked calculation into a recoverable error.",
+      "prerequisites": [
+        "result"
+      ],
+      "introduces": [
+        "checked-add",
+        "overflow",
+        "ok-or"
+      ]
+    },
+    {
+      "id": "question-mark",
+      "chapter": "errors",
+      "title": "Propagate with ?",
+      "objective": "Propagate a Result error with ? instead of repeating a match.",
+      "prerequisites": [
+        "checked-arithmetic"
+      ],
+      "introduces": [
+        "result-question-mark",
+        "error-propagation"
+      ]
+    },
+    {
+      "id": "atomic-change",
+      "chapter": "errors",
+      "title": "Validate before you mutate",
+      "objective": "Keep a previous value intact when a replacement is rejected.",
+      "prerequisites": [
+        "question-mark",
+        "mutable"
+      ],
+      "introduces": [
+        "failure-atomicity",
+        "validation-before-mutation"
+      ]
+    },
+    {
+      "id": "vector-basics",
+      "chapter": "collections",
+      "title": "Use a sequence that can grow",
+      "objective": "Create a Vec, append an element, and borrow its elements.",
+      "prerequisites": [
+        "atomic-change",
+        "borrowed-slices"
+      ],
+      "introduces": [
+        "Vec",
+        "vec-macro",
+        "push",
+        "vector-slice"
+      ]
+    },
+    {
+      "id": "closures",
+      "chapter": "collections",
+      "title": "Write a small operation as a value",
+      "objective": "Call a closure and recognise its parameter syntax.",
+      "prerequisites": [
+        "vector-basics",
+        "return-values"
+      ],
+      "introduces": [
+        "closure",
+        "closure-parameter",
+        "capture"
+      ]
+    },
+    {
+      "id": "iterator-basics",
+      "chapter": "collections",
+      "title": "Ask a sequence for its next item",
+      "objective": "Read iterator items until next returns None.",
+      "prerequisites": [
+        "closures",
+        "optional-values",
+        "unicode"
+      ],
+      "introduces": [
+        "iterator",
+        "iter",
+        "next",
+        "while-let",
+        "copied",
+        "collect",
+        "predicate"
+      ]
+    },
+    {
+      "id": "iterators",
+      "chapter": "collections",
+      "title": "Transform without taking ownership",
+      "objective": "Filter copied numbers and reduce the remaining values to a sum.",
+      "prerequisites": [
+        "iterator-basics"
+      ],
+      "introduces": [
+        "filter",
+        "sum",
+        "lazy-adapter"
+      ]
+    },
+    {
+      "id": "vectors",
+      "chapter": "collections",
+      "title": "Keep sorted, unique rows",
+      "objective": "Keep a vector sorted while rejecting duplicate keys.",
+      "prerequisites": [
+        "iterators",
+        "result-basics"
+      ],
+      "introduces": [
+        "sorted-invariant",
+        "binary-search",
+        "insertion-position"
+      ]
+    },
+    {
+      "id": "imports",
+      "chapter": "collections",
+      "title": "Find names in the standard library",
+      "objective": "Read a standard-library path and introduce a short imported name.",
+      "prerequisites": [
+        "iterators"
+      ],
+      "introduces": [
+        "module",
+        "std",
+        "use",
+        "path",
+        "import"
+      ]
+    },
+    {
+      "id": "maps",
+      "chapter": "collections",
+      "title": "Count with a map",
+      "objective": "Count repeated text keys with a HashMap entry.",
+      "prerequisites": [
+        "imports",
+        "vectors"
+      ],
+      "introduces": [
+        "HashMap",
+        "key-value",
+        "entry",
+        "or-insert",
+        "get"
+      ]
+    },
+    {
+      "id": "sets",
+      "chapter": "collections",
+      "title": "Record whether a value was seen",
+      "objective": "Use a HashSet to distinguish a new value from a repeated one.",
+      "prerequisites": [
+        "maps"
+      ],
+      "introduces": [
+        "HashSet",
+        "set-membership",
+        "unique-values"
+      ]
+    },
+    {
+      "id": "traits",
+      "chapter": "abstraction",
+      "title": "Name a behavior with a trait",
+      "objective": "Define and implement a named method contract for a concrete type.",
+      "prerequisites": [
+        "sets",
+        "methods"
+      ],
+      "introduces": [
+        "trait",
+        "trait-implementation",
+        "trait-method"
+      ]
+    },
+    {
+      "id": "generics",
+      "chapter": "abstraction",
+      "title": "One algorithm, several types",
+      "objective": "Write one ordered-slice algorithm for more than one element type.",
+      "prerequisites": [
+        "traits"
+      ],
+      "introduces": [
+        "generic-function",
+        "trait-bound",
+        "Ord",
+        "max"
+      ]
+    },
+    {
+      "id": "derive",
+      "chapter": "abstraction",
+      "title": "Ask Rust to generate a trait implementation",
+      "objective": "Use derive to inspect, compare, and clone a simple struct.",
+      "prerequisites": [
+        "generics"
+      ],
+      "introduces": [
+        "derive",
+        "attribute",
+        "Debug",
+        "PartialEq"
+      ]
+    },
+    {
+      "id": "lifetimes",
+      "chapter": "abstraction",
+      "title": "Describe where a borrow comes from",
+      "objective": "Explain which input references support a borrowed return value.",
+      "prerequisites": [
+        "derive",
+        "static-text"
+      ],
+      "introduces": [
+        "named-lifetime",
+        "lifetime-relationship"
+      ]
+    },
+    {
+      "id": "aliases",
+      "chapter": "abstraction",
+      "title": "Give a recurring type a readable name",
+      "objective": "Use a generic type alias for a repeated Result type.",
+      "prerequisites": [
+        "derive",
+        "result-basics"
+      ],
+      "introduces": [
+        "type-alias",
+        "generic-alias",
+        "pub",
+        "visibility"
+      ]
+    },
+    {
+      "id": "little-endian",
+      "chapter": "bytes",
+      "title": "Encode a number explicitly",
+      "objective": "Encode a u32 into four bytes in a specified byte order.",
+      "prerequisites": [
+        "aliases",
+        "lifetimes",
+        "unicode"
+      ],
+      "introduces": [
+        "byte-order",
+        "little-endian",
+        "hexadecimal",
+        "integer-codec"
+      ]
+    },
+    {
+      "id": "decode",
+      "chapter": "bytes",
+      "title": "Reject short input safely",
+      "objective": "Check input bounds before decoding a fixed-size integer.",
+      "prerequisites": [
+        "little-endian",
+        "question-mark",
+        "closures"
+      ],
+      "introduces": [
+        "range-get",
+        "try-into",
+        "map-err"
+      ]
+    },
+    {
+      "id": "tests",
+      "chapter": "bytes",
+      "title": "Test an invariant, not one example",
+      "objective": "Check codec boundaries and distinguish a round-trip test from an independent fixture.",
+      "prerequisites": [
+        "decode",
+        "iterator-basics"
+      ],
+      "introduces": [
+        "invariant-test",
+        "round-trip",
+        "independent-fixture"
+      ]
+    },
+    {
+      "id": "files",
+      "chapter": "bytes",
+      "title": "Write and reopen bytes",
+      "objective": "Save a byte sequence and read the same bytes back from a file.",
+      "prerequisites": [
+        "tests",
+        "aliases",
+        "imports"
+      ],
+      "introduces": [
+        "file",
+        "filesystem",
+        "std-fs",
+        "io-result",
+        "file-bytes"
+      ]
+    },
+    {
+      "id": "option-propagation",
+      "chapter": "bytes",
+      "title": "Stop a missing calculation with ?",
+      "objective": "Propagate None from a checked calculation in an Option-returning function.",
+      "prerequisites": [
+        "files",
+        "checked-arithmetic",
+        "question-mark"
+      ],
+      "introduces": [
+        "option-question-mark",
+        "checked-mul",
+        "checked-sub"
+      ]
+    },
+    {
+      "id": "checksums",
+      "chapter": "bytes",
+      "title": "Check whether bytes changed",
+      "objective": "Explain what a checksum can detect and why it is not authentication.",
+      "prerequisites": [
+        "option-propagation"
+      ],
+      "introduces": [
+        "checksum",
+        "collision",
+        "wrapping-add",
+        "numeric-conversion"
+      ]
+    },
+    {
+      "id": "database-basics",
+      "chapter": "database",
+      "title": "Meet a table, row, and column",
+      "objective": "Describe the three fields of one stored record before using SQL.",
+      "prerequisites": [
+        "checksums",
+        "structs"
+      ],
+      "introduces": [
+        "database",
+        "table",
+        "row",
+        "column",
+        "schema",
+        "SQL"
+      ]
+    },
+    {
+      "id": "sql-crud",
+      "chapter": "database",
+      "title": "Read and change rows with SQL",
+      "objective": "Trace INSERT, SELECT, UPDATE, and DELETE on one row.",
+      "prerequisites": [
+        "database-basics"
+      ],
+      "introduces": [
+        "INSERT",
+        "SELECT",
+        "UPDATE",
+        "DELETE",
+        "WHERE",
+        "COUNT",
+        "SQL-string",
+        "autocommit-intro",
+        "discarded-binding"
+      ]
+    },
+    {
+      "id": "row-validation",
+      "chapter": "database",
+      "title": "Define the row contract",
+      "objective": "Apply the table’s name rules before accepting a row.",
+      "prerequisites": [
+        "sql-crud",
+        "unicode",
+        "iterator-basics"
+      ],
+      "introduces": [
+        "validation-rule",
+        "ASCII-control",
+        "repeat"
+      ]
+    },
+    {
+      "id": "sql-strings",
+      "chapter": "database",
+      "title": "Parse SQL without splitting names",
+      "objective": "Decode a SQL quoted-text token without treating its contents as commands.",
+      "prerequisites": [
+        "row-validation",
+        "iterator-basics"
+      ],
+      "introduces": [
+        "token",
+        "lexer",
+        "parser",
+        "SQL-quote-escape",
+        "push-character"
+      ]
+    },
+    {
+      "id": "tdb1",
+      "chapter": "database",
+      "title": "Exchange files with C Foundry",
+      "objective": "Validate a documented header and its exact record length.",
+      "prerequisites": [
+        "sql-strings",
+        "files",
+        "little-endian"
+      ],
+      "introduces": [
+        "file-header",
+        "magic",
+        "version",
+        "record-size",
+        "byte-literal",
+        "numeric-cast"
+      ]
+    },
+    {
+      "id": "page-layout",
+      "chapter": "pages",
+      "title": "Address fixed-size pages",
+      "objective": "Calculate a fixed page’s offset while rejecting overflow and truncation.",
+      "prerequisites": [
+        "tdb1",
+        "option-propagation"
+      ],
+      "introduces": [
+        "page",
+        "page-id",
+        "byte-offset",
+        "paged-file"
+      ]
+    },
+    {
+      "id": "recursion",
+      "chapter": "pages",
+      "title": "Repeat a smaller version of a problem",
+      "objective": "Trace a recursive function until its base case stops further calls.",
+      "prerequisites": [
+        "page-layout",
+        "return-values"
+      ],
+      "introduces": [
+        "recursion",
+        "base-case",
+        "recursive-step"
+      ]
+    },
+    {
+      "id": "bplus-lookup",
+      "chapter": "pages",
+      "title": "Seek through a B+ tree",
+      "objective": "Choose the correct child using a sorted separator list.",
+      "prerequisites": [
+        "recursion",
+        "vectors",
+        "closures"
+      ],
+      "introduces": [
+        "tree",
+        "root",
+        "branch",
+        "leaf",
+        "separator",
+        "B-plus-tree",
+        "range-seek",
+        "partition-point"
+      ]
+    },
+    {
+      "id": "rebalance",
+      "chapter": "pages",
+      "title": "Split, merge, and preserve invariants",
+      "objective": "Split an overflowing sorted leaf without losing its promoted key.",
+      "prerequisites": [
+        "bplus-lookup",
+        "vector-basics"
+      ],
+      "introduces": [
+        "leaf-split",
+        "branch-split",
+        "occupancy",
+        "redistribution",
+        "merge",
+        "root-collapse",
+        "split-off"
+      ]
+    },
+    {
+      "id": "source-primer",
+      "chapter": "pages",
+      "title": "Find your way around the complete source",
+      "objective": "Locate the boundary between a TinyDB operation and its supplied helpers.",
+      "prerequisites": [
+        "rebalance",
+        "aliases",
+        "files"
+      ],
+      "introduces": [
+        "provided-scaffold",
+        "cfg",
+        "Path",
+        "PathBuf",
+        "read-only-helper",
+        "closure-trait",
+        "fallible-collect",
+        "type-placeholder",
+        "field-pattern"
+      ]
+    },
+    {
+      "id": "staging",
+      "chapter": "transactions",
+      "title": "Stage changes before publishing",
+      "objective": "Keep a committed collection unchanged while editing a candidate copy.",
+      "prerequisites": [
+        "source-primer",
+        "atomic-change"
+      ],
+      "introduces": [
+        "transaction",
+        "staged-state",
+        "committed-state",
+        "read-own-writes",
+        "to-vec"
+      ]
+    },
+    {
+      "id": "rollback",
+      "chapter": "transactions",
+      "title": "Rollback discards the candidate",
+      "objective": "Discard an entire staged candidate while keeping committed data.",
+      "prerequisites": [
+        "staging",
+        "optional-values"
+      ],
+      "introduces": [
+        "rollback",
+        "transaction-state",
+        "is-none"
+      ]
+    },
+    {
+      "id": "commit-generation",
+      "chapter": "transactions",
+      "title": "Commit one new generation",
+      "objective": "Advance one generation for a whole successfully committed transaction.",
+      "prerequisites": [
+        "rollback",
+        "checked-arithmetic"
+      ],
+      "introduces": [
+        "commit",
+        "generation",
+        "autocommit"
+      ]
+    },
+    {
+      "id": "journal",
+      "chapter": "recovery",
+      "title": "Record intent before installing pages",
+      "objective": "Choose recovery behaviour based on whether a commit marker exists.",
+      "prerequisites": [
+        "commit-generation",
+        "checksums",
+        "files"
+      ],
+      "introduces": [
+        "journal",
+        "after-image",
+        "prepared-marker",
+        "commit-marker",
+        "redo",
+        "flush"
+      ]
+    },
+    {
+      "id": "redo",
+      "chapter": "recovery",
+      "title": "Replay once, verify on repetition",
+      "objective": "Replay a committed after-image once and verify it safely on another recovery attempt.",
+      "prerequisites": [
+        "journal"
+      ],
+      "introduces": [
+        "idempotence",
+        "recovery-conflict",
+        "snapshot-identity"
+      ]
+    },
+    {
+      "id": "browser-storage",
+      "chapter": "recovery",
+      "title": "Save files without overwriting another tab",
+      "objective": "Distinguish a database commit from publishing a browser workspace snapshot.",
+      "prerequisites": [
+        "redo"
+      ],
+      "introduces": [
+        "virtual-filesystem",
+        "IndexedDB",
+        "workspace-revision",
+        "compare-and-save",
+        "stale-tab",
+        "atomic-save"
+      ]
+    }
+  ]
+}
