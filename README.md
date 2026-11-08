@@ -19,8 +19,13 @@ npm ci
 npm run dev
 ```
 
-Vite sets the required cross-origin isolation headers. The compiler loads on
-request (57.8 MB compressed), with download progress and integrity checks.
+Vite sets the required cross-origin isolation headers. Choosing **Run code**
+automatically loads the compiler on first use (57.8 MB compressed), shows
+progress in the run toolbar, then compiles and executes the program. There is
+no separate compiler setup button or readiness card. **Stop** can cancel the
+first preparation as well as compilation/execution; choosing Run again retries.
+Compiler assets are not requested before Run. Later runs reuse the prepared
+compiler in tab memory, with integrity checks on the initial downloads.
 Cache Storage reuses verified downloads where browser storage permits it.
 Initialization still needs time to decompress and prepare the Wasm compiler.
 
@@ -141,7 +146,8 @@ cancellation, output caps, and fresh program filesystems.
 The Node checks do not establish browser compatibility. The additional
 `test/browser-smoke.py` runs a real Chromium browser against static hosting
 without server-supplied isolation headers. It checks service-worker startup,
-SharedArrayBuffer availability, a real Rust compile and execution, touch
+SharedArrayBuffer availability, on-demand compiler loading, cancel/retry,
+compiler reuse across runs, a real Rust compile and execution, touch
 editing, and phone/tablet viewport sizes. Run it after building with
 `python test/browser-smoke.py` (Python Playwright and Chromium required).
 Set `BASE_URL` to test the deployed Pages URL.

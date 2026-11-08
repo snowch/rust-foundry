@@ -29,11 +29,6 @@
         <div><p class="eyebrow" id="concept">YOUR FIRST PROGRAM</p><h1 id="lesson-title">Hello, Rust</h1><p id="description" class="description"></p></div>
       </section>
       <div id="compatibility" class="notice error" role="alert" hidden></div>
-      <section class="toolchain-card" aria-label="Compiler setup">
-        <div class="toolchain-icon" aria-hidden="true">↓</div>
-        <div class="toolchain-copy"><strong id="load-title">Bring the compiler to your browser.</strong><p id="load-detail">One download, about 58 MB. Your code never leaves this tab.</p><div class="download-track" id="download-track" hidden><div id="download-progress"></div></div></div>
-        <button id="load" class="button secondary">Load compiler <span aria-hidden="true">↗</span></button>
-      </section>
       <section class="workspace" aria-label="Rust editor and results">
         <div class="editor-panel">
           <div class="panel-bar"><div class="file-tab"><span class="file-icon" aria-hidden="true">R</span> main.rs <span class="saved-dot" id="saved-dot" title="Saved locally"></span></div><div class="panel-tools"><button id="reset" class="text-button" title="Restore this exercise’s starter code">Reset</button><span class="separator"></span><button id="export-source" class="icon-button" aria-label="Download Rust source" title="Download Rust source">↓</button></div></div>
@@ -43,10 +38,10 @@
           <div class="stdin-bar"><label for="stdin">STANDARD INPUT</label><span>Available to std::io::stdin()</span></div>
           <textarea id="stdin" aria-label="Standard input" placeholder="Input for your program, if it needs any…" spellcheck="false"></textarea>
         </div>
-        <div class="run-bar"><span class="runtime-label"><span class="dot" id="runtime-dot"></span><span id="runtime-state">Compiler not loaded</span></span><div class="run-actions"><button id="export-wasm" class="text-button" disabled>Save .wasm</button><button id="stop" class="button stop" disabled><span aria-hidden="true">■</span> Stop</button><button id="run" class="button primary" disabled><span aria-hidden="true">▶</span> Run code <kbd>⌘ ↵</kbd></button></div></div>
+        <div class="run-bar"><span class="runtime-label"><span class="dot" aria-hidden="true"></span><span id="runtime-state">Ready</span></span><div class="run-actions"><button id="export-wasm" class="text-button" disabled>Save .wasm</button><button id="stop" class="button stop" disabled><span aria-hidden="true">■</span> Stop</button><button id="run" class="button primary" disabled><span aria-hidden="true">▶</span> Run code <kbd>⌘ ↵</kbd></button></div><progress id="download-progress" class="run-progress" max="1" value="0" aria-label="Compiler download" hidden></progress></div>
         <div class="results-panel">
           <div class="panel-bar result-tabs" role="tablist" aria-label="Program results"><button id="tab-output" role="tab" aria-selected="true" aria-controls="output-panel">Output</button><button id="tab-diagnostics" role="tab" aria-selected="false" aria-controls="diagnostics-panel">Compiler <span id="diagnostic-indicator" hidden>●</span></button></div>
-          <div class="output-content"><div id="output-panel" role="tabpanel" aria-labelledby="tab-output"><div id="empty-output" class="empty-output"><span class="terminal-glyph" aria-hidden="true">&gt;_</span><strong>Your program starts here.</strong><p>Load the compiler, then run your code.<br>Output will appear in this panel.</p></div><pre id="stdout" class="console" hidden></pre><pre id="stderr" class="console stderr" hidden></pre></div><div id="diagnostics-panel" role="tabpanel" aria-labelledby="tab-diagnostics" hidden><pre id="diagnostics" class="console">Compiler messages will appear here.</pre></div></div>
+          <div class="output-content"><div id="output-panel" role="tabpanel" aria-labelledby="tab-output"><div id="empty-output" class="empty-output"><span class="terminal-glyph" aria-hidden="true">&gt;_</span><strong>Your program starts here.</strong><p>Choose Run code to see your output.</p></div><pre id="stdout" class="console" hidden></pre><pre id="stderr" class="console stderr" hidden></pre></div><div id="diagnostics-panel" role="tabpanel" aria-labelledby="tab-diagnostics" hidden><pre id="diagnostics" class="console">Compiler messages will appear here.</pre></div></div>
           <div class="run-summary" id="run-summary"><span class="status-light" id="status-light"></span><span id="status-text" role="status" aria-live="polite">Ready when you are</span></div>
           <div class="goal"><span class="eyebrow">THE CHECK</span><p id="goal-text"></p><div id="check-result" hidden></div></div>
         </div>
