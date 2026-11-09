@@ -13,6 +13,13 @@ export function initCourse({ openLab, canRun, unsupported }) {
   const link = (text, hash, className) => { const a = el('a', text, className); a.href = hash; return a; };
   const members = chapter => course.filter(x => x.chapter === chapter);
   const tally = (lessons, kind) => lessons.filter(x => read(`${kind}:${x.id}`)).length;
+  function fitMenu(allowScroll = false, opening = false) {
+    const bar = root.querySelector('.lesson-position');
+    if (!bar || (!opening && !bar.querySelector(':scope > details[open]'))) return;
+    const viewportBottom = (window.visualViewport?.offsetTop || 0) + (window.visualViewport?.height || innerHeight);
+    if (allowScroll && bar.getBoundingClientRect().bottom > viewportBottom - 160) bar.scrollIntoView({ block: 'start', behavior: 'instant' });
+    bar.style.setProperty('--lesson-menu-height', `${Math.max(0, viewportBottom - bar.getBoundingClientRect().bottom - 12)}px`);
+  }
   function updateProgress() {
     root.querySelectorAll('.progress-copy').forEach(node => { node.textContent = `${tally(course, 'read')} / ${course.length} read · ${tally(course, 'practice')} / ${course.length} practice checks passed in this edition. Saved on this browser when storage permits.`; });
     root.querySelectorAll('[data-chapter-progress]').forEach(node => {
@@ -39,9 +46,9 @@ export function initCourse({ openLab, canRun, unsupported }) {
     return list;
   }
   function outline(chapter) {
-    const aside = el('aside', undefined, 'course-outline');
-    const details = el('details', undefined, 'outline-disclosure'); details.id = 'chapter-contents'; details.open = matchMedia('(min-width: 1100px)').matches;
-    details.append(el('summary', `Chapter ${Number(chapter.number)} · lessons and course outline`));
+    const details = el('details', undefined, 'outline-disclosure'); details.id = 'chapter-contents';
+    const summary = el('summary', 'Outline'); summary.setAttribute('aria-label', 'Course outline'); details.append(summary);
+    const panel = el('div', undefined, 'course-outline lesson-menu');
     const navigation = el('nav'); navigation.setAttribute('aria-label', 'Lessons in this chapter');
     const copy = el('p', undefined, 'chapter-progress-copy'); copy.dataset.chapterProgress = chapter.id;
     const meter = el('progress'); meter.max = members(chapter.id).length; meter.dataset.chapterMeter = chapter.id; meter.setAttribute('aria-label', 'Chapter reading progress');
@@ -52,15 +59,34 @@ export function initCourse({ openLab, canRun, unsupported }) {
       const a = link(`${item.number}. ${item.title}`, '#course/' + members(item.id)[0].id);
       if (item.id === chapter.id) a.className = 'current-chapter'; chaptersNav.append(a);
     }
-    all.append(chaptersNav); details.append(navigation, all, link('← Course overview', '#course')); aside.append(details); return aside;
+    all.append(chaptersNav); panel.append(navigation, all, link('← Course overview', '#course')); details.append(panel); return details;
   }
   function position(chapter, lesson) {
     const index = members(chapter.id).indexOf(lesson);
     const bar = el('nav', undefined, 'lesson-position'); bar.setAttribute('aria-label', 'Your course position');
-    const copy = el('div'); copy.append(el('p', `Chapter ${Number(chapter.number)} of ${chapters.length} · Lesson ${index + 1} of ${members(chapter.id).length}`, 'chapter-position'), el('p', chapter.title, 'position-title'));
-    const selection = el('label', 'Current lesson', 'position-select-label'), select = el('select'); select.setAttribute('aria-label', 'Lesson in this chapter');
-    for (const [i, member] of members(chapter.id).entries()) { const option = el('option', `${i + 1}. ${member.title}`); option.value = member.id; option.selected = member.id === lesson.id; select.append(option); }
-    select.onchange = () => { location.hash = '#course/' + select.value; }; selection.append(select); bar.append(copy, selection); return bar;
+    const copy = el('p', `Chapter ${Number(chapter.number)} of ${chapters.length}`, 'chapter-position');
+    const selection = el('div', undefined, 'position-select-label'), select = el('select'); select.setAttribute('aria-label', 'Lesson in this chapter');
+    const current = el('option', `Lesson ${index + 1} of ${members(chapter.id).length}`); current.value = ''; current.disabled = true; current.selected = true; select.append(current);
+    for (const [i, member] of members(chapter.id).entries()) { const option = el('option', `${i + 1}. ${member.title}${member.id === lesson.id ? ' · current' : ''}`); option.value = member.id; select.append(option); }
+    select.onchange = () => { location.hash = '#course/' + select.value; }; selection.append(select); bar.append(copy, selection, outline(chapter));
+    if (lesson.prerequisites.length) {
+      const requirements = el('details', undefined, 'lesson-prerequisites');
+      requirements.append(el('summary', 'Before this lesson'));
+      const panel = el('div', undefined, 'lesson-menu');
+      panel.append(el('p', 'This lesson builds on these earlier topics. Revisit any that are unfamiliar.'));
+      const list = el('ul');
+      for (const required of lesson.prerequisites) { const dependency = course.find(item => item.id === required); const li = el('li'); li.append(link(dependency.title, '#course/' + required)); list.append(li); }
+      panel.append(list); requirements.append(panel); bar.append(requirements);
+    }
+    bar.querySelectorAll(':scope > details').forEach(details => {
+      details.querySelector('summary').onclick = () => { if (!details.open) fitMenu(true, true); };
+      details.ontoggle = () => {
+        if (!details.open) return;
+        bar.querySelectorAll(':scope > details').forEach(other => { if (other !== details) other.open = false; });
+        fitMenu(true);
+      };
+    });
+    return bar;
   }
   function overview() {
     const intro = el('article', undefined, 'course-overview');
@@ -95,30 +121,23 @@ export function initCourse({ openLab, canRun, unsupported }) {
     if (rendered && active?.id === next?.id) { updateProgress(); return; }
     runners.forEach(runner => runner.dispose()); runners = []; active = next; rendered = true; root.replaceChildren();
     document.title = active ? `${active.title} · Chapter ${Number(chapters.find(x => x.id === active.chapter).number)} — Rust Foundry` : 'Rust Foundry — learn Rust, build a database';
-    const header = el('header', undefined, 'course-heading');
+    const header = el('header', undefined, `course-heading${active ? ' lesson-heading' : ''}`);
     if (active) {
       const chapter = chapters.find(x => x.id === active.chapter), crumbs = el('nav', undefined, 'course-breadcrumb'); crumbs.setAttribute('aria-label', 'Breadcrumb');
-      crumbs.append(link('Course', '#course'), el('span', ' / '), link(`${chapter.number}. ${chapter.title}`, '#course/' + members(chapter.id)[0].id)); header.append(crumbs);
+      crumbs.append(link('Course', '#course'), el('span', '/'), el('span', `${chapter.number}. ${chapter.title}`)); header.append(crumbs);
     } else header.append(el('p', 'RUST, ONE SMALL PROGRAM AT A TIME', 'eyebrow'));
     header.append(el('h1', active ? active.title : 'From your first value to a database.'));
+    if (active) {
+      const goal = el('p', undefined, 'lesson-goal'); goal.append(el('strong', 'Goal: '), document.createTextNode(active.objective)); header.append(goal);
+      if (!active.prerequisites.length) header.append(el('p', 'Start here. No previous programming experience needed.', 'entry-requirement'));
+    }
     if (!active) header.append(el('p', '', 'progress-copy'));
     root.append(header);
     if (!active) { overview(); updateProgress(); return; }
     const lesson = active, index = course.indexOf(lesson), chapter = chapters.find(x => x.id === lesson.chapter);
     try { localStorage.setItem(prefix + 'last-lesson', lesson.id); } catch { /* Optional resume state. */ }
     root.append(position(chapter, lesson));
-    const body = el('div', undefined, 'course-body'), article = el('article', undefined, 'reading'); body.append(outline(chapter), article); root.append(body);
-    const goal = el('section', undefined, 'lesson-goal');
-    goal.append(el('p', 'WHAT YOU WILL DO', 'eyebrow'), el('p', lesson.objective));
-    if (!lesson.prerequisites.length) goal.append(el('p', 'Start here. No earlier programming, Rust, or SQL knowledge is needed.', 'entry-requirement'));
-    else {
-      const requirements = el('details', undefined, 'lesson-prerequisites');
-      requirements.append(el('summary', `Before this lesson · ${lesson.prerequisites.length} earlier ${lesson.prerequisites.length === 1 ? 'topic' : 'topics'}`), el('p', 'This lesson builds on the linked explanations. Revisit any that are unfamiliar; completing them is not a navigation lock.'));
-      const list = el('ul');
-      for (const required of lesson.prerequisites) { const dependency = course.find(item => item.id === required); const li = el('li'); li.append(link(dependency.title, '#course/' + required)); list.append(li); }
-      requirements.append(list); goal.append(requirements);
-    }
-    article.append(goal);
+    const body = el('div', undefined, 'course-body'), article = el('article', undefined, 'reading'); body.append(article); root.append(body);
     lesson.explain.forEach(text => article.append(el('p', text)));
     const createRunner = mode => {
       const runner = createLessonRunner({ lesson, mode, unsupported, canRun: () => !runners.some(item => item.isBusy()) && canRun(), onPass: () => markPractice(lesson.id) }); runners.push(runner); return runner;
@@ -172,5 +191,17 @@ export function initCourse({ openLab, canRun, unsupported }) {
     else if (event.key.startsWith(prefix)) { volatile.delete(event.key.slice(prefix.length)); updateProgress(); }
   });
   window.addEventListener('course-progress', updateProgress);
+  window.addEventListener('resize', () => fitMenu());
+  window.addEventListener('scroll', () => fitMenu(), { passive: true });
+  window.visualViewport?.addEventListener('resize', () => fitMenu());
+  document.addEventListener('pointerdown', event => {
+    const bar = root.querySelector('.lesson-position');
+    if (bar && !bar.contains(event.target)) bar.querySelectorAll(':scope > details[open]').forEach(details => { details.open = false; });
+  });
+  root.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') return;
+    const open = root.querySelector('.lesson-position > details[open]');
+    if (open) { open.open = false; open.querySelector('summary').focus(); event.preventDefault(); }
+  });
   return { render, isBusy: () => runners.some(item => item.isBusy()), suspend: () => runners.forEach(runner => runner.stop()) };
 }

@@ -89,7 +89,7 @@ fn main() { println!("{}", greeting()); }
         actual_prerequisites = page.locator('.lesson-prerequisites a').evaluate_all('(links) => links.map(link => link.hash.slice(8))')
         assert actual_prerequisites == lesson['prerequisites'], lesson['id']
         chapter_index = next(i for i, value in enumerate(lessons) if value['chapter'] == lesson['chapter'])
-        expect(page.locator('.chapter-position')).to_contain_text(f'Lesson {lessons.index(lesson) - chapter_index + 1} of {sum(item["chapter"] == lesson["chapter"] for item in lessons)}')
+        expect(page.get_by_label('Lesson in this chapter').locator('option:checked')).to_have_text(f'Lesson {lessons.index(lesson) - chapter_index + 1} of {sum(item["chapter"] == lesson["chapter"] for item in lessons)}')
         expect(page.locator('.progress-copy')).to_contain_text(f'0 / {len(lessons)} read')
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), lesson['id']
     assert compiler_requests == [], 'Reading downloaded the compiler.'
@@ -249,15 +249,18 @@ fn main() { println!("{}", greeting()); }
     expect(worked.locator('.inline-status')).to_have_text('Running locally…', timeout=30_000)
     # Chapter navigation uses local lesson numbers and explains chapter transitions.
     page.get_by_label('Lesson in this chapter', exact=True).select_option('compiler-messages')
-    expect(page.locator('.chapter-position')).to_have_text(f'Chapter 1 of {len(chapters)} · Lesson {first_size} of {first_size}')
+    expect(page.locator('.chapter-position')).to_have_text(f'Chapter 1 of {len(chapters)}')
+    expect(page.get_by_label('Lesson in this chapter').locator('option:checked')).to_have_text(f'Lesson {first_size} of {first_size}')
     next_program = page.locator('.inline-runner[data-mode="worked"]')
     next_program.get_by_role('button', name='Run example', exact=True).click()
     expect(next_program.locator('.inline-output')).to_have_text('Fixed\n', timeout=30_000)
     expect(next_program.get_by_role('button', name='Run example', exact=True)).to_be_enabled()
     page.locator('.adjacent-next').click()
-    expect(page.locator('.chapter-position')).to_have_text(f'Chapter 2 of {len(chapters)} · Lesson 1 of {sum(item["chapter"] == "flow" for item in lessons)}')
+    expect(page.locator('.chapter-position')).to_have_text(f'Chapter 2 of {len(chapters)}')
+    expect(page.get_by_label('Lesson in this chapter').locator('option:checked')).to_have_text(f'Lesson 1 of {sum(item["chapter"] == "flow" for item in lessons)}')
     page.locator('.adjacent-previous').click()
-    expect(page.locator('.chapter-position')).to_have_text(f'Chapter 1 of {len(chapters)} · Lesson {first_size} of {first_size}')
+    expect(page.locator('.chapter-position')).to_have_text(f'Chapter 1 of {len(chapters)}')
+    expect(page.get_by_label('Lesson in this chapter').locator('option:checked')).to_have_text(f'Lesson {first_size} of {first_size}')
     route(page, '#course')
     expect(page.locator('.resume-card')).to_contain_text('Continue: Read a compiler message')
     route(page, '#course/first-program')

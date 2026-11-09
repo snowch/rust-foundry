@@ -142,16 +142,18 @@ summary{cursor:pointer;min-height:44px;align-content:center;font-size:17px;color
 .course-view{max-width:1440px}.course-heading{max-width:none}
 .course-breadcrumb{font-size:16px;color:#b9c8d1;line-height:1.7}.course-breadcrumb a{color:#edb99b;min-height:44px;display:inline-block;padding:8px 0}
 .course-heading .progress-copy{color:#b6c3cc}
-.lesson-goal{padding:16px 18px;border:1px solid #526259;border-radius:7px;background:#1c2824;margin:0 0 26px}.reading .lesson-goal>p{margin:6px 0;font-size:17px}.reading .lesson-goal>.eyebrow{font-size:14px;color:var(--orange)}.lesson-prerequisites{margin-top:12px;border-top:1px solid #526259;padding-top:6px}.lesson-prerequisites p{font-size:16px}.lesson-prerequisites ul{padding-left:22px}.previous-edition{padding:14px 18px;border:1px solid #526259;border-radius:7px;margin:24px 0}.previous-edition p{font-size:17px;line-height:1.8}.previous-draft p{font-size:16px!important}
+.lesson-heading{max-width:900px;margin:0 auto 14px}.lesson-heading .course-breadcrumb{display:flex;align-items:center;gap:6px}.lesson-heading .course-breadcrumb>a{flex-shrink:0}.lesson-heading h1{margin:4px 0 10px}.lesson-heading .lesson-goal{margin:0;font-size:18px;line-height:1.6}.lesson-goal strong{font-weight:550}.lesson-heading .entry-requirement{font-size:16px;line-height:1.6;margin:6px 0 0}.previous-edition{padding:14px 18px;border:1px solid #526259;border-radius:7px;margin:24px 0}.previous-edition p{font-size:17px;line-height:1.8}.previous-draft p{font-size:16px!important}
 .course-outline .progress-copy{font-size:14px!important;line-height:1.75;color:#b7c7c6;border-top:1px solid #425158;padding-top:14px}
-.lesson-position{position:sticky;top:0;z-index:8;display:flex;align-items:center;gap:24px;justify-content:space-between;border:1px solid #526259;border-radius:8px;padding:13px 18px;background:#1c2828;box-shadow:0 4px 16px #0005;margin:24px 0}
-.chapter-position{font:15px/1.6 var(--mono);margin:0;color:#efb491}.position-title{margin:3px 0 0;color:#e0e8e4;font-size:18px}
-.position-select-label{font-size:14px;color:#bacac5;min-width:0;width:330px;max-width:48%;flex-shrink:0}
+.lesson-position{position:sticky;top:0;z-index:8;display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;border-block:1px solid #526259;padding:6px 8px;background:#1c2828;margin:0 auto 16px;max-width:900px}
+.chapter-position{font-size:16px;line-height:1.5;margin:0;color:#efb491;white-space:nowrap}
+.position-select-label{width:155px;min-width:0;margin-right:auto}
 .position-select-label select{display:block;width:100%;min-height:44px;font-size:17px;padding:8px;color:#ecf2ed;background:#253434;border:1px solid #6c8278;border-radius:5px}
-.course-body{display:grid;grid-template-columns:265px minmax(0,1fr);gap:32px;align-items:start}
+.course-body{max-width:900px;margin:auto}
 .course-body .reading{width:100%;margin:0;max-width:900px;min-width:0}
-.course-outline{position:sticky;top:126px;max-height:calc(100svh - 150px);overflow-y:auto;border:1px solid #3c4b51;border-radius:8px;padding:18px;background:#192126;min-width:0}
-.course-outline h2{font-size:23px;line-height:1.35;margin:9px 0 14px;font-weight:550}.course-outline>.outline-disclosure>summary{display:none}
+.lesson-position>details>summary{min-height:44px;padding:8px 4px;font-size:16px;color:#dce4e6}.lesson-position>details[open]>summary{color:var(--orange)}
+.lesson-menu{position:absolute;top:calc(100% + 4px);left:0;right:0;max-height:min(65svh,var(--lesson-menu-height,65svh));overflow-y:auto;overscroll-behavior:contain;border:1px solid #63747d;border-radius:6px;padding:16px 18px;background:#192126;box-shadow:0 6px 18px #0005;color:#dce4e6}
+.lesson-menu p,.lesson-menu li{font-size:17px;line-height:1.65}.lesson-menu>p{margin:0 0 8px}.lesson-menu ul{margin:0;padding-left:22px}.lesson-prerequisites .lesson-menu li a,.course-outline>a{display:inline-block;min-height:44px;padding:8px 0;color:#efbb9f;text-decoration:underline;text-underline-offset:3px}
+.course-outline h2{font-size:23px;line-height:1.35;margin:9px 0 14px;font-weight:550}.course-outline .chapter-lesson-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.course-outline .chapter-lesson-list li{margin:0}.course-outline .chapter-lesson{height:100%}
 .chapter-progress-copy{font-size:15px;color:#bccdc7;line-height:1.7}.course-outline progress{width:100%;height:5px;accent-color:#a8c2ad}
 .chapter-lesson-list{list-style:none;margin:16px 0;padding:0}.chapter-lesson-list li{margin:8px 0}
 .chapter-lesson{display:block;border:1px solid #3d4b51;border-radius:6px;padding:12px;min-height:44px;line-height:1.5;color:#dce4e6;background:#1e282d}
@@ -160,7 +162,6 @@ summary{cursor:pointer;min-height:44px;align-content:center;font-size:17px;color
 .lesson-progress-label{display:block;font-size:14px;line-height:1.7;margin-top:7px;color:#b8c8c3}
 .course-outline .all-chapters{border-top:1px solid #425158;padding-top:12px;margin-top:20px}
 .all-chapters nav>a{display:block;min-height:44px;padding:10px 0;border-bottom:1px solid #344249;font-size:16px;line-height:1.6}.all-chapters .current-chapter{color:#f5b38b}
-.course-outline>.outline-disclosure>a{display:inline-block;font-size:16px;min-height:44px;padding-top:14px;color:#efbb9f}
 .course-overview{max-width:900px;margin:auto;font-size:18px}.course-overview>p{font-size:18px;line-height:1.85;color:#cad5dc}.course-overview .chapter-card h2{font-size:25px;line-height:1.4}
 .course-overview .chapter-lesson-list{display:grid;gap:10px;grid-template-columns:repeat(3,minmax(0,1fr))}.course-overview .chapter-lesson-list li{margin:0}.course-overview .chapter-lesson{height:100%}
 .resume-card{border:1px solid #59695f;border-radius:8px;background:#1c2824;padding:22px;margin:28px 0}.resume-card p{font-size:17px;line-height:1.8}.resume-card .eyebrow{font-size:14px}.resume-card .button{margin-top:15px;white-space:normal}
@@ -181,14 +182,11 @@ summary{cursor:pointer;min-height:44px;align-content:center;font-size:17px;color
 .reading .adjacent-lessons{display:flex;gap:14px;justify-content:space-between;flex-wrap:wrap;margin:30px 0}
 .reading .adjacent-lessons a{flex:1;min-width:200px;border:1px solid #6d6558;border-radius:7px;padding:14px 16px;color:#f3c3a6;white-space:pre-line;text-decoration:none;font-size:17px;line-height:1.7;background:#272724}
 .reading .adjacent-next{border-color:#c89170!important;background:#382c24!important}
-@media(max-width:1099px){
-  .course-body{display:flex;flex-direction:column;gap:14px}.course-outline{position:static;width:100%;max-height:none;padding:10px 16px}.course-outline>.outline-disclosure>summary{display:list-item;font-size:16px}.course-outline .chapter-lesson-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.course-outline .chapter-lesson-list li{margin:0}.course-outline .chapter-lesson{height:100%}
-}
 @media(max-width:640px){
-  .lesson-position{gap:10px;flex-direction:column;align-items:stretch;padding:11px 12px;margin:18px 0;border-radius:6px}.chapter-position{font-size:14px}.position-title{font-size:17px}.position-select-label{width:100%;max-width:100%;font-size:14px}.position-select-label select{font-size:17px}.position-select-label{display:flex;flex-direction:column;gap:3px}
+  .lesson-position{gap:2px 10px}.position-select-label{width:146px}.lesson-menu{padding:12px 14px}.lesson-heading .course-breadcrumb{font-size:16px;line-height:1.5}
   .course-outline .chapter-lesson-list,.course-overview .chapter-lesson-list{grid-template-columns:1fr}
   .inline-code-heading{padding:8px 12px;gap:8px}.inline-code-heading label{font-size:16px}.inline-runner>textarea{height:300px;padding:14px 12px;font-size:17px}.inline-controls{padding:12px 12px 6px}.reading .inline-status{padding:10px 12px}.inline-runner>.console{padding-left:12px;padding-right:12px}.inline-runner .code-keys{gap:5px}
-  .lesson-practice,.inline-runner>textarea{scroll-margin-top:200px}.resume-card{padding:16px}.reading .adjacent-lessons a{min-width:100%;font-size:17px}
+  .lesson-practice,.inline-runner>textarea{scroll-margin-top:120px}.resume-card{padding:16px}.reading .adjacent-lessons a{min-width:100%;font-size:17px}
 }
 @media(max-width:1000px){.db-grid{grid-template-columns:1fr}.course-map nav{grid-template-columns:repeat(2,minmax(0,1fr))}.db-fields label{min-width:180px}}
 @media(max-width:640px){

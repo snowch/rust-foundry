@@ -15,8 +15,13 @@ for open-ended programs and complete TinyDB projects.
 
 ## Make the course hierarchy visible
 
-- Keep the chapter number/title and local lesson number visible while scrolling.
+- Show the chapter title once in the breadcrumb and the lesson title once as
+  the page heading. Put the objective below the heading as a short sentence.
+- Keep chapter and local lesson counts in one compact sticky toolbar.
 - Offer a native lesson chooser with every lesson in the current chapter.
+- Put the course outline and prerequisite links in toolbar disclosures, closed
+  until requested. Only one opens at a time; Escape returns focus to its control,
+  and a tap outside closes it. Their panels scroll inside the viewport.
 - Highlight the current lesson with both an accessible current-page state and
   the words “You are here” in the chapter outline.
 - Show chapter progress separately from overall course progress.
@@ -44,9 +49,12 @@ is recorded in [curriculum-review.md](curriculum-review.md).
 
 Use 18px prose, 17px code/results, 44px or larger editing and execution targets,
 and a horizontally scrolling punctuation row. Keep long code inside its editor
-rather than overflowing the document. The chapter outline collapses on narrow
-screens; the lesson chooser remains visible. Cancel a run when its lesson is
-left, and reuse the prepared compiler between lesson cards and the full editor.
+rather than overflowing the document. The toolbar wraps to two compact rows on
+phones; lesson navigation stays visible without separate overview cards. The
+header's ordinary “Star on GitHub” repository link uses compact “Star” on smaller
+screens while retaining its complete accessible name. Cancel a run when its
+lesson is left, and reuse the prepared compiler between lesson cards and the
+full editor.
 
 ## Verification
 

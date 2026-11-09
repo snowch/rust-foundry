@@ -1,10 +1,14 @@
 .theme-toggle{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:8px 12px;border:1px solid #63717b;border-radius:6px;background:#263039;color:#e4ece7;font-size:16px;white-space:nowrap;touch-action:manipulation}
 .theme-toggle>span:first-child{font:22px/1 system-ui}.header-right{gap:18px}
-@media(max-width:400px){.brand sup{display:none}.header-right{gap:8px}.header-right>a{display:none}}
+.header-right .github-star{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:44px;padding:6px 4px;white-space:nowrap;font-size:16px}.header-right .github-star span{margin:0}.github-star>[aria-hidden]{font-size:22px}.github-star:hover{text-decoration:underline;text-underline-offset:4px}
+@media(max-width:900px){.github-star-destination{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}}
+@media(max-width:640px){.brand sup{display:none}.header-right{gap:8px}.header-right .about-link{display:none}}
+@media(max-width:350px){.header{padding-left:12px;padding-right:12px;gap:8px}.brand{gap:6px}.theme-toggle{padding:8px;gap:4px}}
 
 :root[data-theme=light]{color-scheme:light;color:#202e39;background:#f6f8fa;--muted:#536474;--border:#cbd5de;--orange:#a7441c;--light-surface:#fff;--light-soft:#edf2f5;--light-line:#b9c7d1;--light-control-line:#7c8d99;--light-text:#202e39;--light-secondary:#465c6c;--light-success:#23623b;--light-error:#a33225;--light-selected:#ffeddf}
-:root[data-theme=light] :is(.header,.sidebar,.workspace,.editor-panel,.results-panel,.goal,.course-map,.reading-code,.ownership-walk,.lab-card,.db-console,.db-file-panel,.db-run-bar,.course-outline,.inline-runner){background:var(--light-surface);border-color:var(--light-line)}
+:root[data-theme=light] :is(.header,.sidebar,.workspace,.editor-panel,.results-panel,.goal,.course-map,.reading-code,.ownership-walk,.lab-card,.db-console,.db-file-panel,.db-run-bar,.lesson-menu,.inline-runner){background:var(--light-surface);border-color:var(--light-line)}
 :root[data-theme=light] :is(.mode-nav,.panel-bar,.file-tab,.code-area,.editor-footer,.run-bar,.code-keys,.reading .code-label,.inline-code-heading,.chapter-lesson){background:var(--light-soft);border-color:var(--light-line)}
+:root[data-theme=light] .chapter-lesson{color:var(--light-text)}
 :root[data-theme=light] :is(.brand-light,.brand sup,.header-right>a,.privacy,.sidebar-heading .eyebrow,.version,.lesson-button,.lesson-number,.lesson-button small,.progress-card,.progress-card>div:first-child,.progress-card>div:first-child span:last-child,.progress-card p,.sidebar-bottom,.outline-icon,.sidebar-bottom p,.breadcrumb,.breadcrumb>span:last-child,.experimental,.description,.text-button,.icon-button,.file-tab,.editor-footer,.stdin-bar,.stdin-bar label,.stdin-bar span,.result-tabs>button,.empty-output strong,.empty-output p,.terminal-glyph,.run-summary,.goal .eyebrow,.goal p,.runtime-label,.learning-note,.learning-note p,footer,footer strong,footer p,.footer-links,.footer-links span){color:var(--light-secondary)}
 :root[data-theme=light] :is(.brand sup,.lesson-number,.progress-card,.editor-panel,.editor-footer,.panel-bar,.file-tab,.run-summary,.goal,.run-bar,footer,.project-picker,.workspace-tools,.prediction,.hint,.reading-completion,.practice-context,.course-outline .all-chapters,.all-chapters nav>a,.course-outline .progress-copy,.inline-runner .code-keys,.inline-diagnostics,.inline-more,.expected-output,.db-file){border-color:var(--light-line)}
 :root[data-theme=light] :is(.lesson-button.active,.mode-nav a[aria-current=page],.chapter-lesson[aria-current=page]){background:var(--light-selected);color:#793411;border-color:#b9673c}
@@ -26,7 +30,7 @@
 :root[data-theme=light] .check-neutral{color:#795219}
 :root[data-theme=light] .notice{background:#fff0de;color:#743813;border-color:#b17a49}
 :root[data-theme=light] :is(summary,.course-heading p,.reading p,.reading li,.program-label,.db-grid p,.db-console>label,.course-breadcrumb,.course-heading .progress-copy,.course-outline .progress-copy,.chapter-progress-copy,.lesson-progress-label,.course-overview>p,.inline-code-heading label,.inline-save,.reading .inline-status,.reading .inline-runner>h3){color:var(--light-secondary)}
-:root[data-theme=light] :is(.reading a,.course-breadcrumb a,.all-chapters .current-chapter,.course-outline>.outline-disclosure>a,.current-lesson-badge){color:#8c3b19}
+:root[data-theme=light] :is(.reading a,.course-breadcrumb a,.all-chapters .current-chapter,.lesson-prerequisites a,.course-outline>a,.current-lesson-badge){color:#8c3b19}
 :root[data-theme=light] .reading-code pre{color:#213541}
 :root[data-theme=light] .reading .code-label{color:#445e6e}
 :root[data-theme=light] .callout{background:#fff1e3;color:#693d20!important}
@@ -35,15 +39,16 @@
 :root[data-theme=light] :is(.db-fields input,.db-fields select,.position-select-label select){background:#fff;color:var(--light-text);border-color:var(--light-control-line)}
 :root[data-theme=light] #db-script{background:#fff;color:#213541;border-color:var(--light-control-line);caret-color:#a7441c}
 :root[data-theme=light] #db-status{color:#74431e}
-:root[data-theme=light] :is(.lesson-position,.resume-card){background:#eaf3ee;border-color:#849e8e;box-shadow:0 4px 16px #253d3020}
-:root[data-theme=light] :is(.chapter-position,.position-title,.position-select-label){color:#314f40}
+:root[data-theme=light] .resume-card{background:#eaf3ee;border-color:#849e8e;box-shadow:0 4px 16px #253d3020}
+:root[data-theme=light] .lesson-position{background:#f6f8fa;border-color:var(--light-line)}
+:root[data-theme=light] :is(.chapter-position,.position-select-label,.lesson-menu,.lesson-position>details>summary){color:var(--light-secondary)}
+:root[data-theme=light] .lesson-position>details[open]>summary{color:#8c3b19}
 :root[data-theme=light] .reading .adjacent-lessons a{background:#f0f3f4;color:#793b1c;border-color:#b9c7d1}
 :root[data-theme=light] .reading .adjacent-next{background:var(--light-selected)!important;border-color:#b9673c!important}
 :root[data-theme=light] .course-outline progress{accent-color:#327046}
 :root[data-theme=light] .progress-track{background:#ced9e0}
 :root[data-theme=light] .workspace{box-shadow:0 9px 25px #22313c0a}
 :root[data-theme=light] .separator{background:#aebec9}
-:root[data-theme=light] .lesson-goal{background:#eaf3ee;border-color:#849e8e}
-:root[data-theme=light] :is(.lesson-prerequisites,.previous-edition){border-color:var(--light-line)}
+:root[data-theme=light] .previous-edition{border-color:var(--light-line)}
 :root[data-theme=light] .code-keys>button{border-color:var(--light-control-line)}
 :root[data-theme=light] textarea::-webkit-scrollbar-thumb,:root[data-theme=light] .output-content::-webkit-scrollbar-thumb{background:#a4b5c1}
