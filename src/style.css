@@ -196,3 +196,5 @@ summary{cursor:pointer;min-height:44px;align-content:center;font-size:17px;color
   .ownership-walk,.lab-card{padding-left:14px;padding-right:14px}.db-console,.db-file-panel{padding:16px}
   .db-grid{gap:18px}.db-fields{gap:12px}.reading-actions{gap:10px}.callout{padding:10px 14px}
 }
+
+.site-license{margin:0;padding:20px clamp(18px,4vw,40px);font-size:14px;line-height:1.6}.site-license a{text-decoration:underline}
