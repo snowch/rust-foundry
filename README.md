@@ -2,7 +2,7 @@
 
 [Open Rust Foundry](https://snowch.github.io/rust-foundry/)
 
-A browser-only Rust course with **13 chapters, 75 authored lessons, and eight
+A browser-only Rust course with **14 chapters, 85 authored lessons, and eight
 optional TinyDB implementation projects**. Start with a three-line program,
 printing, values, calculations, functions, and checks before ownership, borrowing,
 structs, enums, errors, collections, traits, and byte codecs. Then build a
@@ -209,7 +209,7 @@ Tests also require stable `rustc` (or set `RUSTC`), a C compiler, curl, Python
 Playwright, and Chromium. The native checks run randomized tree invariants,
 transaction/recovery failpoints, corruption rejection, and C ↔ Rust exchange
 against a SHA-pinned copy of C Foundry's actual source downloaded only for tests.
-The website does not fetch that source. All 75 reference programs execute with
+The website does not fetch that source. All 85 reference programs execute with
 their expected output, and supplied starters require a genuine change. Syntax
 and prerequisite guards cover early-use regressions such as assertions, Option,
 closures, generic functions, and lifetime annotations. Browser checks cover every lesson,
@@ -264,3 +264,19 @@ as gzip, split into 8 MiB parts, and described by `public/toolchain/manifest.jso
 Dependency lifecycle scripts are disabled in `.npmrc` because the published
 thread shim includes its compiled distribution and has a prepare script that
 otherwise attempts to rebuild unpublished developer tooling.
+
+## Algorithms and original concept diagrams
+
+The algorithms chapter adds ten runnable, assertion-based lessons: complexity,
+binary search, insertion sort, recursive cost, linked lists with Box, stacks,
+VecDeque queues, hashing, binary search trees, and breadth-first search. Each
+has explicit prerequisites, instruction, a starter, a worked reference, hints,
+and boundary-case assertions. It follows the reusable-contracts chapter so
+its collections and reference notation have already been taught.
+
+Original semantic HTML/CSS concept maps explain those lessons and selected
+foundations and TinyDB concepts. The Big O explorer compares mathematical
+growth functions as input size changes. Its values are models, not measured
+execution times. No third-party illustration assets are used. Existing lesson
+IDs, edition keys, themes, licensing, and the persistent TinyDB engine remain
+compatible. The overview displays the actual lesson and chapter counts.
