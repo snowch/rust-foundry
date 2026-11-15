@@ -2,6 +2,7 @@ import { rustLessons as previousRust, databaseLessons as previousDatabase, owner
 import { foundations } from './foundations.js';
 import { bridges } from './bridges.js';
 import { exercise } from './lesson-data.js';
+import { algorithmLessons } from './algorithms.js';
 export { ownershipSteps };
 
 const previous = new Map([...previousRust, ...previousDatabase].map(item => [item.id, item]));
@@ -221,6 +222,7 @@ export const chapters = [
   ['errors', 'Report and preserve failure', 'Results, numeric parsing, checked arithmetic, and propagation.'],
   ['collections', 'Work with growing collections', 'Vectors, closures, iterators, maps, and sets.'],
   ['abstraction', 'Name reusable contracts', 'Traits, generic functions, derives, lifetimes, and type aliases.'],
+  ['algorithms', 'Algorithms and data structures', 'Big O, search, sorting, recursion, lists, stacks, queues, hashing, trees, and graphs.'],
   ['bytes', 'Store and validate bytes', 'Portable codecs, tests, files, checked sizes, and checksums.'],
   ['database', 'Build a table and command language', 'Database vocabulary, CRUD, validation, parsing, and exchange files.'],
   ['pages', 'Organise and index pages', 'Page addresses, B+ tree lookup, splits, and source navigation.'],
@@ -237,12 +239,13 @@ const order = [
   'result-basics', 'result', 'checked-arithmetic', 'question-mark', 'atomic-change',
   'vector-basics', 'closures', 'iterator-basics', 'iterators', 'vectors', 'imports', 'maps', 'sets',
   'traits', 'generics', 'derive', 'lifetimes', 'aliases',
+  ...algorithmLessons.map(item => item.id),
   'little-endian', 'decode', 'tests', 'files', 'option-propagation', 'checksums',
   'database-basics', 'sql-crud', 'row-validation', 'sql-strings', 'tdb1',
   'page-layout', 'recursion', 'bplus-lookup', 'rebalance', 'source-primer',
   'staging', 'rollback', 'commit-generation', 'journal', 'redo', 'browser-storage'
 ];
-const candidates = new Map([...foundations, ...bridges, ...revised].map(item => [item.id, item]));
+const candidates = new Map([...foundations, ...bridges, ...revised, ...algorithmLessons].map(item => [item.id, item]));
 export const course = order.map(id => { const item = candidates.get(id); if (!item) throw new Error('Missing lesson ' + id); return item; });
 // First-use notes are part of direct instruction, before each runnable example.
 course.find(item => item.id === 'result-basics').explain.push('The if/else here is also an expression: its chosen arm produces Ok(id) or Err(message) as the function’s returned Result. Both arms produce the same Result type.');

@@ -1,6 +1,7 @@
 import { course, chapters, ownershipSteps, courseEdition } from './course-data.js';
 import { element as el, button, codeBlock, download } from './dom.js';
 import { createLessonRunner } from './lesson-runner.js';
+import { createConceptDiagram } from './concept-diagrams.js';
 const prefix = `rust-foundry-course-v${courseEdition}:`;
 const volatile = new Map();
 const read = key => { if (volatile.has(key)) return volatile.get(key); try { return localStorage.getItem(prefix + key) === 'true'; } catch { return false; } };
@@ -90,11 +91,12 @@ export function initCourse({ openLab, canRun, unsupported }) {
   }
   function overview() {
     const intro = el('article', undefined, 'course-overview');
-    intro.append(el('p', 'Start with a three-line program. No previous programming, Rust, or SQL knowledge is required. Each lesson explains its new notation, shows what you will do, and links to the earlier ideas it uses. Early practice changes simple output; assertions and unfinished-function markers appear only after their own lesson.'), el('p', 'Run and edit each example here in the lesson. Later chapters build from records and files to TinyDB pages, indexing, transactions, and recovery. You can move at your own pace or revisit a prerequisite whenever needed.'));
+    intro.append(el('p', 'Start with a three-line program. No previous programming, Rust, or SQL knowledge is required. Each lesson explains its new notation, shows what you will do, and links to the earlier ideas it uses. Early practice changes simple output; assertions and unfinished-function markers appear only after their own lesson.'), el('p', 'Run and edit each example here in the lesson. The algorithms chapter covers Big O, search, sorting, lists, stacks, queues, hashing, trees, and graphs. Later chapters build from records and files to TinyDB pages, indexing, transactions, and recovery. You can move at your own pace or revisit a prerequisite whenever needed.'));
     let previous;
     try { previous = course.find(x => x.id === localStorage.getItem(prefix + 'last-lesson')); } catch { /* Optional resume storage. */ }
     const resume = el('section', undefined, 'resume-card');
     resume.append(el('p', previous ? 'PICK UP WHERE YOU LEFT OFF' : 'START HERE', 'eyebrow'), link(`${previous ? 'Continue' : 'Start'}: ${(previous || course[0]).title} →`, '#course/' + (previous || course[0]).id, 'button primary'), el('p', 'Examples run here in the lesson. The compiler downloads only on your first Run.')); intro.append(resume);
+    intro.append(el('p', `${course.length} lessons across ${chapters.length} chapters · original concept diagrams · runnable Rust exercises`, 'course-size'));
     intro.append(previousEdition());
     for (const chapter of chapters) {
       const card = el('section', undefined, 'chapter-card'), count = el('p', undefined, 'chapter-progress-copy'); count.dataset.chapterProgress = chapter.id;
@@ -139,6 +141,8 @@ export function initCourse({ openLab, canRun, unsupported }) {
     root.append(position(chapter, lesson));
     const body = el('div', undefined, 'course-body'), article = el('article', undefined, 'reading'); body.append(article); root.append(body);
     lesson.explain.forEach(text => article.append(el('p', text)));
+    const diagram = createConceptDiagram(lesson);
+    if (diagram) article.append(diagram);
     const createRunner = mode => {
       const runner = createLessonRunner({ lesson, mode, unsupported, canRun: () => !runners.some(item => item.isBusy()) && canRun(), onPass: () => markPractice(lesson.id) }); runners.push(runner); return runner;
     };

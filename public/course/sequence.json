@@ -50,32 +50,38 @@
       "summary": "Traits, generic functions, derives, lifetimes, and type aliases."
     },
     {
-      "id": "bytes",
+      "id": "algorithms",
       "number": "09",
+      "title": "Algorithms and data structures",
+      "summary": "Big O, search, sorting, recursion, lists, stacks, queues, hashing, trees, and graphs."
+    },
+    {
+      "id": "bytes",
+      "number": "10",
       "title": "Store and validate bytes",
       "summary": "Portable codecs, tests, files, checked sizes, and checksums."
     },
     {
       "id": "database",
-      "number": "10",
+      "number": "11",
       "title": "Build a table and command language",
       "summary": "Database vocabulary, CRUD, validation, parsing, and exchange files."
     },
     {
       "id": "pages",
-      "number": "11",
+      "number": "12",
       "title": "Organise and index pages",
       "summary": "Page addresses, B+ tree lookup, splits, and source navigation."
     },
     {
       "id": "transactions",
-      "number": "12",
+      "number": "13",
       "title": "Publish changes together",
       "summary": "Staged state, rollback, commit, and generations."
     },
     {
       "id": "recovery",
-      "number": "13",
+      "number": "14",
       "title": "Recover and retain work",
       "summary": "Journals, idempotent replay, and browser persistence."
     }
@@ -864,6 +870,165 @@
         "generic-alias",
         "pub",
         "visibility"
+      ]
+    },
+    {
+      "id": "alg-complexity",
+      "chapter": "algorithms",
+      "title": "Big O: time, space, and input cases",
+      "objective": "Count distinct pair visits and distinguish linear from quadratic growth.",
+      "prerequisites": [
+        "aliases",
+        "loops"
+      ],
+      "introduces": [
+        "big-o",
+        "time-complexity",
+        "auxiliary-space",
+        "case-analysis"
+      ]
+    },
+    {
+      "id": "alg-search",
+      "chapter": "algorithms",
+      "title": "Implement binary search",
+      "objective": "Shrink a sorted half-open interval until a target is found or the interval is empty.",
+      "prerequisites": [
+        "alg-complexity",
+        "optional-values",
+        "borrowed-slices"
+      ],
+      "introduces": [
+        "binary-search-implementation",
+        "half-open-interval",
+        "loop-invariant"
+      ]
+    },
+    {
+      "id": "alg-sort",
+      "chapter": "algorithms",
+      "title": "Insertion sort and a sorted-prefix invariant",
+      "objective": "Sort a mutable slice while preserving a sorted prefix after every insertion.",
+      "prerequisites": [
+        "alg-search",
+        "mutable"
+      ],
+      "introduces": [
+        "insertion-sort",
+        "stable-sort",
+        "sorted-prefix"
+      ]
+    },
+    {
+      "id": "alg-recursion",
+      "chapter": "algorithms",
+      "title": "Recursive algorithms and stack cost",
+      "objective": "Implement a decreasing recursive step with a terminating base case.",
+      "prerequisites": [
+        "alg-complexity",
+        "functions"
+      ],
+      "introduces": [
+        "algorithmic-recursion",
+        "recursive-stack-cost"
+      ]
+    },
+    {
+      "id": "alg-lists",
+      "chapter": "algorithms",
+      "title": "Linked lists and owned links",
+      "objective": "Prepend a heap-allocated node without copying or losing the existing list.",
+      "prerequisites": [
+        "alg-recursion",
+        "structs",
+        "option"
+      ],
+      "introduces": [
+        "Box",
+        "linked-list",
+        "owning-link"
+      ]
+    },
+    {
+      "id": "alg-stacks",
+      "chapter": "algorithms",
+      "title": "Stacks: validate nested delimiters",
+      "objective": "Use last-in, first-out order to detect mismatched or unfinished brackets.",
+      "prerequisites": [
+        "alg-lists",
+        "enums",
+        "unicode"
+      ],
+      "introduces": [
+        "stack",
+        "LIFO",
+        "delimiter-matching"
+      ]
+    },
+    {
+      "id": "alg-queues",
+      "chapter": "algorithms",
+      "title": "Queues: first in, first out",
+      "objective": "Serve queued work in arrival order, including the empty-queue case.",
+      "prerequisites": [
+        "alg-stacks",
+        "imports"
+      ],
+      "introduces": [
+        "queue",
+        "FIFO",
+        "VecDeque",
+        "ring-buffer"
+      ]
+    },
+    {
+      "id": "alg-hashes",
+      "chapter": "algorithms",
+      "title": "Hashing, collisions, and deterministic output",
+      "objective": "Count repeated words with a hash map and sort only for display.",
+      "prerequisites": [
+        "alg-complexity",
+        "maps",
+        "iterators"
+      ],
+      "introduces": [
+        "hash-collision",
+        "expected-complexity",
+        "deterministic-map-output"
+      ]
+    },
+    {
+      "id": "alg-trees",
+      "chapter": "algorithms",
+      "title": "Binary search trees and height",
+      "objective": "Insert unique keys into an owned binary search tree and traverse them in order.",
+      "prerequisites": [
+        "alg-lists",
+        "alg-recursion",
+        "alg-search"
+      ],
+      "introduces": [
+        "binary-search-tree",
+        "tree-height",
+        "inorder-traversal",
+        "degenerate-tree"
+      ]
+    },
+    {
+      "id": "alg-graphs",
+      "chapter": "algorithms",
+      "title": "Graphs and breadth-first search",
+      "objective": "Find the shortest edge count in an unweighted graph while avoiding repeated visits.",
+      "prerequisites": [
+        "alg-queues",
+        "alg-trees",
+        "sets"
+      ],
+      "introduces": [
+        "graph",
+        "adjacency-list",
+        "breadth-first-search",
+        "shortest-unweighted-path"
       ]
     },
     {

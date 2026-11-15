@@ -29,7 +29,7 @@ if not base:
     threading.Thread(target=server.serve_forever, daemon=True).start()
     base = f'http://127.0.0.1:{server.server_port}/rust-foundry/'
 
-catalog = json.loads(subprocess.check_output(['node', '--input-type=module', '-e', 'import {course,chapters} from "./src/course-data.js"; console.log(JSON.stringify({course,chapters}));'], cwd=root))
+catalog = json.loads(subprocess.check_output(['node', '--input-type=module', '-e', 'import {course,chapters} from "./src/course-data.js"; import {conceptDiagrams} from "./src/concept-diagrams.js"; console.log(JSON.stringify({course,chapters,diagrams:Object.keys(conceptDiagrams)}));'], cwd=root))
 
 lessons, chapters = catalog['course'], catalog['chapters']
 by_id = {lesson['id']: lesson for lesson in lessons}
@@ -91,7 +91,17 @@ fn main() { println!("{}", greeting()); }
         chapter_index = next(i for i, value in enumerate(lessons) if value['chapter'] == lesson['chapter'])
         expect(page.get_by_label('Lesson in this chapter').locator('option:checked')).to_have_text(f'Lesson {lessons.index(lesson) - chapter_index + 1} of {sum(item["chapter"] == lesson["chapter"] for item in lessons)}')
         expect(page.locator('.progress-copy')).to_contain_text(f'0 / {len(lessons)} read')
+        if lesson.get('diagram') or lesson['id'] in catalog['diagrams']:
+            expect(page.locator('.concept-map')).to_be_visible()
+            expect(page.locator('.concept-map-flow li')).to_have_count(3)
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), lesson['id']
+    route(page, '#course/alg-complexity')
+    slider = page.locator('#growth-size')
+    slider.fill('32')
+    expect(page.locator('.growth-explorer output')).to_have_text('32')
+    expect(page.locator('.growth-explorer tbody')).to_contain_text('1,024')
+    route(page, '#course')
+    expect(page.locator('.course-size')).to_contain_text(f'{len(lessons)} lessons across {len(chapters)} chapters')
     assert compiler_requests == [], 'Reading downloaded the compiler.'
     # Bring an earlier full-editor draft into the lesson, then keep inline edits across navigation.
     legacy = 'fn main() { println!("Earlier draft"); }\n'
