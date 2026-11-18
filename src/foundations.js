@@ -8,10 +8,10 @@ export const foundations = [
       'A program is a set of instructions for a computer. The text you edit is its source code; main.rs is the Rust source filename shown here. This program has one instruction: display the message Hello, Rust! You do not need any previous programming experience for this lesson.',
       'The first line, fn main() {, marks where the program begins. fn means “function”, a named group of instructions; main is the name Rust starts with. The empty parentheses mean main takes no inputs here. The opening { and closing } enclose its instructions. Keep these outer lines as they are for now.',
       'The middle line, println!("Hello, Rust!");, displays the text between the double quotes. Write println! including its exclamation mark: it is Rust’s supplied print command. Its parentheses hold the message, and the semicolon ends the instruction. The quotes mark text in the source; they are not printed.',
-      'Choose Run example below. A compiler is the tool that checks your source and translates it into a form the browser can run. Your output appears beneath the code. The first run downloads the compiler; later runs reuse it. Then change just the words inside the quotes and run again.'
+      'A compiler checks your source and translates it into a program the browser can run. Your first run downloads about 58 MB of compiler files. Later runs in the same tab reuse the prepared compiler.'
     ],
     body: '    println!("Hello, Rust!");', starter: main('    println!("Change this message");'), expected: 'Hello, Rust!',
-    practiceInstruction: 'Change only the text inside the quotes to Hello, Rust! Keep the quotes, parentheses, exclamation mark, and semicolon.',
+    practiceInstruction: 'In the practice editor’s main.rs, replace Change this message inside the quotation marks with Hello, Rust! Keep the ! after println and the punctuation outside the quotation marks. Choose Run checks and compare the printed line.',
     walkthrough: ['Rust starts inside main, between the braces.', 'println! displays Hello, Rust! and finishes the line.', 'There are no more instructions, so the program ends.'],
     pitfall: 'Removing a quote or changing the spelling of println! changes the program’s syntax—the punctuation and spelling Rust expects.',
     question: 'Which characters appear in the output?', choices: ['Hello, Rust!', '"Hello, Rust!"', 'println!("Hello, Rust!");'], answer: 0,

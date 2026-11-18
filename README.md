@@ -85,7 +85,7 @@ Open the printed localhost URL. Loading `index.html` via `file://` will not work
 
 - Real Rust 2021 single-file source, compiled to `wasm32-wasip1`.
 - Standard input, stdout, stderr, compiler diagnostics, and output checks.
-- Source editing, per-example/exercise/reference local drafts and completion, reset, `.rs` export,
+- Source editing, per-example/exercise/reference local drafts and completion, restore and undo, `.rs` export,
   and `.wasm` export after successful compilation.
 - A deliberate ownership error shows Rust's real E0382 diagnostic.
 - Stop cancels compilation or execution by terminating its worker tree.
