@@ -1,12 +1,13 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { course, chapters } from '../src/course-data.js';
 import { zipFiles } from '../src/archive.js';
+import { describeExperiment, exerciseInstruction } from '../src/experiments.js';
 const encode = text => new TextEncoder().encode(text);
 const files = [];
 for (const lesson of course) {
   files.push([`lessons/${lesson.id}/starter.rs`, encode(lesson.starter)], [`lessons/${lesson.id}/reference.rs`, encode(lesson.solution)]);
   if (lesson.lab) files.push([`lessons/${lesson.id}/lab.sql`, encode(lesson.lab.script + '\n')]);
-  files.push([`lessons/${lesson.id}/README.txt`, encode(`${lesson.title}\n\nGoal: ${lesson.objective}\nBefore this lesson: ${lesson.prerequisites.length ? lesson.prerequisites.map(id => course.find(item => item.id === id).title).join('; ') : 'No previous programming, Rust, or SQL knowledge'}\n\n${lesson.explain.join('\n\n')}\n\nExpected output:\n${lesson.expected}\nExercise: ${lesson.practiceInstruction}\n\n${lesson.hints.map((x, i) => `Hint ${i + 1}: ${x}`).join('\n')}\n\nExperiment: ${lesson.experiment}\n`)]);
+  files.push([`lessons/${lesson.id}/README.txt`, encode(`${lesson.title}\n\nGoal: ${lesson.objective}\nBefore this lesson: ${lesson.prerequisites.length ? lesson.prerequisites.map(id => course.find(item => item.id === id).title).join('; ') : 'No previous programming, Rust, or SQL knowledge'}\n\n${lesson.explain.join('\n\n')}\n\nExpected output:\n${lesson.expected}\nExercise: ${exerciseInstruction(lesson)}\n\n${lesson.hints.map((x, i) => `Hint ${i + 1}: ${x}`).join('\n')}\n\nBrowser experiment: ${describeExperiment(lesson)}\n`)]);
 }
 const source = await readFile('native/tinydb.rs', 'utf8');
 const projects = [
@@ -30,7 +31,7 @@ for (const [id, signature, hint] of projects) {
   if (end < body) throw new Error('Milestone boundary changed: ' + id);
   const starter = source.slice(0, body) + `\n${indent}    todo!("${id}: ${hint}")` + (oneLine ? '\n' + indent : '') + source.slice(end);
   files.push([`tinydb/${id}/starter.rs`, encode(starter)], [`tinydb/${id}/reference.rs`, encode(source)],
-    [`tinydb/${id}/README.txt`, encode(`${id}\n\n${hint}\n\nImplement the TODO in the otherwise working database.\nNative checks: rustc --edition 2021 --test starter.rs -o tinydb-tests && ./tinydb-tests\nNative CLI: rustc --edition 2021 starter.rs -o tinydb && ./tinydb people.rdb\nBrowser: open this milestone in Rust Foundry, compile it, and install it in the workspace. Browser examples are smoke checks; use the native invariant suite for the full check.\n`)]);
+    [`tinydb/${id}/README.txt`, encode(`${id}\n\n${hint}\n\nImplement the TODO in the otherwise working database.\nNative checks: open a terminal in this project folder. Run rustc --edition 2021 --test starter.rs -o tinydb-tests && ./tinydb-tests. Read the test names and assertion messages. An unfinished todo! reports a panic when its function is called.\nNative CLI: rustc --edition 2021 starter.rs -o tinydb && ./tinydb people.rdb\nBrowser: in TinyDB workspace, open Optional Rust source and project starters. Choose the matching project and Open project starter in editor. Locate the same todo! line. Choose Run code, inspect output, then choose Use compiled TinyDB in workspace. Use a new database filename for tests. The native tests exercise more inputs and failure paths than the supplied browser scripts.\n`)]);
   const browserStarter = starter.split('\n#[cfg(test)]\nmod tests')[0].trimEnd() + '\n';
   await writeFile(`public/course/${id}.rs`, browserStarter);
   manifest.push({ id, hint, signature: signature.trim(), file: `${id}.rs` });

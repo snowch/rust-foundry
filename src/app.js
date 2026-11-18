@@ -9,31 +9,44 @@ import { initDatabase } from './database.js';
 import { loadCompiler } from './compiler.js';
 const $ = (id) => document.getElementById(id);
 const storageKey = 'rust-foundry-mvp-v1';
-let saved = { sources: {}, inputs: {}, completed: [], selected: 'hello' };
+let saved = { sources: {}, inputs: {}, completed: [], recovery: {}, selected: 'hello' };
 try { saved = { ...saved, ...JSON.parse(localStorage.getItem(storageKey) || '{}') }; } catch { /* Recover from blocked or corrupt storage. */ }
 if (!saved.sources || typeof saved.sources !== 'object') saved.sources = {};
 if (!saved.inputs || typeof saved.inputs !== 'object') saved.inputs = {};
 if (!Array.isArray(saved.completed)) saved.completed = [];
+if (!saved.recovery || typeof saved.recovery !== 'object') saved.recovery = {};
 let current = examples.find(x => x.id === saved.selected) || examples[0];
 let toolchain, cancelLoading, task, artifact, phase;
 let busy = false;
-let output = '', errors = '', diagnostics = '';
-const save = () => {
-  try { localStorage.setItem(storageKey, JSON.stringify(saved)); $('saved-dot').classList.remove('unsaved'); }
-  catch { $('saved-dot').classList.add('unsaved'); $('saved-dot').title = 'Browser storage unavailable; export your code to keep it.'; }
+let output = '', errors = '', diagnostics = '', lastRun;
+const updateEditorTools = () => {
+  $('undo-reset').hidden = !saved.recovery[current.id];
+  $('undo-reset').disabled = busy;
+  $('reset').disabled = busy || ($('source').value === current.source && $('stdin').value === current.stdin);
 };
-const status = (text, kind = '') => { $('status-text').textContent = text; $('status-light').className = 'status-light ' + kind; };
+const save = () => {
+  const hint = $('draft-save-status');
+  try {
+    localStorage.setItem(storageKey, JSON.stringify(saved));
+    hint.hidden = true; $('saved-dot').classList.remove('unsaved');
+  } catch {
+    hint.hidden = false; hint.textContent = 'Saved for this tab only. Use Download Rust source in Editor tools and copy any program input before reloading or closing the tab.';
+    $('saved-dot').classList.add('unsaved');
+  }
+  updateEditorTools();
+};
+const status = (text, kind = '') => { $('run-summary').hidden = !text; $('status-text').textContent = text; $('status-light').className = 'status-light ' + kind; };
 const setBusy = (value) => {
   busy = value;
   $('run').disabled = busy || !supported;
-  $('stop').disabled = !busy;
+  $('stop').hidden = !busy;
   $('source').readOnly = busy;
   $('stdin').readOnly = busy;
-  $('reset').disabled = busy;
+  updateEditorTools();
   $('install-tinydb').disabled = busy || !artifact;
   document.querySelectorAll('#code-keys button').forEach(button => { button.disabled = busy; });
   document.querySelectorAll('.lesson-button').forEach(button => { button.disabled = busy; });
-  if (!busy) $('runtime-state').textContent = 'Ready';
+  if (!busy) $('runtime-state').textContent = '';
 };
 const selectTab = (name) => {
   for (const tab of ['output', 'diagnostics']) {
@@ -65,12 +78,13 @@ const renderNav = () => {
   $('course-progress').style.width = `${completed / examples.length * 100}%`;
 };
 const clearResults = () => {
-  output = ''; errors = ''; diagnostics = ''; artifact = undefined;
+  output = ''; errors = ''; diagnostics = ''; artifact = undefined; lastRun = undefined;
+  $('editor-result-context').hidden = true;
   $('stdout').textContent = ''; $('stdout').hidden = true;
   $('stderr').textContent = ''; $('stderr').hidden = true;
   $('empty-output').hidden = false;
-  $('empty-output').querySelector('strong').textContent = 'Your program starts here.';
-  $('empty-output').querySelector('p').textContent = 'Choose Run code to see your output.';
+  $('empty-output').querySelector('strong').textContent = 'Choose Run code to see the output.';
+  $('empty-output').querySelector('p').textContent = '';
   $('diagnostics').textContent = 'Compiler messages will appear here.';
   $('diagnostic-indicator').hidden = true;
   $('check-result').hidden = true;
@@ -78,11 +92,7 @@ const clearResults = () => {
   selectTab('output');
 };
 const renderLesson = () => {
-  const index = examples.indexOf(current);
-  $('lesson-index').textContent = index >= 0 ? String(index + 1).padStart(2, '0') : '↳';
   $('lesson-title').textContent = current.title;
-  $('breadcrumb').textContent = current.title;
-  $('concept').textContent = current.concept;
   $('description').textContent = current.description;
   $('note').textContent = current.note;
   $('goal-text').textContent = current.goal;
@@ -92,11 +102,11 @@ const renderLesson = () => {
   $('practice-context').replaceChildren();
   if (current.courseId) {
     const link = document.createElement('a'); link.href = '#course/' + current.courseId; link.textContent = '← Return to the lesson';
-    $('practice-context').append(link, document.createTextNode(' · Drafts are saved separately for each worked program, exercise, and reference.'));
+    $('practice-context').append(link, document.createTextNode(' · This editor has a separate draft from the lesson editor.'));
   }
   $('install-tinydb').hidden = !current.tinydb;
   $('install-tinydb').disabled = true;
-  clearResults(); refreshLines(); renderNav(); status('Ready when you are');
+  clearResults(); refreshLines(); renderNav(); updateEditorTools(); status('');
 };
 const features = [];
 if (!globalThis.crossOriginIsolated || typeof SharedArrayBuffer === 'undefined') features.push('cross-origin isolation (COOP/COEP headers)');
@@ -155,10 +165,10 @@ $('run').addEventListener('click', async () => {
   if (!supported || busy) return;
   if (learning.isBusy()) { status('Stop the lesson’s current run first.', ''); return; }
   if (database.isBusy()) { status('Stop the TinyDB workspace run first.', ''); return; }
-  if (new TextEncoder().encode($('source').value).length > 64_000) { status('Source exceeds the MVP’s 64 KB limit.', 'error'); return; }
+  if (new TextEncoder().encode($('source').value).length > 64_000) { status('Source exceeds the 64 KB limit.', 'error'); return; }
   if (new TextEncoder().encode($('stdin').value).length > 100_000) { status('Input exceeds the 100 KB limit.', 'error'); return; }
   const source = $('source').value, stdin = $('stdin').value, lesson = current;
-  clearResults(); setBusy(true);
+  clearResults(); lastRun = { source, stdin }; setBusy(true);
   $('empty-output').querySelector('strong').textContent = 'Your compiler is at work.';
   $('empty-output').querySelector('p').textContent = 'Compilation happens in browser workers. You can stop it at any time.';
   let result;
@@ -172,28 +182,27 @@ $('run').addEventListener('click', async () => {
     status(error.message || 'Could not prepare this run. Choose Run code to retry.', error.name === 'AbortError' ? '' : 'error');
     return;
   } finally {
-    task = undefined;
-    setBusy(false);
+    const focusWasOnStop = document.activeElement === $('stop');
+    task = undefined; setBusy(false);
+    if (focusWasOnStop) $('run').focus();
   }
-  const seconds = (result.compileMs / 1000).toFixed(1);
   if (result.stage === 'compile') {
     selectTab('diagnostics'); status(result.message || 'Rust found an error. See the compiler message.', 'error');
   } else if (result.stage === 'cancelled' || result.stage === 'timeout') {
     status(result.message, '');
     if (lesson.id === 'loop' && phase === 'running') { saved.completed = [...new Set([...saved.completed, lesson.id])]; save(); renderNav(); }
   } else if (!result.ok) {
-    status(result.message || `Program exited with code ${result.exitCode}.`, 'error');
-    if (result.stage === 'compile') selectTab('diagnostics');
+    status(Number.isInteger(result.exitCode) ? `Program exited with status ${result.exitCode}.` : result.message || 'The program stopped before finishing.', Number.isInteger(result.exitCode) ? '' : 'error');
   } else {
     if (lesson.tinydb && artifact) $('install-tinydb').disabled = false;
-    status(`Finished · compiled ${seconds}s · ran ${result.runMs.toFixed(0)}ms`, 'success');
+    status('Run finished.', 'success');
     if (!output) $('stdout').textContent = '(Program finished without output.)';
     if (lesson.expected !== null) {
       const customInput = stdin !== lesson.stdin;
       const passed = !customInput && matchesOutput(result.stdout, lesson.expected);
       $('check-result').hidden = false;
       $('check-result').className = passed ? 'passed' : 'check-neutral';
-      $('check-result').textContent = passed ? '✓ Output matches. Nicely done.' : customInput ? 'Custom input · example check skipped.' : 'Output differs from the example. Keep experimenting.';
+      $('check-result').textContent = passed ? 'Output matches the target.' : customInput ? 'The example check uses the supplied input.' : 'This output differs from the target above.';
       if (passed) { saved.completed = [...new Set([...saved.completed, lesson.id])]; save(); renderNav(); }
       if (passed && lesson.courseId && lesson.practiceMode === 'exercise') markPractice(lesson.courseId);
     }
@@ -203,15 +212,16 @@ $('stop').addEventListener('click', () => {
   if (cancelLoading) cancelLoading();
   else task?.cancel();
 });
-$('source').addEventListener('input', () => { saved.sources[current.id] = $('source').value; save(); refreshLines(); });
+function draftChanged() {
+  $('check-result').hidden = true;
+  $('editor-result-context').hidden = !lastRun || (lastRun.source === $('source').value && lastRun.stdin === $('stdin').value);
+  $('editor-result-context').textContent = 'Output from the earlier source or input. Choose Run code to update it.';
+  artifact = undefined; $('export-wasm').disabled = true; $('install-tinydb').disabled = true;
+  status('');
+}
+$('source').addEventListener('input', () => { saved.sources[current.id] = $('source').value; save(); refreshLines(); draftChanged(); });
 $('source').addEventListener('scroll', () => { $('line-numbers').scrollTop = $('source').scrollTop; });
 for (const type of ['click', 'keyup', 'select']) $('source').addEventListener(type, refreshLines);
-$('source').addEventListener('keydown', (event) => {
-  if (event.key === 'Tab' && !$('source').readOnly) {
-    event.preventDefault(); const editor = $('source'); editor.setRangeText('    ', editor.selectionStart, editor.selectionEnd, 'end');
-    editor.dispatchEvent(new Event('input'));
-  }
-});
 document.querySelectorAll('#code-keys [data-key]').forEach(button => {
   button.addEventListener('pointerdown', event => event.preventDefault());
   button.addEventListener('click', () => {
@@ -225,9 +235,23 @@ document.querySelectorAll('#code-keys [data-key]').forEach(button => {
   });
 });
 $('hide-keyboard').addEventListener('click', () => { $('source').blur(); $('stdin').blur(); });
-$('stdin').addEventListener('input', () => { saved.inputs[current.id] = $('stdin').value; save(); });
+$('stdin').addEventListener('input', () => { saved.inputs[current.id] = $('stdin').value; save(); draftChanged(); });
+function showDraft() {
+  $('source').value = saved.sources[current.id] ?? current.source;
+  $('stdin').value = saved.inputs[current.id] ?? current.stdin;
+  // Source, input and recovery keys share one atomic localStorage write.
+  save(); refreshLines(); draftChanged(); $('source').focus();
+}
 $('reset').addEventListener('click', () => {
-  delete saved.sources[current.id]; delete saved.inputs[current.id]; save(); renderLesson(); $('source').focus();
+  saved.recovery[current.id] = { source: $('source').value, stdin: $('stdin').value };
+  delete saved.sources[current.id]; delete saved.inputs[current.id]; showDraft();
+  status('Starter restored. Undo restore recovers your previous source and input.');
+});
+$('undo-reset').addEventListener('click', () => {
+  const previous = saved.recovery[current.id];
+  if (!previous) return;
+  saved.sources[current.id] = previous.source; saved.inputs[current.id] = previous.stdin;
+  delete saved.recovery[current.id]; showDraft(); status('Previous source and input restored.');
 });
 const download = (data, name, type) => {
   const url = URL.createObjectURL(new Blob([data], { type }));

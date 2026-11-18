@@ -47,7 +47,7 @@ with sync_playwright() as p:
     page.goto(base, wait_until='domcontentloaded')
     page.wait_for_function('crossOriginIsolated && !!navigator.serviceWorker.controller', timeout=30_000)
     expect(page.locator('#course-view')).to_be_visible()
-    expect(page.locator('#course-view h1')).to_contain_text('From your first value')
+    expect(page.locator('#course-view h1')).to_contain_text('Learn Rust and build a database')
     assert toolchain_requests == [], 'Reading requested compiler assets.'
     page.locator('[data-view="practice"]').click()
     expect(page.locator('#run')).to_be_enabled()
@@ -63,6 +63,7 @@ with sync_playwright() as p:
     page.get_by_role('button', name='Insert braces', exact=True).click()
     expect(editor).to_have_value('fn main() {}')
     assert editor.evaluate('(element) => element.selectionStart') == 11
+    page.locator('.editor-tools summary').click()
     page.locator('#reset').click()
     # First Run can be stopped while the compiler is being downloaded/prepared.
     page.locator('#run').click()
@@ -73,8 +74,8 @@ with sync_playwright() as p:
     expect(page.locator('#download-progress')).to_be_hidden()
     # The next Run downloads as needed and executes without a separate setup step.
     page.locator('#run').click()
-    page.wait_for_function('document.getElementById("status-text").textContent.startsWith("Finished") || document.getElementById("status-light").classList.contains("error")', timeout=300_000)
-    expect(page.locator('#status-text')).to_contain_text('Finished')
+    page.wait_for_function('document.getElementById("status-text").textContent.includes("Run finished") || document.getElementById("status-light").classList.contains("error")', timeout=300_000)
+    expect(page.locator('#status-text')).to_contain_text('Run finished')
     expect(page.locator('#stdout')).to_have_text('Hello, Rust!\n')
     expect(page.locator('#check-result')).to_contain_text('Output matches')
     assert not errors, errors
@@ -84,7 +85,7 @@ with sync_playwright() as p:
     editor.fill('fn main() { println!("Run again"); }')
     started = time.monotonic()
     page.locator('#run').click()
-    expect(page.locator('#status-text')).to_contain_text('Finished', timeout=20_000)
+    expect(page.locator('#status-text')).to_contain_text('Run finished', timeout=20_000)
     assert time.monotonic() - started < 20, 'Warm compilation exceeded the desktop CI performance budget.'
     expect(page.locator('#stdout')).to_have_text('Run again\n')
     assert len(toolchain_requests) == request_count, 'A later Run downloaded compiler assets again.'

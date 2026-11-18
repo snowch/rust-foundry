@@ -3,15 +3,14 @@ name: Deploy Rust Foundry to GitHub Pages
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: github-pages
+  group: rust-foundry-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -42,10 +41,15 @@ jobs:
       - name: Verify course, persistent workspace, recovery, and stale-tab protection
         run: python test/browser-course.py
       - uses: actions/upload-pages-artifact@v3
+        if: github.ref == 'refs/heads/main'
         with:
           path: dist
 
   deploy:
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      pages: write
+      id-token: write
     needs: build
     runs-on: ubuntu-latest
     environment:

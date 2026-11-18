@@ -2,7 +2,7 @@
 import { element as el } from './dom.js';
 const map = (title, nodes, caption) => ({ title, nodes, caption });
 export const conceptDiagrams = {
-  'first-program': map('From entry point to visible output', [['fn main()', 'Enter the program'], ['println!(…)', 'Write a line'], ['Output', 'Read the printed message']], 'These are execution steps, not three separate programs.'),
+  'first-program': map('From entry point to visible output', [['fn main()', 'Enter the program'], ['println!(…)', 'Write a line'], ['Output', 'Read the printed message']], 'The diagram traces the three parts of the worked program.'),
   'loops': map('A loop keeps a partial result', [['total = 0', 'Initialize once'], ['Visit each value', 'Add it to the partial total'], ['Loop ends', 'Use the accumulated result']], 'The accumulator changes while the loop repeatedly applies the same instruction.'),
   'arrays': map('An index selects one element', [['[10, 20, 30]', 'Three initialized elements'], ['Indices: 0, 1, 2', 'Indexing starts at zero'], ['values[1] → 20', 'The index must be in bounds']], 'Array length counts elements. The last valid index is one less than the length.'),
   'strings': map('Owned text has one owner', [['String binding', 'Owns the text allocation'], ['push_str(…)', 'Append through the owner'], ['Owner leaves scope', 'Owned storage is released']], 'A later ownership lesson follows what happens when this owner moves to another binding.'),
@@ -24,7 +24,7 @@ export const conceptDiagrams = {
   'rebalance': map('Repair occupancy after changes', [['Overflow on insertion', 'Split a full node'], ['Update the parent', 'Propagate a split if necessary'], ['Underflow on deletion', 'Borrow or merge; possibly collapse root']], 'The diagram describes structural rules, not a claim that every edit performs all three operations.'),
   'staging': map('Stage before publishing', [['Committed state', 'Readers begin from this version'], ['Candidate state', 'Apply and validate the change'], ['Publish on success', 'Keep committed state on error']], 'A failed candidate must not leak partial edits into the committed database.'),
   'rollback': map('Choose whether to keep staged changes', [['BEGIN', 'Start a working transaction'], ['INSERT / UPDATE / DELETE', 'Change staged state'], ['COMMIT or ROLLBACK', 'Publish the candidate or discard it']], 'The implementation determines the durability boundary; rollback and crash recovery are different operations.'),
-  'journal': map('Recovery follows a durable ordering', [['Write recovery information', 'Record the candidate generation'], ['Publish database pages', 'Advance the installed state'], ['Reopen after interruption', 'Validate and replay when needed']], 'The journal lesson and workspace expose the actual failure points and generation rules.'),
+  'journal': map('The journal defines a recovery order', [['Write recovery information', 'Record the candidate generation'], ['Publish database pages', 'Advance the installed state'], ['Reopen after interruption', 'Validate and replay when needed']], 'The workspace simulates the three stopping points. That experiment traces the journal rules on the supplied file.'),
   'browser-storage': map('Reject a stale tab’s write', [['Load a saved revision', 'Remember the version read'], ['Compare and save atomically', 'Check that version is still current'], ['Save or report conflict', 'Do not overwrite newer work']], 'Browser persistence is separate from a single execution’s temporary WASI filesystem.'),
 };
 export function createConceptDiagram(lesson) {
@@ -33,7 +33,7 @@ export function createConceptDiagram(lesson) {
   const figure = el('figure', undefined, 'concept-map');
   const heading = el('h2', data.title); heading.id = `concept-${lesson.id}`;
   figure.setAttribute('aria-labelledby', heading.id);
-  figure.append(el('p', 'CONCEPT MAP', 'eyebrow'), heading);
+  figure.append(heading);
   const list = el('ol', undefined, 'concept-map-flow');
   for (const [title, detail] of data.nodes) {
     const item = el('li'); item.append(el('strong', title), el('span', detail)); list.append(item);

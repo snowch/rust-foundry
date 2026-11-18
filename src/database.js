@@ -3,6 +3,7 @@ import { openWorkspaceStore, RevisionConflict } from './workspace-store.js';
 import { validFilename, validateFiles, FILE_LIMIT } from './files.js';
 import { element as el, button, download } from './dom.js';
 import { zipFiles } from './archive.js';
+import { createDraft } from './drafts.js';
 const $ = id => document.getElementById(id);
 const presets = [
   ['Query', 'SELECT * FROM people;\n.check'],
@@ -17,6 +18,7 @@ const presets = [
 ];
 export function initDatabase({ openSource, canRun = () => true }) {
   let store, ready, files = [], revision = 0, dirty = false, blocked = false, running = false, task, custom, bundled;
+  let lastRun;
   const message = text => { $('db-status').textContent = text; };
   const storageStatus = () => {
     $('db-storage').textContent = blocked ? 'Newer files exist in another tab. Your unsaved candidate is downloadable.' : dirty ? 'Unsaved files in memory. Download to keep them.' : store ? `Saved in this browser · revision ${revision}` : 'Memory only · download files to keep them.';
@@ -24,7 +26,8 @@ export function initDatabase({ openSource, canRun = () => true }) {
     $('db-run').disabled = running || blocked;
     $('db-import').disabled = running || blocked;
     $('db-reload').disabled = running;
-    $('db-stop').disabled = !running;
+    $('db-stop').hidden = !running;
+    $('db-load-preset').disabled = $('db-presets').disabled = $('db-undo-script').disabled = running;
     $('db-script').readOnly = running;
     $('db-name').disabled = running;
     $('db-edit-source').disabled = running;
@@ -82,7 +85,11 @@ export function initDatabase({ openSource, canRun = () => true }) {
     if (!validFilename(name) || /\.(wal|tmp)$/i.test(name)) { message('Choose a simple database filename, such as people.rdb; .wal and .tmp are sidecars.'); return; }
     const script = $('db-script').value;
     if (new TextEncoder().encode(script).length > 100_000) { message('Script exceeds the 100 KB input limit.'); return; }
-    running = true; storageStatus(); renderFiles(); $('db-output').textContent = ''; $('db-errors').textContent = ''; message(custom ? 'Running your compiled Rust program…' : 'Preparing TinyDB…');
+    running = true; lastRun = { name, script }; storageStatus(); renderFiles();
+    $('db-output-context').hidden = true; $('db-output-heading').hidden = true;
+    $('db-output').hidden = true; $('db-errors').hidden = true;
+    $('db-output').textContent = ''; $('db-errors').textContent = '';
+    message(custom ? 'Running your compiled Rust program…' : 'Preparing TinyDB…');
     let cancelled = false;
     const controller = new AbortController();
     const loadTimer = setTimeout(() => controller.abort(), 30_000);
@@ -94,14 +101,21 @@ export function initDatabase({ openSource, canRun = () => true }) {
       if (cancelled) { message('Stopped. Saved files were retained.'); return; }
       message('Running TinyDB locally…');
       task = runBinary({ bytes, stdin: script, args: [name], files,
-        onEvent: data => { if (data.type === 'stdout') $('db-output').textContent += data.text; if (data.type === 'stderr') $('db-errors').textContent += data.text; } });
+        onEvent: data => {
+          if (data.type === 'stdout') { $('db-output-heading').hidden = false; $('db-output').hidden = false; $('db-output').textContent += data.text; }
+          if (data.type === 'stderr') { $('db-output-heading').hidden = false; $('db-errors').hidden = false; $('db-errors').textContent += data.text; }
+        } });
       const result = await task.finished;
       if (result.files) {
         const persisted = await saveFiles(result.files);
-        if (!blocked) message(result.exitCode === 80 ? `Simulated interruption preserved the journal${persisted ? ' in browser storage' : ' in memory'}. Choose “Reopen and recover” next.` : `${result.ok ? 'Finished' : `Exited ${result.exitCode}`} · ran ${result.runMs.toFixed(0)} ms · ${persisted ? 'files saved' : 'files in memory; download to keep'}.`);
+        if (!blocked) message(result.exitCode === 80 ? `Simulated interruption preserved the journal${persisted ? ' in browser storage' : ' in memory'}. Load the Reopen and recover example, then choose Run statements.` : `${result.ok ? 'Finished' : `Program exited with status ${result.exitCode}. See the messages below`}. ${persisted ? 'Workspace files saved.' : 'Download files to keep this in-memory result.'}`);
       } else message(result.message || 'Run failed. Saved files were retained.');
     } catch (error) { message(cancelled ? 'Stopped. Saved files were retained.' : error.name === 'AbortError' ? 'Program download timed out. Check your connection and retry.' : error.message + ' Saved files were retained.'); }
-    finally { clearTimeout(loadTimer); running = false; task = undefined; storageStatus(); renderFiles(); }
+    finally {
+      const focusWasOnStop = document.activeElement === $('db-stop');
+      clearTimeout(loadTimer); running = false; task = undefined; storageStatus(); renderFiles();
+      if (focusWasOnStop) $('db-run').focus();
+    }
   };
   $('db-stop').onclick = () => { task?.cancel(); message('Stopping…'); };
   $('db-retry').onclick = () => saveFiles(files);
@@ -147,20 +161,44 @@ export function initDatabase({ openSource, canRun = () => true }) {
       openSource(await response.text(), id);
     } catch (error) { message(error.message); }
   };
-  $('db-bundled').onclick = () => { custom = undefined; $('db-program').textContent = 'Bundled TinyDB · Rust compiled to Wasm'; storageStatus(); message('Using the bundled reference program.'); };
+  $('db-bundled').onclick = () => { custom = undefined; $('db-program').textContent = 'Bundled TinyDB program'; storageStatus(); message('Using the bundled reference program.'); };
   const presetsElement = $('db-presets');
   for (const [title, script] of presets) {
     const option = el('option', title); option.value = title; presetsElement.append(option);
   }
-  presetsElement.onchange = () => {
-    if (running) return;
-    $('db-script').value = presets.find(([title]) => title === presetsElement.value)[1];
-    saveDraft();
+  const draft = createDraft('rust-foundry-sql-v1', JSON.stringify({ script: presets[1][1], name: 'people.rdb' }));
+  const currentDraft = () => JSON.stringify({ script: $('db-script').value, name: $('db-name').value });
+  const showDraftState = () => {
+    $('db-undo-script').hidden = !draft.canUndo;
+    $('db-draft-status').hidden = draft.durable;
+    $('db-draft-status').textContent = draft.durable ? '' : 'This script is saved for this tab only. Copy it before reloading or closing the tab.';
+    $('db-output-context').hidden = !lastRun || $('db-output-heading').hidden ||
+      (lastRun.name === $('db-name').value && lastRun.script === $('db-script').value);
+    $('db-output-context').textContent = 'Output from the earlier script or filename. Run the current script to update it.';
   };
-  const saveDraft = () => { try { localStorage.setItem('rust-foundry-sql-v1', JSON.stringify({ script: $('db-script').value, name: $('db-name').value })); } catch { /* Files remain exportable. */ } };
+  const showDraft = () => {
+    let value;
+    try { value = JSON.parse(draft.value); } catch { /* A corrupt legacy draft can be replaced by editing. */ }
+    $('db-script').value = typeof value?.script === 'string' ? value.script : presets[1][1];
+    $('db-name').value = typeof value?.name === 'string' ? value.name : 'people.rdb';
+    showDraftState();
+  };
+  const replaceDraft = (script, name) => {
+    draft.replace(JSON.stringify({ script, name })); showDraft();
+  };
+  $('db-load-preset').onclick = () => {
+    if (running) return;
+    const [title, script] = presets.find(([label]) => label === presetsElement.value);
+    replaceDraft(script, $('db-name').value);
+    message(`Loaded ${title}. Choose Run statements. Undo script change restores your previous script and filename.`);
+  };
+  $('db-undo-script').onclick = () => {
+    if (running) return;
+    draft.undo(); showDraft(); message('Previous script and filename restored.');
+  };
+  const saveDraft = () => { draft.save(currentDraft()); showDraftState(); };
   $('db-script').oninput = saveDraft; $('db-name').oninput = saveDraft;
-  $('db-script').value = presets[1][1]; presetsElement.value = 'CRUD';
-  try { const draft = JSON.parse(localStorage.getItem('rust-foundry-sql-v1')); if (typeof draft?.script === 'string') $('db-script').value = draft.script; if (validFilename(draft?.name)) $('db-name').value = draft.name; } catch { /* Recover a corrupt draft. */ }
+  presetsElement.value = 'CRUD'; showDraft();
   // No save on storage events: the revision check is authoritative at write time.
   window.addEventListener('beforeunload', event => { if (dirty) { event.preventDefault(); event.returnValue = ''; } });
   return {
@@ -168,12 +206,12 @@ export function initDatabase({ openSource, canRun = () => true }) {
     openLab: async lab => {
       await initialize();
       if (running) { message('Stop the current workspace run before opening another lab.'); return; }
-      $('db-name').value = lab.filename; $('db-script').value = lab.script; saveDraft(); location.hash = '#workspace';
-      message('Lesson script loaded. Choose Run statements to execute it.');
+      replaceDraft(lab.script, lab.filename); location.hash = '#workspace';
+      message('Lesson script loaded. Choose Run statements. Undo script change restores your previous script and filename.');
     },
     install: bytes => {
       if (running) return false;
-      custom = bytes; $('db-program').textContent = 'Your compiled Rust program · resets to reference on page reload'; storageStatus(); location.hash = '#workspace'; return true;
+      custom = bytes; $('db-program').textContent = 'Your compiled Rust program · this tab only'; storageStatus(); location.hash = '#workspace'; return true;
     },
   };
 }

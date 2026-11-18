@@ -2,6 +2,7 @@ import { course, chapters, ownershipSteps, courseEdition } from './course-data.j
 import { element as el, button, codeBlock, download } from './dom.js';
 import { createLessonRunner } from './lesson-runner.js';
 import { createConceptDiagram } from './concept-diagrams.js';
+import { experimentEdits, labEdits, exerciseInstruction } from './experiments.js';
 const prefix = `rust-foundry-course-v${courseEdition}:`;
 const volatile = new Map();
 const read = key => { if (volatile.has(key)) return volatile.get(key); try { return localStorage.getItem(prefix + key) === 'true'; } catch { return false; } };
@@ -22,7 +23,7 @@ export function initCourse({ openLab, canRun, unsupported }) {
     bar.style.setProperty('--lesson-menu-height', `${Math.max(0, viewportBottom - bar.getBoundingClientRect().bottom - 12)}px`);
   }
   function updateProgress() {
-    root.querySelectorAll('.progress-copy').forEach(node => { node.textContent = `${tally(course, 'read')} / ${course.length} read · ${tally(course, 'practice')} / ${course.length} practice checks passed in this edition. Saved on this browser when storage permits.`; });
+    root.querySelectorAll('.progress-copy').forEach(node => { node.textContent = `${tally(course, 'read')} / ${course.length} read · ${tally(course, 'practice')} / ${course.length} practice checks passed.`; });
     root.querySelectorAll('[data-chapter-progress]').forEach(node => {
       const lessons = members(node.dataset.chapterProgress);
       node.textContent = `${tally(lessons, 'read')} / ${lessons.length} read · ${tally(lessons, 'practice')} / ${lessons.length} practiced`;
@@ -91,12 +92,12 @@ export function initCourse({ openLab, canRun, unsupported }) {
   }
   function overview() {
     const intro = el('article', undefined, 'course-overview');
-    intro.append(el('p', 'Start with a three-line program. No previous programming, Rust, or SQL knowledge is required. Each lesson explains its new notation, shows what you will do, and links to the earlier ideas it uses. Early practice changes simple output; assertions and unfinished-function markers appear only after their own lesson.'), el('p', 'Run and edit each example here in the lesson. The algorithms chapter covers Big O, search, sorting, lists, stacks, queues, hashing, trees, and graphs. Later chapters build from records and files to TinyDB pages, indexing, transactions, and recovery. You can move at your own pace or revisit a prerequisite whenever needed.'));
+    intro.append(el('p', 'Start with a three-line Rust program. No programming, Rust, or SQL experience is required. Run and edit code in each lesson, then use what you learn to explore a small database.'));
     let previous;
     try { previous = course.find(x => x.id === localStorage.getItem(prefix + 'last-lesson')); } catch { /* Optional resume storage. */ }
     const resume = el('section', undefined, 'resume-card');
-    resume.append(el('p', previous ? 'PICK UP WHERE YOU LEFT OFF' : 'START HERE', 'eyebrow'), link(`${previous ? 'Continue' : 'Start'}: ${(previous || course[0]).title} →`, '#course/' + (previous || course[0]).id, 'button primary'), el('p', 'Examples run here in the lesson. The compiler downloads only on your first Run.')); intro.append(resume);
-    intro.append(el('p', `${course.length} lessons across ${chapters.length} chapters · original concept diagrams · runnable Rust exercises`, 'course-size'));
+    resume.append(link(`${previous ? 'Continue' : 'Start'}: ${(previous || course[0]).title} →`, '#course/' + (previous || course[0]).id, 'button primary'), el('p', 'The first run downloads about 58 MB of compiler files. Your browser compiles and runs the source locally.')); intro.append(resume);
+    intro.append(el('p', `${course.length} lessons across ${chapters.length} chapters`, 'course-size'));
     intro.append(previousEdition());
     for (const chapter of chapters) {
       const card = el('section', undefined, 'chapter-card'), count = el('p', undefined, 'chapter-progress-copy'); count.dataset.chapterProgress = chapter.id;
@@ -106,8 +107,8 @@ export function initCourse({ openLab, canRun, unsupported }) {
   }
   function previousEdition() {
     const box = el('details', undefined, 'previous-edition');
-    box.append(el('summary', 'About this revised edition and previous work'));
-    box.append(el('p', 'The course now starts with smaller steps and explicitly teaches the foundations used later. Reading and practice marks belong to this revised edition; earlier marks and drafts have not been deleted. Previous drafts are downloadable beside their corresponding revised code cards.'));
+    box.append(el('summary', 'Download drafts and marks from the previous edition'));
+    box.append(el('p', 'This edition tracks reading and practice separately. Open Editor tools on a lesson to manage the current draft. Earlier drafts have their own download beside the worked code or practice editor.'));
     const previous = {};
     try {
       for (let i = 0; i < localStorage.length; i++) {
@@ -127,8 +128,8 @@ export function initCourse({ openLab, canRun, unsupported }) {
     if (active) {
       const chapter = chapters.find(x => x.id === active.chapter), crumbs = el('nav', undefined, 'course-breadcrumb'); crumbs.setAttribute('aria-label', 'Breadcrumb');
       crumbs.append(link('Course', '#course'), el('span', '/'), el('span', `${chapter.number}. ${chapter.title}`)); header.append(crumbs);
-    } else header.append(el('p', 'RUST, ONE SMALL PROGRAM AT A TIME', 'eyebrow'));
-    header.append(el('h1', active ? active.title : 'From your first value to a database.'));
+    }
+    header.append(el('h1', active ? active.title : 'Learn Rust and build a database'));
     if (active) {
       const goal = el('p', undefined, 'lesson-goal'); goal.append(el('strong', 'Goal: '), document.createTextNode(active.objective)); header.append(goal);
       if (!active.prerequisites.length) header.append(el('p', 'Start here. No previous programming experience needed.', 'entry-requirement'));
@@ -147,9 +148,17 @@ export function initCourse({ openLab, canRun, unsupported }) {
       const runner = createLessonRunner({ lesson, mode, unsupported, canRun: () => !runners.some(item => item.isBusy()) && canRun(), onPass: () => markPractice(lesson.id) }); runners.push(runner); return runner;
     };
     const worked = createRunner('worked');
-    article.append(el('h2', 'Run and explore'), el('p', 'Predict what this program will do. Run it here, compare your output, then change one thing and run it again.'), worked.root);
-    const expected = el('details', undefined, 'expected-output'); expected.append(el('summary', 'Expected output · compare after your run'), codeBlock(lesson.expected)); article.append(expected);
-    const steps = el('ol'); lesson.walkthrough.forEach(text => steps.append(el('li', text))); article.append(el('h2', 'Walk through it'), steps, el('h3', 'Watch for this'), el('p', lesson.pitfall, 'callout'));
+    const [before, after, observe] = experimentEdits[lesson.id];
+    const starterInstructions = el('p');
+    starterInstructions.append('The worked editor opens with ', el('code', 'main.rs'), '. If you have a saved edit, choose Editor tools → Restore starter. Predict the output, then choose Run example.');
+    const editInstructions = el('p');
+    editInstructions.append('In that same editor, replace the code under Find with the code under Replace with, then choose Run example again.');
+    const edit = el('div', undefined, 'experiment-edit');
+    edit.append(codeBlock(before.trim(), 'Find'), codeBlock(after.trim(), 'Replace with'));
+    article.append(el('h2', 'Run the starter and try a change'), starterInstructions, editInstructions, edit, el('p', observe), worked.root);
+    const expected = el('details', undefined, 'expected-output'); expected.id = 'expected-output';
+    expected.append(el('summary', 'Starter result and practice output target'), codeBlock(lesson.expected)); article.append(expected);
+    const steps = el('ol'); lesson.walkthrough.forEach(text => steps.append(el('li', text))); article.append(el('h2', 'Read the starter step by step'), steps, el('h3', 'Common mistake'), el('p', lesson.pitfall, 'callout'));
     if (lesson.showOwnershipWalkthrough) {
       const walk = el('section', undefined, 'ownership-walk'); let step = 0;
       const update = () => {
@@ -161,26 +170,39 @@ export function initCourse({ openLab, canRun, unsupported }) {
     const feedback = el('p'); feedback.setAttribute('role', 'status');
     lesson.choices.forEach((choice, i) => quiz.append(button(choice, () => { feedback.textContent = `${i === lesson.answer ? 'Correct.' : 'Try again.'} ${lesson.feedback}`; feedback.className = i === lesson.answer ? 'passed' : 'check-neutral'; }))); quiz.append(feedback); article.append(quiz);
     const practice = el('section', undefined, 'lesson-practice'); practice.id = 'lesson-practice';
-    practice.append(el('h2', 'Your turn'), el('p', lesson.practiceInstruction));
-    if (lesson.checkType === 'assertions') practice.append(el('p', 'Keep the supplied assertions: they check additional inputs as well as the displayed example.'));
-    else practice.append(el('p', 'For this exercise, the check compares your displayed output with the expected output.'));
+    practice.append(el('h2', 'Practice'), el('p', exerciseInstruction(lesson)));
+    const check = el('p');
+    check.append(lesson.checkType === 'assertions' ? 'Run checks executes the assertions in main.rs and compares the printed result. ' : 'Run checks compares the printed result. ',
+      button('Show practice output target', () => { expected.open = true; expected.querySelector('summary').focus(); }));
+    practice.append(check);
     const exercise = createRunner('exercise'); practice.append(exercise.root);
     const practiceStatus = el('p', undefined, 'practice-pass-status'); practiceStatus.dataset.practiceStatus = lesson.id; practice.append(practiceStatus);
     lesson.hints.forEach((hint, i) => { const details = el('details', undefined, 'hint'); details.append(el('summary', `Hint ${i + 1}`), el('p', hint)); practice.append(details); });
     const reference = el('details', undefined, 'hint reference-solution'); reference.append(el('summary', 'Reference solution · reveal when you need it'));
     let referenceRunner;
-    reference.ontoggle = () => { if (reference.open && !referenceRunner) { referenceRunner = createRunner('reference'); reference.append(referenceRunner.root); } }; practice.append(reference, el('h3', 'Experiment'), el('p', lesson.experiment)); article.append(practice);
-    worked.root.after(button('Try the exercise ↓', () => practice.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' })));
+    reference.ontoggle = () => { if (reference.open && !referenceRunner) { referenceRunner = createRunner('reference'); reference.append(referenceRunner.root); } };
+    practice.append(reference); article.append(practice);
     if (lesson.lab) {
-      const lab = el('section', undefined, 'lab-card'); lab.append(el('h2', 'TinyDB project lab'), el('p', 'Use the persistent TinyDB workspace for this SQL script and its database files. The Rust examples above run here in the lesson. Re-running an INSERT into an existing lab file can report duplicate IDs.'), codeBlock(lesson.lab.script, 'SQL and TinyDB commands'), button('Open persistent TinyDB workspace', () => openLab(lesson.lab), 'button secondary'));
-      if (lesson.lab.recoveryScript) lab.append(el('p', 'After the simulated interruption, run this second script to reopen and recover:'), codeBlock(lesson.lab.recoveryScript)); article.append(lab);
+      const [original, replacement, evidence] = labEdits[lesson.id];
+      const lab = el('section', undefined, 'lab-card');
+      const initial = el('details'); initial.append(el('summary', 'Inspect the prepared script'), codeBlock(lesson.lab.script, 'SQL and TinyDB commands'));
+      lab.append(el('h2', 'Try it on TinyDB files'), el('p', `Open the workspace to load the script and ${lesson.lab.filename} into the editor. If a file with that name appears under Workspace files, use an unused filename for this run. Choose Run statements to run the starter.`),
+        el('p', 'For the comparison, change Database filename to another unused name. Replace the indicated text in TinyDB script, then choose Run statements again.'), codeBlock(original, 'Find in TinyDB script'), codeBlock(replacement, 'Replace with'), el('p', evidence),
+        button('Open workspace with this script', () => openLab(lesson.lab), 'button secondary'));
+      if (lesson.id === 'tdb1') {
+        const cWorkspace = link('C Foundry command workspace', 'https://snowch.github.io/c-foundry/#/workspace');
+        cWorkspace.target = '_blank'; cWorkspace.rel = 'noopener'; lab.append(cWorkspace);
+      }
+      lab.append(initial);
+      if (lesson.lab.recoveryScript) lab.append(el('p', 'After each simulated interruption, keep the filename. Replace TinyDB script with these lines and choose Run statements to reopen that file:'), codeBlock(lesson.lab.recoveryScript));
+      article.append(lab);
     }
     const downloads = el('details', undefined, 'hint lesson-downloads'); downloads.append(el('summary', 'Download the starter and reference'), button('Download starter .rs', () => download(lesson.starter, `${lesson.id}-starter.rs`, 'text/plain')), button('Download reference .rs', () => download(lesson.solution, `${lesson.id}-reference.rs`, 'text/plain'))); article.append(downloads);
-    const finish = el('section', undefined, 'reading-completion'); finish.append(el('h2', 'Ready to move on?'), el('p', 'Mark the reading when you have understood it. Running an example does not mark reading or practice complete.'));
+    const finish = el('section', undefined, 'reading-completion'); finish.append(el('h2', 'Reading progress'), el('p', 'Mark this lesson when you finish reading. Practice checks have their own progress mark.'));
     const completionStatus = el('p'); completionStatus.setAttribute('role', 'status');
     const toggle = button('', () => {
       const persisted = write(`read:${lesson.id}`, !read(`read:${lesson.id}`)); updateProgress();
-      completionStatus.textContent = persisted ? 'Reading mark saved.' : 'Storage is unavailable; this mark lasts for this visit only.';
+      completionStatus.textContent = persisted ? 'Reading mark saved.' : 'This mark lasts until the tab reloads or closes. Browser storage is unavailable.';
     }); toggle.dataset.readToggle = lesson.id; finish.append(toggle, completionStatus);
     const nav = el('nav', undefined, 'adjacent-lessons'); nav.setAttribute('aria-label', 'Adjacent lessons');
     if (index > 0) { const previous = course[index - 1]; nav.append(link(`← Previous lesson\n${previous.title}`, '#course/' + previous.id, 'adjacent-previous')); }
