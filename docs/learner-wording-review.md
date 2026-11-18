@@ -15,6 +15,7 @@ The audit starts from the course’s stated entry point. A reader can begin with
 
 - Native Rust compiled and ran all 85 worked programs and their 85 literal variants. This included the intended compiler diagnostics and program assertion failures.
 - The native database suite passed 12 invariant tests, the C Foundry exchange against its pinned implementation, and all eight project starter compilations.
+- All 14 TinyDB starter scripts and their documented changes ran in Chromium. This included the prepared and committed journal cases, opening a recovered file twice, and finding the renamed export and snapshot.
 - Chromium exercised the production worker, lesson checks, exact legacy downloads, persisted drafts, compiler cancellation, and TinyDB recovery, stale-tab protection, and quota fallback. Tested 99 learner views at each of 320, 390, 820 and 1440 CSS pixels, across the light and dark themes, with no document overflow or page exceptions.
 - Regression tests protect the durable draft when Restore or Undo succeeds in memory but a replacement write fails. Keyboard walkthroughs exercise the code editor and SQL example loader.
 

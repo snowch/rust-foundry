@@ -188,7 +188,12 @@ export function initCourse({ openLab, canRun, unsupported }) {
       const initial = el('details'); initial.append(el('summary', 'Inspect the prepared script'), codeBlock(lesson.lab.script, 'SQL and TinyDB commands'));
       lab.append(el('h2', 'Try it on TinyDB files'), el('p', `Open the workspace to load the script and ${lesson.lab.filename} into the editor. If a file with that name appears under Workspace files, use an unused filename for this run. Choose Run statements to run the starter.`),
         el('p', 'For the comparison, change Database filename to another unused name. Replace the indicated text in TinyDB script, then choose Run statements again.'), codeBlock(original, 'Find in TinyDB script'), codeBlock(replacement, 'Replace with'), el('p', evidence),
-        button('Open workspace with this script', () => openLab(lesson.lab), 'button secondary'), initial);
+        button('Open workspace with this script', () => openLab(lesson.lab), 'button secondary'));
+      if (lesson.id === 'tdb1') {
+        const cWorkspace = link('C Foundry command workspace', 'https://snowch.github.io/c-foundry/#/workspace');
+        cWorkspace.target = '_blank'; cWorkspace.rel = 'noopener'; lab.append(cWorkspace);
+      }
+      lab.append(initial);
       if (lesson.lab.recoveryScript) lab.append(el('p', 'After each simulated interruption, keep the filename. Replace TinyDB script with these lines and choose Run statements to reopen that file:'), codeBlock(lesson.lab.recoveryScript));
       article.append(lab);
     }
