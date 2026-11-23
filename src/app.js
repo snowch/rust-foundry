@@ -322,7 +322,7 @@ function route() {
   const view = ['course', 'workspace', 'practice'].includes(name) ? name : name === 'about' ? 'practice' : 'course';
   $('course-view').hidden = view !== 'course'; $('database-view').hidden = view !== 'workspace'; $('practice-view').hidden = view !== 'practice';
   document.querySelectorAll('[data-view]').forEach(link => { if (link.dataset.view === view) link.setAttribute('aria-current', 'page'); else link.removeAttribute('aria-current'); });
-  if (view === 'course') learning.render(id);
+  if (view === 'course') learning.render(name==='lab'?undefined:id,name==='lab'?id:undefined);
   else learning.suspend();
   if (view === 'workspace') { document.title = 'TinyDB workspace — Rust Foundry'; database.initialize(); }
   if (view === 'practice') document.title = 'Rust editor — Rust Foundry';
