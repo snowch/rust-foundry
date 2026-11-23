@@ -13,7 +13,7 @@ export function initializeReadingState(app){
  async function save(){
   if(saving||restoring||composing||document.readyState!=='complete'||app.isBusy()||window.rustFoundryRunner.introOpen)throw Error('Finish typing and wait for the current run or file operation to finish.');
   saving=true;const controls=[...document.querySelectorAll('#course-view,#database-view,#practice-view,.header,.mode-nav')],previous=controls.map(node=>node.inert);controls.forEach(node=>node.inert=true);
-  try{app.flush();const token=crypto.randomUUID();const record={token,hash:location.hash,scroll:[scrollX,scrollY],app:app.snapshot(),drafts:snapshotDraftMemory(),results:resultSnapshot(),details:[...document.querySelectorAll('main details')].map((node,index)=>[index,node.open]),feedback:[...document.querySelectorAll('.prediction [role=status]')].map(node=>[node.textContent,node.className])};
+  try{app.flush();const token=crypto.randomUUID();const record={token,hash:location.hash,scroll:[scrollX,scrollY],app:app.snapshot(),drafts:snapshotDraftMemory(),results:resultSnapshot(),details:['course-view','database-view','practice-view'].map(id=>[id,[...document.getElementById(id).querySelectorAll('details')].map(node=>node.open)]),feedback:[...document.querySelectorAll('.prediction [role=status]')].map(node=>[node.textContent,node.className])};
   await store(record);sessionStorage.setItem(marker,token);if(sessionStorage.getItem(marker)!==token)throw Error('This window could not save its place. Keep it open and export your work before reloading.');reloadReady=true;setTimeout(()=>{reloadReady=false;},2000);return token;}finally{saving=false;controls.forEach((node,index)=>node.inert=previous[index]);}
  }
  async function restore(){
@@ -21,7 +21,7 @@ export function initializeReadingState(app){
   try{const db=await database();let record;try{record=await request(db.transaction('snapshots').objectStore('snapshots').get(token));}finally{db.close();}
    if(record?.hash!==location.hash){sessionStorage.removeItem(marker);await discard(token);return;}
    restoreDraftMemory(record.drafts);restoreResults(record.results);await app.restore(record.app);
-   const nodes=[...document.querySelectorAll('main details')];for(const[index,open]of record.details||[])if(nodes[index])nodes[index].open=open;
+   for(const[id,values]of record.details||[]){if(typeof id==='string'){const nodes=[...document.getElementById(id).querySelectorAll('details')];values.forEach((open,index)=>{if(nodes[index])nodes[index].open=open;});}else{const nodes=[...document.querySelectorAll('main details')];if(nodes[id])nodes[id].open=values;}}
    document.querySelectorAll('.prediction [role=status]').forEach((node,index)=>{const value=record.feedback?.[index];if(value){node.textContent=value[0];node.className=value[1];}});
    requestAnimationFrame(()=>scrollTo(...record.scroll));sessionStorage.removeItem(marker);
    const clean=await database();try{const tx=clean.transaction('snapshots','readwrite');tx.objectStore('snapshots').delete(token);}finally{clean.close();}
