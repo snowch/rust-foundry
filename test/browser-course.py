@@ -296,6 +296,12 @@ fn main() { println!("{}", greeting()); }
     page.locator('#install-tinydb').click()
     expect(page.locator('#db-program')).to_contain_text('Your compiled Rust program')
     assert run(page, 'SELECT COUNT(*) FROM people;', 'qa.rdb').startswith('learner edited TinyDB\n')
+    page.evaluate('()=>rustFoundryState.save()')
+    page.reload(wait_until='domcontentloaded')
+    page.wait_for_function('!!window.rustFoundryState')
+    page.evaluate('()=>rustFoundryState.ready')
+    expect(page.locator('#db-program')).to_contain_text('Your compiled Rust program')
+    assert run(page, 'SELECT COUNT(*) FROM people;', 'qa.rdb').startswith('learner edited TinyDB\n')
     page.locator('#db-bundled').click()
     assert not run(page, 'SELECT COUNT(*) FROM people;').startswith('learner edited TinyDB')
     assert len(compiler_requests) == request_count, 'The full editor did not reuse the lesson compiler.'
