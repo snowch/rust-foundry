@@ -36,6 +36,9 @@ jobs:
         run: |
           python -m pip install playwright==1.62.0
           python -m playwright install --with-deps chromium
+      - run: npx playwright install chromium
+      - name: Verify focused lab hubs and saved progress
+        run: npm run test:hub
       - name: Verify isolation and real compilation in a mobile-sized browser
         run: python test/browser-smoke.py
       - name: Verify course, persistent workspace, recovery, and stale-tab protection

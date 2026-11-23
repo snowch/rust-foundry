@@ -11,3 +11,5 @@ A lesson presents its goal and prerequisites, explanation and question, a saved 
 Each lesson ends with a References row for its actual Rust topics, short reminders and direct official documentation links, followed by completion and previous/next cards naming their destinations. References are optional; essential instructions stay visible. Solutions can nest a runnable reference because revealing an answer after attempting practice has a clear benefit. Preserve earlier-edition drafts and export controls.
 
 Verify phone, tablet and wide layouts, both themes using the actual theme button, outline and dialog keyboard behavior, all authored routes, original code and suggested edits. Functional tests establish that the interface and examples work; they do not establish learning effectiveness.
+
+The Foundry now uses the [focused lab-series hub](lab-series.md): numbered lab cards, scoped progress and stable lesson links.

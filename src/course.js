@@ -1,3 +1,4 @@
+import './lab-hub.js';
 import {courseNavigation} from './course-navigation.js';
 import {homeIllustration} from './home-illustration.js';
 import {materialSymbol} from './material-symbols.mjs';
@@ -14,15 +15,18 @@ const read = key => { if (volatile.has(key)) return volatile.get(key); try { ret
 const write = (key, value) => { volatile.set(key, value); try { localStorage.setItem(prefix + key, String(value));volatile.delete(key); return true; } catch { return false; } };
 export function markPractice(id) { const persisted = write(`practice:${id}`, true); window.dispatchEvent(new Event('course-progress')); return persisted; }
 
+const labGroups=chapters.map((c,i)=>({...c,number:i+1,summary:c.summary,href:'#lab/'+c.id,requirement:i?'Builds on '+chapters[i-1].title+'.':'No previous programming experience required.',lessons:course.filter(l=>l.chapter===c.id).map(l=>({...l,href:'#course/'+l.id}))}));
+const labFor=lesson=>labGroups.find(g=>g.id===lesson?.chapter);
+function brandLab(group){const brand=document.querySelector('.brand');brand.href=group?group.href:'#course';brand.querySelector('.brand-subtitle').textContent=group?group.title:'Rust 2021 · Learn in your browser';}
 export function initCourse({ openLab, canRun, unsupported }) {
   const root = document.getElementById('course-view');
-  let active, rendered = false, runners = [],predictionDraft;
+  let active, activeLab, rendered = false, renderKey, runners = [],predictionDraft,hubCleanup=()=>{};
   const link = (text, hash, className) => { const a = el('a', text, className); a.href = hash; return a; };
   const members = chapter => course.filter(x => x.chapter === chapter);
   const tally = (lessons, kind) => lessons.filter(x => read(`${kind}:${x.id}`)).length;
   function fitMenu() {}
   function updateProgress() {
-    root.querySelectorAll('.progress-copy').forEach(node => { node.textContent = `${tally(course, 'read')} / ${course.length} complete`; });
+    root.querySelectorAll('.progress-copy').forEach(node => { node.textContent = `${tally(activeLab?.lessons||course, 'read')} / ${(activeLab?.lessons||course).length} complete`; });
     root.querySelectorAll('[data-chapter-progress]').forEach(node => {
       const lessons = members(node.dataset.chapterProgress);
       node.textContent = `${tally(lessons, 'read')} / ${lessons.length} read · ${tally(lessons, 'practice')} / ${lessons.length} practiced`;
@@ -45,12 +49,13 @@ export function initCourse({ openLab, canRun, unsupported }) {
     intro.append(el('p', 'Start with a three-line Rust program. No programming, Rust, or SQL experience is required. Run and edit code in each lesson, then use what you learn to explore a small database.'));
     let previous;
     try { previous = course.find(x => x.id === localStorage.getItem(prefix + 'last-lesson')); } catch { /* Optional resume storage. */ }
+    const target=foundryHub.destination(course,id=>read('read:'+id),previous?.id);previous=target.lesson;
     const resume = el('section', undefined, 'resume-card');
-    resume.append(link(`${previous ? 'Continue' : 'Start'}: ${(previous || course[0]).title} →`, '#course/' + (previous || course[0]).id, 'button primary'), el('p', 'The first run downloads about 58 MB of compiler files. Your browser compiles and runs the source locally.')); intro.append(resume);
+    resume.append(link(`${target.label}: ${previous.title} →`, '#course/' + (previous || course[0]).id, 'button primary'), el('p', 'The first run downloads about 58 MB of compiler files. Your browser compiles and runs the source locally.')); intro.append(resume);
     const hero=el('div',undefined,'home-hero'),copy=el('div',undefined,'home-copy');copy.append(root.querySelector('.course-heading'));while(intro.firstChild)copy.append(intro.firstChild);hero.append(copy,homeIllustration());intro.append(hero);
     intro.append(el('p',`${course.length} lessons across ${chapters.length} chapters`,'course-size'));
-    intro.append(courseNavigation({home:true,progress:updateProgress}));intro.append(previousEdition());
-    const archive = link('Download all starters, references, and TinyDB projects ↓', './course/rust-foundry-course.zip'); archive.download = ''; intro.append(archive); root.append(intro);
+    const choose=el('section',undefined,'hub-choices');choose.innerHTML='<div class="hub-heading"><h2>Choose a lab</h2><p>'+labGroups.filter(g=>g.lessons.every(l=>read('read:'+l.id))).length+' / '+labGroups.length+' labs complete</p></div><div class="foundry-lab-grid">'+foundryHub.cards(labGroups,id=>read('read:'+id))+'</div>';intro.append(choose);intro.append(previousEdition());
+    const archive = link('Download all starters, references, and TinyDB projects ↓', './course/rust-foundry-course.zip'); archive.download = ''; intro.append(archive); root.append(intro);const art=intro.querySelector('figure');art?.classList.add('hub-art');const arrange=()=>{if(!art)return;if(matchMedia('(max-width:900px)').matches)choose.after(art);else hero.append(art);};arrange();const query=matchMedia('(max-width:900px)');query.addEventListener('change',arrange);hubCleanup=()=>query.removeEventListener('change',arrange);
   }
   function previousEdition() {
     const box = el('details', undefined, 'previous-edition');
@@ -66,10 +71,10 @@ export function initCourse({ openLab, canRun, unsupported }) {
     if (Object.keys(previous).length) box.append(button('Download previous-edition work .json', () => download(JSON.stringify(previous, null, 2), 'rust-foundry-previous-edition.json', 'application/json')));
     return box;
   }
-  function render(id) {
+  function render(id,labId) {
     const next = course.find(x => x.id === id);
-    if (rendered && active?.id === next?.id) { updateProgress(); return; }
-    runners.forEach(runner => runner.dispose()); runners = []; active = next; rendered = true; root.replaceChildren();
+    const key=(id||'')+'/'+(labId||'');if (rendered && renderKey===key) { updateProgress(); return; }
+    hubCleanup();hubCleanup=()=>{};predictionDraft=undefined;runners.forEach(runner => runner.dispose()); runners = []; active = next;activeLab=labFor(active)||labGroups.find(g=>g.id===labId);brandLab(activeLab);renderKey=key; rendered = true; root.replaceChildren();
     document.title = active ? `${active.title} · Chapter ${Number(chapters.find(x => x.id === active.chapter).number)} — Rust Foundry` : 'Rust Foundry — learn Rust, build a database';
     const header = el('header', undefined, `course-heading${active ? ' lesson-heading' : ''}`);
     header.append(el('h1', active ? active.title : 'Learn Rust and build a database'));
@@ -79,8 +84,8 @@ export function initCourse({ openLab, canRun, unsupported }) {
     }
 
     if(active)root.append(courseNavigation({active,progress:updateProgress}));root.append(header);
-    if (!active) { overview(); updateProgress(); return; }
-    const lesson = active, index = course.indexOf(lesson), chapter = chapters.find(x => x.id === lesson.chapter);
+    if (!active) {if(activeLab){document.title=activeLab.title+' · Rust Foundry';root.innerHTML=foundryHub.overview(activeLab,id=>read('read:'+id),(()=>{try{return localStorage.getItem(prefix+'last-lesson')}catch{return null}})(),'#course');}else overview();updateProgress();return; }
+    const lesson = active, scoped=activeLab.lessons,index = scoped.findIndex(l=>l.id===lesson.id), chapter = chapters.find(x => x.id === lesson.chapter);
     try { localStorage.setItem(prefix + 'last-lesson', lesson.id); } catch { /* Optional resume state. */ }
     if(lesson.prerequisites.length)header.append(prerequisites(lesson));
     const body = el('div', undefined, 'course-body'), article = el('article', undefined, 'reading'); body.append(article); root.append(body);
@@ -148,8 +153,8 @@ export function initCourse({ openLab, canRun, unsupported }) {
     const completionStatus=el('p','Saved in this browser. Practice checks are recorded separately.','completion-note');completionStatus.setAttribute('role','status');
     toggle.onchange=()=>{const persisted=write(`read:${lesson.id}`,toggle.checked);updateProgress();completionStatus.textContent=persisted?'Saved in this browser. Practice checks are recorded separately.':'This mark lasts until the tab reloads or closes. Browser storage is unavailable.';};finish.append(label,completionStatus);
     const nav = el('nav', undefined, 'adjacent-lessons'); nav.setAttribute('aria-label', 'Adjacent lessons');
-    function card(destination,direction,className){const item=link('',destination?'#course/'+destination.id:'#course',className);item.append(el('small',destination?direction:'Course overview'),el('strong',destination?destination.title:'Choose a lesson'));return item;}
-    nav.append(card(course[index-1],'Previous lesson','adjacent-previous'),card(course[index+1],'Next lesson','adjacent-next'));
+    function card(destination,direction,className){const item=link('',destination?'#course/'+destination.id:activeLab.href,className);item.append(el('small',destination?direction:'Lab overview'),el('strong',destination?destination.title:activeLab.title));return item;}
+    nav.append(card(scoped[index-1],'Previous lesson','adjacent-previous'),card(scoped[index+1],'Next lesson','adjacent-next'));
     finish.append(nav); article.append(finish); updateProgress();
   }
   window.addEventListener('storage', event => {
@@ -163,6 +168,6 @@ export function initCourse({ openLab, canRun, unsupported }) {
   return {render,isBusy:()=>runners.some(item=>item.isBusy()),suspend:()=>runners.forEach(runner=>runner.stop()),
       snapshot:()=>({marks:[...volatile],id:active?.id,prediction:predictionDraft?.snapshot(),runners:runners.map(r=>[r.root.dataset.mode,r.snapshot()])}),
       restore(value){if(!value||value.id!==active?.id)return;for(const[key,mark]of value.marks||[])volatile.set(key,mark);if(value.prediction&&predictionDraft){predictionDraft.restore(value.prediction);root.querySelector('#course-prediction').value=predictionDraft.value;}
-        for(const[mode,state]of value.runners||[]){if(mode==='reference'&&!runners.some(r=>r.root.dataset.mode===mode)){const box=root.querySelector('.reference-solution');box.open=true;box.ontoggle();}runners.find(r=>r.root.dataset.mode===mode)?.restore(state);}updateProgress();}
+        for(const[mode,state]of value.runners||[]){if(mode==='reference'&&!runners.some(r=>r.root.dataset.mode===mode)){const box=root.querySelector('.reference-solution');box.open=true;box.ontoggle();}runners.find(r=>r.root.dataset.mode===mode)?.restore?.(state);}updateProgress();}
     };
 }

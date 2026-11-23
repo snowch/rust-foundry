@@ -12,7 +12,8 @@
     "test:native": "node scripts/test-native.mjs",
     "serve": "node scripts/serve.mjs",
     "toolchain:fetch": "node scripts/fetch-toolchain.mjs",
-    "check": "node scripts/check.mjs"
+    "check": "node scripts/check.mjs",
+    "test:hub": "node test/hub-selection.cjs && node test/lab-hub.cjs"
   },
   "keywords": [],
   "author": "",
@@ -25,5 +26,8 @@
     "@oligami/browser_wasi_shim-threads": "0.1.1",
     "typescript": "5.9.3",
     "vite": "6.4.1"
+  },
+  "devDependencies": {
+    "playwright": "^1.62.1"
   }
 }
