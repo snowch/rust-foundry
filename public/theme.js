@@ -9,10 +9,10 @@
     const theme = preference || (system.matches ? 'dark' : 'light');
     document.documentElement.dataset.theme = theme;
     document.documentElement.style.colorScheme = theme;
-    document.documentElement.style.backgroundColor = theme === 'dark' ? '#121518' : '#f6f8fa';
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#121518' : '#f6f8fa');
-    document.getElementById('theme-toggle')?.setAttribute('aria-checked', String(theme === 'dark'));
-    const label = document.getElementById('theme-label'); if (label) label.textContent = theme === 'dark' ? 'Dark' : 'Light';
+    document.documentElement.style.backgroundColor = theme === 'dark' ? '#142326' : '#f7faf9';
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#142326' : '#f7faf9');
+    document.getElementById('theme-toggle')?.setAttribute('aria-label', theme === 'dark' ? 'Light theme' : 'Dark theme');
+    const label = document.getElementById('theme-label'); if (label) label.textContent = theme === 'dark' ? 'Light theme' : 'Dark theme';
     const control = document.getElementById('theme-toggle'); if (control) control.title = `Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`;
   };
   apply();

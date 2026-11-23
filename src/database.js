@@ -1,3 +1,4 @@
+import {assetURL} from './asset-url.js';
 import { runBinary } from './runner.js';
 import { openWorkspaceStore, RevisionConflict } from './workspace-store.js';
 import { validFilename, validateFiles, FILE_LIMIT } from './files.js';
@@ -18,7 +19,7 @@ const presets = [
 ];
 export function initDatabase({ openSource, canRun = () => true }) {
   let store, ready, files = [], revision = 0, dirty = false, blocked = false, running = false, task, custom, bundled;
-  let lastRun;
+  let lastRun,operations=0;
   const message = text => { $('db-status').textContent = text; };
   const storageStatus = () => {
     $('db-storage').textContent = blocked ? 'Newer files exist in another tab. Your unsaved candidate is downloadable.' : dirty ? 'Unsaved files in memory. Download to keep them.' : store ? `Saved in this browser · revision ${revision}` : 'Memory only · download files to keep them.';
@@ -48,25 +49,25 @@ export function initDatabase({ openSource, canRun = () => true }) {
   };
   async function initialize() {
     if (ready) return ready;
-    ready = (async () => {
+    operations++;ready = (async () => {
       try { store = await openWorkspaceStore(); const saved = await store.read(); files = saved.files; revision = saved.revision; }
       catch (error) { store?.close(); store = undefined; message(`Storage unavailable: ${error.message}. Runs work in memory; download your files.`); }
       renderFiles();
-    })();
+    })().finally(()=>operations--);
     return ready;
   }
   async function saveFiles(candidate) {
-    validateFiles(candidate); files = candidate; dirty = true;
+    validateFiles(candidate); files = candidate; dirty = true;operations++;
     try {
       if (store) { const saved = await store.save(revision, files); revision = saved.revision; dirty = false; }
       renderFiles(); return !dirty;
     } catch (error) {
       blocked = error instanceof RevisionConflict; renderFiles(); message(error.message + ' Your candidate files are available below.'); return false;
-    }
+    }finally{operations--;}
   }
   async function loadBundled(signal) {
     if (bundled) return bundled;
-    const base = new URL('./programs/', document.baseURI);
+    const base = assetURL('programs/');
     const manifestResponse = await fetch(new URL('tinydb.json', base), { signal });
     if (!manifestResponse.ok) throw new Error('Could not download TinyDB. Check your connection and retry.');
     const manifest = await manifestResponse.json();
@@ -85,20 +86,18 @@ export function initDatabase({ openSource, canRun = () => true }) {
     if (!validFilename(name) || /\.(wal|tmp)$/i.test(name)) { message('Choose a simple database filename, such as people.rdb; .wal and .tmp are sidecars.'); return; }
     const script = $('db-script').value;
     if (new TextEncoder().encode(script).length > 100_000) { message('Script exceeds the 100 KB input limit.'); return; }
-    running = true; lastRun = { name, script }; storageStatus(); renderFiles();
-    $('db-output-context').hidden = true; $('db-output-heading').hidden = true;
-    $('db-output').hidden = true; $('db-errors').hidden = true;
-    $('db-output').textContent = ''; $('db-errors').textContent = '';
+    running = true;storageStatus(); renderFiles();
     message(custom ? 'Running your compiled Rust program…' : 'Preparing TinyDB…');
-    let cancelled = false;
+    let cancelled = false,loadFailed=false;
     const controller = new AbortController();
     const loadTimer = setTimeout(() => controller.abort(), 30_000);
     // Cancellation also covers the initial program download; fetch cannot later start a cancelled run.
     task = { cancel: () => { cancelled = true; controller.abort(); } };
     try {
-      const bytes = custom || await loadBundled(controller.signal);
+      let bytes;try{bytes=custom||await loadBundled(controller.signal);}catch(error){loadFailed=!cancelled;throw error;}
       clearTimeout(loadTimer);
       if (cancelled) { message('Stopped. Saved files were retained.'); return; }
+      lastRun={name,script};$('db-output-context').hidden=true;$('db-output-heading').hidden=true;$('db-output').hidden=true;$('db-errors').hidden=true;$('db-output').textContent='';$('db-errors').textContent='';
       message('Running TinyDB locally…');
       task = runBinary({ bytes, stdin: script, args: [name], files,
         onEvent: data => {
@@ -115,6 +114,7 @@ export function initDatabase({ openSource, canRun = () => true }) {
       const focusWasOnStop = document.activeElement === $('db-stop');
       clearTimeout(loadTimer); running = false; task = undefined; storageStatus(); renderFiles();
       if (focusWasOnStop) $('db-run').focus();
+      if(loadFailed)window.rustFoundryRunner.recovery.open();
     }
   };
   $('db-stop').onclick = () => { task?.cancel(); message('Stopping…'); };
@@ -131,7 +131,7 @@ export function initDatabase({ openSource, canRun = () => true }) {
   $('db-download').onclick = () => download(zipFiles(files), `rust-foundry-workspace${dirty ? '-unsaved' : ''}.zip`, 'application/zip');
   $('db-import').onchange = async event => {
     await initialize(); if (running || blocked) return;
-    try {
+    operations++;try {
       const additions = await Promise.all([...event.target.files].map(async file => {
         if (!validFilename(file.name) || file.size > FILE_LIMIT) throw new Error('Import simple filenames, each at most 2 MB.');
         return [file.name, new Uint8Array(await file.arrayBuffer())];
@@ -143,11 +143,11 @@ export function initDatabase({ openSource, canRun = () => true }) {
       const saved = await saveFiles(candidate);
       if (!blocked) message(saved ? 'Imported files saved. Use .import filename to load an exchange file into the active database.' : 'Imported files are in memory; download to keep them.');
     } catch (error) { message(error.message); }
-    finally { event.target.value = ''; }
+    finally { operations--;event.target.value = ''; }
   };
   $('db-edit-source').onclick = async () => {
     try {
-      const response = await fetch(new URL('./programs/tinydb.rs', document.baseURI));
+      const response = await fetch(assetURL('programs/tinydb.rs'));
       if (!response.ok) throw new Error('Could not load the Rust source.');
       openSource(await response.text());
     } catch (error) { message(error.message); }
@@ -156,7 +156,7 @@ export function initDatabase({ openSource, canRun = () => true }) {
     if (running) return;
     const id = $('db-project').value;
     try {
-      const response = await fetch(new URL(`./course/${id}.rs`, document.baseURI));
+      const response = await fetch(assetURL(`course/${id}.rs`));
       if (!response.ok) throw new Error('Could not load the project starter.');
       openSource(await response.text(), id);
     } catch (error) { message(error.message); }
@@ -200,9 +200,13 @@ export function initDatabase({ openSource, canRun = () => true }) {
   $('db-script').oninput = saveDraft; $('db-name').oninput = saveDraft;
   presetsElement.value = 'CRUD'; showDraft();
   // No save on storage events: the revision check is authoritative at write time.
-  window.addEventListener('beforeunload', event => { if (dirty) { event.preventDefault(); event.returnValue = ''; } });
+  window.addEventListener('beforeunload', event => { if (dirty&&!window.rustFoundryState?.canReload) { event.preventDefault(); event.returnValue = ''; } });
   return {
-    initialize, isBusy: () => running,
+    initialize, isBusy: () => running||operations>0,
+    stop:()=>task?.cancel(),releaseCaches:()=>{bundled=undefined;},
+    snapshot:()=>({initialized:!!ready,custom,draft:draft.snapshot(),candidate:dirty||blocked||(!store&&files.length)?{files,revision,dirty,blocked}:null,lastRun,output:$('db-output').textContent,errors:$('db-errors').textContent,heading:$('db-output-heading').hidden,status:$('db-status').textContent}),
+    async restore(value){if(!value)return;if(value.initialized)await initialize();draft.restore(value.draft);showDraft();custom=value.custom;$('db-program').textContent=custom?'Your compiled Rust program · this tab only':'Bundled TinyDB program';
+      if(value.candidate){const candidate=value.candidate;blocked=candidate.blocked||(!!store&&revision!==candidate.revision);files=candidate.files;revision=candidate.revision;dirty=candidate.dirty||!store;}lastRun=value.lastRun;$('db-output').textContent=value.output;$('db-errors').textContent=value.errors;$('db-output').hidden=!value.output;$('db-errors').hidden=!value.errors;$('db-output-heading').hidden=value.heading;message(value.status);showDraftState();renderFiles();},
     openLab: async lab => {
       await initialize();
       if (running) { message('Stop the current workspace run before opening another lab.'); return; }

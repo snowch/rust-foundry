@@ -36,6 +36,8 @@ export function createDraft(key, initial) {
     get durable() { return durable; },
     get canUndo() { return backup !== null; },
     save,
+    snapshot:()=>({value,backup}),
+    restore(snapshot){if(!snapshot)return;value=snapshot.value;backup=snapshot.backup;backupDurable=write(recoveryKey,backup);durable=write(key,value);},
     replace(next) {
       if (value === next) return;
       backup = value;
@@ -50,3 +52,6 @@ export function createDraft(key, initial) {
     },
   };
 }
+
+export const snapshotDraftMemory=()=>[...tabDrafts];
+export function restoreDraftMemory(values){for(const[key,value]of values||[])tabDrafts.set(key,value);}
