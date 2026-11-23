@@ -40,6 +40,15 @@ jobs:
         run: python test/browser-smoke.py
       - name: Verify course, persistent workspace, recovery, and stale-tab protection
         run: python test/browser-course.py
+      - name: Verify shared runner, offline copy, recovery, and restart journeys
+        run: |
+          python test/browser-shared.py
+          python test/browser-updates.py
+      - name: Retain immutable releases and legacy workers for open tabs
+        if: github.ref == 'refs/heads/main'
+        env:
+          PUBLISHED_COURSE_URL: https://snowch.github.io/rust-foundry/
+        run: node scripts/retain-for-publish.mjs
       - uses: actions/upload-pages-artifact@v3
         if: github.ref == 'refs/heads/main'
         with:

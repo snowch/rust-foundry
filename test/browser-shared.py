@@ -1,0 +1,42 @@
+"""Pages-style shared UI, real compiler, saved-work and offline journeys."""
+import atexit,functools,http.server,json,os,pathlib,shutil,tempfile,threading
+from contextlib import ExitStack
+from playwright.sync_api import sync_playwright,expect
+resources=ExitStack();atexit.register(resources.close)
+root=pathlib.Path(__file__).resolve().parent.parent
+base=os.environ.get('BASE_URL');blocked_toolchain=False
+if not base:
+ directory=pathlib.Path(resources.enter_context(tempfile.TemporaryDirectory()));(directory/'rust-foundry').symlink_to(root/'dist',target_is_directory=True)
+ class Handler(http.server.SimpleHTTPRequestHandler):
+  def log_message(self,*args):pass
+  def do_GET(self):
+   if blocked_toolchain and '/toolchain/compiler.' in self.path:self.send_error(503);return
+   super().do_GET()
+ server=http.server.ThreadingHTTPServer(('127.0.0.1',0),functools.partial(Handler,directory=str(directory)));resources.callback(server.server_close);resources.callback(server.shutdown);threading.Thread(target=server.serve_forever,daemon=True).start();base=f'http://127.0.0.1:{server.server_port}/rust-foundry/'
+with sync_playwright() as p:
+ browser=p.chromium.launch(executable_path=os.environ.get('CHROMIUM_PATH') or shutil.which('chromium'),args=['--no-sandbox'])
+ context=browser.new_context(viewport={'width':390,'height':900});page=context.new_page();errors=[];page.on('pageerror',lambda error:errors.append(str(error)))
+ page.goto(base+'#course/first-program',wait_until='domcontentloaded');page.wait_for_function('crossOriginIsolated && !!window.rustFoundryState',timeout=60000)
+ card=page.locator('.inline-runner[data-mode=worked]');card.get_by_role('button',name='Run example',exact=True).click();expect(page.locator('#runner-intro')).to_be_visible();page.keyboard.press('Escape');expect(card.get_by_role('button',name='Run example',exact=True)).to_be_enabled();expect(page.locator('#runner-summary')).to_have_text('Stopped')
+ page.locator('#code-runner-open').click();page.locator('[data-start]').click();expect(page.locator('#runner-summary')).to_have_text('Ready',timeout=300000);page.locator('#runner-idle').select_option('60');page.locator('#code-runner-dialog [data-close]').click()
+ card.locator('textarea').fill('fn main(){println!("Saved Rust");}');page.locator('#course-prediction').fill('The output is Saved Rust.');page.get_by_label('Mark lesson complete',exact=True).check();card.get_by_role('button',name='Run example',exact=True).click();expect(card.locator('.inline-output')).to_have_text('Saved Rust\n',timeout=60000);expect(page.locator('#runner-intro')).to_be_hidden()
+ page.locator('#course-toggle').click();page.locator('#outline-chapter').focus();page.keyboard.press('Escape');expect(page.locator('#course-contents')).to_be_hidden();expect(page.locator('#course-toggle')).to_be_focused()
+ preparations=page.evaluate('rustFoundryRunner.status().preparations');page.evaluate("location.hash='#course/printing'");expect(page.locator('#course-view h1')).to_have_text('Run instructions in order');other=page.locator('.inline-runner[data-mode=worked]');other.get_by_role('button',name='Run example',exact=True).click();expect(other.get_by_role('button',name='Run example',exact=True)).to_be_enabled(timeout=60000);assert page.evaluate('rustFoundryRunner.status().preparations')==preparations
+ page.evaluate("location.hash='#course/first-program'");expect(card.locator('.inline-output')).to_have_text('Saved Rust\n');await_snapshot=page.evaluate('async()=>{await rustFoundryState.save();return true;}');assert await_snapshot;page.reload(wait_until='domcontentloaded');page.wait_for_function('!!window.rustFoundryState');page.evaluate('()=>rustFoundryState.ready');expect(card.locator('textarea')).to_have_value('fn main(){println!("Saved Rust");}');expect(card.locator('.inline-output')).to_have_text('Saved Rust\n');expect(page.locator('#course-prediction')).to_have_value('The output is Saved Rust.');expect(page.get_by_label('Mark lesson complete',exact=True)).to_be_checked()
+ page.locator('#app-status-open').click();page.locator('#download-update').click();expect(page.locator('#version-status')).to_contain_text('Downloaded and ready',timeout=300000);page.locator('#app-status-close').click();context.set_offline(True)
+ plane=context.new_page();plane.goto(base+'#course/first-program',wait_until='domcontentloaded');plane.wait_for_function('crossOriginIsolated && !!window.rustFoundryState',timeout=60000);expect(plane.locator('#lesson-code-first-program-worked')).to_have_value('fn main(){println!("Saved Rust");}');expect(plane.locator('#course-prediction')).to_have_value('The output is Saved Rust.');plane.locator('.inline-runner[data-mode=worked]').get_by_role('button',name='Run example',exact=True).click();expect(plane.locator('.inline-runner[data-mode=worked] .inline-output')).to_have_text('Saved Rust\n',timeout=300000)
+ plane.evaluate("location.hash='#workspace'");expect(plane.locator('#db-run')).to_be_enabled();plane.locator('#db-name').fill('plane.rdb');plane.locator('#db-script').fill("INSERT INTO people VALUES (1, 'Ada', 90);\nSELECT * FROM people;");plane.locator('#db-run').click();expect(plane.locator('#db-run')).to_be_enabled(timeout=30000);expect(plane.locator('#db-output')).to_contain_text('Ada');plane.close();context.set_offline(False);page.bring_to_front()
+ page.evaluate('''async()=>{const base=new URL(document.querySelector('meta[name="gpu-base"]').content,location.href),id=document.querySelector('meta[name="gpu-release"]').content,cache=await caches.open('rust-foundry:'+base.href+':release-'+id);await cache.put(new URL('programs/tinydb.wasm',base),new Response('corrupt'));}''');page.locator('#app-status-open').click();expect(page.locator('#download-update')).to_have_text('Repair offline copy',timeout=30000);assert 'Downloaded and ready' not in page.locator('#version-status').inner_text();page.locator('#download-update').click();expect(page.locator('#version-status')).to_contain_text('Downloaded and ready',timeout=300000);page.locator('#app-status-close').click()
+ for width in [320,390,768,901,1440]:
+  page.set_viewport_size({'width':width,'height':900})
+  for theme in ['light','dark']:
+   if page.locator('html').get_attribute('data-theme')!=theme:page.locator('#theme-toggle').click()
+   expect(page.locator('#theme-label')).to_have_text('Light theme' if theme=='dark' else 'Dark theme')
+   for route in ['#course','#course/first-program','#workspace','#practice']:
+    page.evaluate('(route)=>location.hash=route',route);page.wait_for_timeout(80);assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),(width,theme,route)
+ assert not errors,errors
+ print('PASS real shared compiler reuse; first-use cancellation; explicit startup; saved draft/prediction/result/completion restart; keyboard outline; fresh-tab offline Rust compilation and TinyDB; corruption repair; both themes and responsive routes',flush=True)
+ context.close()
+ if not os.environ.get('BASE_URL'):
+  blocked_toolchain=True;failed=browser.new_context();broken=failed.new_page();broken.goto(base+'#course/first-program',wait_until='domcontentloaded');broken.wait_for_function('crossOriginIsolated&&!!window.rustFoundryState',timeout=60000);broken.locator('#lesson-code-first-program-worked').fill('fn main(){println!("kept after 503");}');broken.locator('#course-prediction').fill('Keep my prediction.');broken.locator('.inline-runner[data-mode=worked]').get_by_role('button',name='Run example',exact=True).click();broken.locator('#runner-intro [data-continue]').click();expect(broken.get_by_role('alertdialog')).to_be_visible(timeout=30000);assert broken.get_by_role('alertdialog').evaluate('(el)=>el.matches(":modal")');broken.keyboard.press('Escape');expect(broken.get_by_role('alertdialog')).to_be_hidden();broken.locator('.inline-runner[data-mode=worked]').get_by_role('button',name='Run example',exact=True).click();expect(broken.get_by_role('alertdialog')).to_be_visible();broken.evaluate("()=>{Storage.prototype.setItem=function(){throw Error('blocked storage')};}");broken.locator('[data-runtime-reload]').click();expect(broken.locator('#runtime-recovery-dialog-error')).to_be_visible();expect(broken.locator('#lesson-code-first-program-worked')).to_have_value('fn main(){println!("kept after 503");}');expect(broken.locator('#course-prediction')).to_have_value('Keep my prediction.');failed.close();print('PASS HTTP503 native recovery modal, Escape and blocked-storage safe reload',flush=True)
+ browser.close()

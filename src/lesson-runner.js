@@ -1,3 +1,4 @@
+import {readResult,writeResult} from './result-state.js';
 import { loadCompiler } from './compiler.js';
 import { startRun } from './runner.js';
 import { matchesOutput } from './examples.js';
@@ -41,7 +42,7 @@ export function createLessonRunner({ lesson, mode, canRun, unsupported, onPass }
   });
   bar.append(label);
   const keys = el('div', undefined, 'code-keys'); keys.setAttribute('role', 'group'); keys.setAttribute('aria-label', `${mode} code editing keys`);
-  for (const [keyName, text, accessible] of [['indent', '↹', 'Insert four spaces'], ['{}', '{ }', 'Insert braces'], ['()', '( )', 'Insert parentheses'], ['[]', '[ ]', 'Insert brackets'], [';', ';', 'Insert semicolon'], ['""', '" "', 'Insert quotes'], ['&', '&', 'Insert ampersand'], [':', ':', 'Insert colon'], ['newline', '↵', 'New line']]) {
+  for (const [keyName, text, accessible] of [['indent', 'Indent', 'Insert four spaces'], ['{}', '{ }', 'Insert braces'], ['()', '( )', 'Insert parentheses'], ['[]', '[ ]', 'Insert brackets'], [';', ';', 'Insert semicolon'], ['""', '" "', 'Insert quotes'], ['&', '&', 'Insert ampersand'], [':', ':', 'Insert colon'], ['newline', 'New line', 'New line']]) {
     const control = button(text, () => {
       if (running) return;
       const edit = insertCode(editor.value, editor.selectionStart, editor.selectionEnd, keyName);
@@ -49,7 +50,7 @@ export function createLessonRunner({ lesson, mode, canRun, unsupported, onPass }
       editor.focus({ preventScroll: true }); changed();
     }); control.setAttribute('aria-label', accessible); control.onpointerdown = event => event.preventDefault(); keys.append(control);
   }
-  keys.append(button('↓', () => editor.blur())); keys.lastElementChild.setAttribute('aria-label', 'Hide keyboard');
+  keys.append(button('Hide keyboard', () => editor.blur())); keys.lastElementChild.setAttribute('aria-label', 'Hide keyboard');
   const progress = el('progress'); progress.max = 1; progress.value = 0; progress.hidden = true; progress.setAttribute('aria-label', 'Compiler download');
   const status = el('p', unsupported || '', 'inline-status'); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
   const outputLabel = el('h3', 'Program output');
@@ -70,7 +71,7 @@ export function createLessonRunner({ lesson, mode, canRun, unsupported, onPass }
   const more = el('details', undefined, 'inline-more');
   const wasm = button('Download compiled .wasm', () => { if (artifact) download(artifact, `${lesson.id}.wasm`, 'application/wasm'); }); wasm.disabled = true;
   more.append(el('summary', 'Editor tools'), reset, undo, button('Download .rs', () => download(editor.value, `${lesson.id}-${mode}.rs`, 'text/plain')), wasm);
-  root.append(bar, editor, keys, controls, progress, status, saved, compilerMessages, errors, outputLabel, provenance, result, more);
+  bar.append(more);root.append(bar, editor, keys, controls, progress, status, saved, compilerMessages, errors, outputLabel, provenance, result);
   outputLabel.hidden = true;
   updateDraftControls();
   if (earlierDraft) {
@@ -97,7 +98,7 @@ export function createLessonRunner({ lesson, mode, canRun, unsupported, onPass }
     if (!canRun()) { status.textContent = 'Another program is running. Stop it or wait for it to finish, then try again.'; return; }
     const source = editor.value;
     if (new TextEncoder().encode(source).length > 64_000) { status.textContent = 'This program exceeds the 64 KB source limit.'; return; }
-    draft.save(source); setRunning(true); errors.textContent = ''; errors.hidden = true; diagnostics.textContent = ''; compilerMessages.hidden = true; compilerMessages.open = false; artifact = undefined; wasm.disabled = true;
+    draft.save(source); setRunning(true);
     let runOutput = '';
     if (lastOutput) { provenance.hidden = false; provenance.textContent = 'Previous output while this run is in progress.'; }
     status.className = 'inline-status'; status.textContent = 'Preparing your run…'; controller = new AbortController();
@@ -105,10 +106,11 @@ export function createLessonRunner({ lesson, mode, canRun, unsupported, onPass }
     try {
       const toolchain = await loadCompiler({ signal: controller.signal, onProgress: data => {
         progress.hidden = false; progress.value = Math.min(1, data.loaded / data.total);
-        status.textContent = data.loaded < data.total ? `Downloading compiler · ${(data.loaded / 1e6).toFixed(1)} / ${(data.total / 1e6).toFixed(1)} MB` : 'Preparing compiler…';
+        status.textContent = data.label?.startsWith('Preparing') ? data.label+'…' : data.loaded < data.total ? `Downloading compiler · ${(data.loaded / 1e6).toFixed(1)} / ${(data.total / 1e6).toFixed(1)} MB` : 'Preparing compiler…';
       } });
       progress.hidden = true;
       if (disposed || controller.signal.aborted) return;
+      errors.textContent='';errors.hidden=true;diagnostics.textContent='';compilerMessages.hidden=true;compilerMessages.open=false;artifact=undefined;wasm.disabled=true;
       task = startRun({ toolchain, source, stdin: '', onEvent: data => {
         if (disposed) return;
         if (data.type === 'phase') status.textContent = data.phase === 'compiling' ? 'Compiling your Rust…' : 'Running locally…';
@@ -149,9 +151,13 @@ export function createLessonRunner({ lesson, mode, canRun, unsupported, onPass }
         provenance.textContent = 'This is the previous program output. The latest attempt did not finish.';
       }
       const focusWasOnStop = document.activeElement === stop;
-      task = undefined; controller = undefined; progress.hidden = true; setRunning(false);
+      task = undefined; controller = undefined; progress.hidden = true; setRunning(false);if(!disposed)remember();
       if (!disposed && focusWasOnStop) runButton.focus();
     }
   }
-  return { root, isBusy: () => running, focus: () => editor.focus({ preventScroll: true }), dispose: () => { disposed = true; controller?.abort(); task?.cancel(); }, stop: () => { controller?.abort(); task?.cancel(); } };
+  function snapshot(){return{draft:draft.snapshot(),lastOutput,output:result.textContent,errors:errors.textContent,diagnostics:diagnostics.textContent,status:status.textContent,statusClass:status.className,artifact};}
+  function restore(value){if(!value)return;if(value.draft){draft.restore(value.draft);editor.value=draft.value;}lastOutput=value.lastOutput;result.textContent=value.output||'';result.hidden=!lastOutput;outputLabel.hidden=!lastOutput;errors.textContent=value.errors||'';errors.hidden=!value.errors;diagnostics.textContent=value.diagnostics||'';compilerMessages.hidden=!value.diagnostics;status.textContent=value.status||'';status.className=value.statusClass||'inline-status';artifact=value.artifact;wasm.disabled=!artifact;updateDraftControls();updateOutputContext();}
+  function remember(){const value=snapshot();delete value.artifact;delete value.draft;writeResult(key,value);}
+  restore(readResult(key));
+  return {root,snapshot,restore,isBusy:()=>running,focus:()=>editor.focus({preventScroll:true}),dispose:()=>{remember();disposed=true;controller?.abort();task?.cancel();},stop:()=>{controller?.abort();task?.cancel();}};
 }

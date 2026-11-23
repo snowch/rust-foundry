@@ -11,7 +11,7 @@ self.onmessage = async ({ data: { manifestUrl } }) => {
     const total = assets.reduce((n, a) => n + a.gzipBytes, 0);
     let loaded = 0;
     let cache;
-    try { cache = await caches.open('rust-foundry-' + manifest.version); } catch { /* Works without persistent cache. */ }
+    try { if(!/\/releases\/[a-f0-9]{64}\//.test(manifestUrl))cache = await caches.open('rust-foundry-' + manifest.version); } catch { /* Works without persistent cache. */ }
     const report = (label, cacheHit = false) => self.postMessage({ type: 'progress', loaded, total, label, cacheHit });
     const getAsset = async (name, label) => {
       const asset = manifest.assets[name];

@@ -1,3 +1,8 @@
+import {courseNavigation} from './course-navigation.js';
+import {homeIllustration} from './home-illustration.js';
+import {materialSymbol} from './material-symbols.mjs';
+import {lessonReferences} from './references.js';
+import {createDraft} from './drafts.js';
 import { course, chapters, ownershipSteps, courseEdition } from './course-data.js';
 import { element as el, button, codeBlock, download } from './dom.js';
 import { createLessonRunner } from './lesson-runner.js';
@@ -6,89 +11,34 @@ import { experimentEdits, labEdits, exerciseInstruction } from './experiments.js
 const prefix = `rust-foundry-course-v${courseEdition}:`;
 const volatile = new Map();
 const read = key => { if (volatile.has(key)) return volatile.get(key); try { return localStorage.getItem(prefix + key) === 'true'; } catch { return false; } };
-const write = (key, value) => { volatile.set(key, value); try { localStorage.setItem(prefix + key, String(value)); return true; } catch { return false; } };
+const write = (key, value) => { volatile.set(key, value); try { localStorage.setItem(prefix + key, String(value));volatile.delete(key); return true; } catch { return false; } };
 export function markPractice(id) { const persisted = write(`practice:${id}`, true); window.dispatchEvent(new Event('course-progress')); return persisted; }
 
 export function initCourse({ openLab, canRun, unsupported }) {
   const root = document.getElementById('course-view');
-  let active, rendered = false, runners = [];
+  let active, rendered = false, runners = [],predictionDraft;
   const link = (text, hash, className) => { const a = el('a', text, className); a.href = hash; return a; };
   const members = chapter => course.filter(x => x.chapter === chapter);
   const tally = (lessons, kind) => lessons.filter(x => read(`${kind}:${x.id}`)).length;
-  function fitMenu(allowScroll = false, opening = false) {
-    const bar = root.querySelector('.lesson-position');
-    if (!bar || (!opening && !bar.querySelector(':scope > details[open]'))) return;
-    const viewportBottom = (window.visualViewport?.offsetTop || 0) + (window.visualViewport?.height || innerHeight);
-    if (allowScroll && bar.getBoundingClientRect().bottom > viewportBottom - 160) bar.scrollIntoView({ block: 'start', behavior: 'instant' });
-    bar.style.setProperty('--lesson-menu-height', `${Math.max(0, viewportBottom - bar.getBoundingClientRect().bottom - 12)}px`);
-  }
+  function fitMenu() {}
   function updateProgress() {
-    root.querySelectorAll('.progress-copy').forEach(node => { node.textContent = `${tally(course, 'read')} / ${course.length} read · ${tally(course, 'practice')} / ${course.length} practice checks passed.`; });
+    root.querySelectorAll('.progress-copy').forEach(node => { node.textContent = `${tally(course, 'read')} / ${course.length} complete`; });
     root.querySelectorAll('[data-chapter-progress]').forEach(node => {
       const lessons = members(node.dataset.chapterProgress);
       node.textContent = `${tally(lessons, 'read')} / ${lessons.length} read · ${tally(lessons, 'practice')} / ${lessons.length} practiced`;
     });
     root.querySelectorAll('[data-lesson-progress]').forEach(node => {
       const id = node.dataset.lessonProgress;
-      node.textContent = `${read(`read:${id}`) ? '✓ Read' : 'Unread'} · ${read(`practice:${id}`) ? '✓ Practice passed' : 'Practice not passed'}`;
+      node.innerHTML=read(`read:${id}`)?materialSymbol('check'):'';node.setAttribute('aria-label',read(`read:${id}`)?'Lesson complete':'Not marked complete');
     });
-    root.querySelectorAll('[data-read-toggle]').forEach(node => { node.textContent = read(`read:${node.dataset.readToggle}`) ? '✓ Read · mark unread' : 'Mark reading complete'; });
+    root.querySelectorAll('[data-read-toggle]').forEach(node => { node.checked=read(`read:${node.dataset.readToggle}`); });
+    root.querySelectorAll('[data-practice-total]').forEach(node=>node.textContent=`${tally(course,'practice')} / ${course.length} practice checks passed`);
     root.querySelectorAll('[data-practice-status]').forEach(node => { node.textContent = read(`practice:${node.dataset.practiceStatus}`) ? '✓ Practice check passed' : 'Practice check not passed yet'; });
     root.querySelectorAll('[data-chapter-meter]').forEach(node => { node.value = tally(members(node.dataset.chapterMeter), 'read'); });
   }
-  const progress = id => { const node = el('small', undefined, 'lesson-progress-label'); node.dataset.lessonProgress = id; return node; };
-  function chapterLinks(chapter, currentId) {
-    const list = el('ol', undefined, 'chapter-lesson-list');
-    for (const [i, lesson] of members(chapter.id).entries()) {
-      const item = el('li'), a = link('', '#course/' + lesson.id, 'chapter-lesson');
-      const title = el('span', `${i + 1}. ${lesson.title}`, 'chapter-lesson-title');
-      if (lesson.id === currentId) { a.setAttribute('aria-current', 'page'); title.append(el('strong', 'You are here', 'current-lesson-badge')); }
-      a.append(title, progress(lesson.id)); item.append(a); list.append(item);
-    }
-    return list;
-  }
-  function outline(chapter) {
-    const details = el('details', undefined, 'outline-disclosure'); details.id = 'chapter-contents';
-    const summary = el('summary', 'Outline'); summary.setAttribute('aria-label', 'Course outline'); details.append(summary);
-    const panel = el('div', undefined, 'course-outline lesson-menu');
-    const navigation = el('nav'); navigation.setAttribute('aria-label', 'Lessons in this chapter');
-    const copy = el('p', undefined, 'chapter-progress-copy'); copy.dataset.chapterProgress = chapter.id;
-    const meter = el('progress'); meter.max = members(chapter.id).length; meter.dataset.chapterMeter = chapter.id; meter.setAttribute('aria-label', 'Chapter reading progress');
-    navigation.append(el('p', `CHAPTER ${chapter.number}`, 'eyebrow'), el('h2', chapter.title), copy, meter, chapterLinks(chapter, active.id), el('p', '', 'progress-copy'));
-    const all = el('details', undefined, 'all-chapters'); all.append(el('summary', `All ${chapters.length} chapters`));
-    const chaptersNav = el('nav'); chaptersNav.setAttribute('aria-label', 'All course chapters');
-    for (const item of chapters) {
-      const a = link(`${item.number}. ${item.title}`, '#course/' + members(item.id)[0].id);
-      if (item.id === chapter.id) a.className = 'current-chapter'; chaptersNav.append(a);
-    }
-    all.append(chaptersNav); panel.append(navigation, all, link('← Course overview', '#course')); details.append(panel); return details;
-  }
-  function position(chapter, lesson) {
-    const index = members(chapter.id).indexOf(lesson);
-    const bar = el('nav', undefined, 'lesson-position'); bar.setAttribute('aria-label', 'Your course position');
-    const copy = el('p', `Chapter ${Number(chapter.number)} of ${chapters.length}`, 'chapter-position');
-    const selection = el('div', undefined, 'position-select-label'), select = el('select'); select.setAttribute('aria-label', 'Lesson in this chapter');
-    const current = el('option', `Lesson ${index + 1} of ${members(chapter.id).length}`); current.value = ''; current.disabled = true; current.selected = true; select.append(current);
-    for (const [i, member] of members(chapter.id).entries()) { const option = el('option', `${i + 1}. ${member.title}${member.id === lesson.id ? ' · current' : ''}`); option.value = member.id; select.append(option); }
-    select.onchange = () => { location.hash = '#course/' + select.value; }; selection.append(select); bar.append(copy, selection, outline(chapter));
-    if (lesson.prerequisites.length) {
-      const requirements = el('details', undefined, 'lesson-prerequisites');
-      requirements.append(el('summary', 'Before this lesson'));
-      const panel = el('div', undefined, 'lesson-menu');
-      panel.append(el('p', 'This lesson builds on these earlier topics. Revisit any that are unfamiliar.'));
-      const list = el('ul');
-      for (const required of lesson.prerequisites) { const dependency = course.find(item => item.id === required); const li = el('li'); li.append(link(dependency.title, '#course/' + required)); list.append(li); }
-      panel.append(list); requirements.append(panel); bar.append(requirements);
-    }
-    bar.querySelectorAll(':scope > details').forEach(details => {
-      details.querySelector('summary').onclick = () => { if (!details.open) fitMenu(true, true); };
-      details.ontoggle = () => {
-        if (!details.open) return;
-        bar.querySelectorAll(':scope > details').forEach(other => { if (other !== details) other.open = false; });
-        fitMenu(true);
-      };
-    });
-    return bar;
+  function prerequisites(lesson){
+    const box=el('details',undefined,'lesson-prerequisites');box.append(el('summary','Earlier topics used here'));const list=el('ul');
+    for(const id of lesson.prerequisites){const item=el('li');item.append(link(course.find(l=>l.id===id).title,'#course/'+id));list.append(item);}box.append(list);return box;
   }
   function overview() {
     const intro = el('article', undefined, 'course-overview');
@@ -97,12 +47,9 @@ export function initCourse({ openLab, canRun, unsupported }) {
     try { previous = course.find(x => x.id === localStorage.getItem(prefix + 'last-lesson')); } catch { /* Optional resume storage. */ }
     const resume = el('section', undefined, 'resume-card');
     resume.append(link(`${previous ? 'Continue' : 'Start'}: ${(previous || course[0]).title} →`, '#course/' + (previous || course[0]).id, 'button primary'), el('p', 'The first run downloads about 58 MB of compiler files. Your browser compiles and runs the source locally.')); intro.append(resume);
-    intro.append(el('p', `${course.length} lessons across ${chapters.length} chapters`, 'course-size'));
-    intro.append(previousEdition());
-    for (const chapter of chapters) {
-      const card = el('section', undefined, 'chapter-card'), count = el('p', undefined, 'chapter-progress-copy'); count.dataset.chapterProgress = chapter.id;
-      card.append(el('h2', `${chapter.number} · ${chapter.title}`), el('p', chapter.summary), count, chapterLinks(chapter)); intro.append(card);
-    }
+    const hero=el('div',undefined,'home-hero'),copy=el('div',undefined,'home-copy');copy.append(root.querySelector('.course-heading'));while(intro.firstChild)copy.append(intro.firstChild);hero.append(copy,homeIllustration());intro.append(hero);
+    intro.append(el('p',`${course.length} lessons across ${chapters.length} chapters`,'course-size'));
+    intro.append(courseNavigation({home:true,progress:updateProgress}));intro.append(previousEdition());
     const archive = link('Download all starters, references, and TinyDB projects ↓', './course/rust-foundry-course.zip'); archive.download = ''; intro.append(archive); root.append(intro);
   }
   function previousEdition() {
@@ -125,21 +72,17 @@ export function initCourse({ openLab, canRun, unsupported }) {
     runners.forEach(runner => runner.dispose()); runners = []; active = next; rendered = true; root.replaceChildren();
     document.title = active ? `${active.title} · Chapter ${Number(chapters.find(x => x.id === active.chapter).number)} — Rust Foundry` : 'Rust Foundry — learn Rust, build a database';
     const header = el('header', undefined, `course-heading${active ? ' lesson-heading' : ''}`);
-    if (active) {
-      const chapter = chapters.find(x => x.id === active.chapter), crumbs = el('nav', undefined, 'course-breadcrumb'); crumbs.setAttribute('aria-label', 'Breadcrumb');
-      crumbs.append(link('Course', '#course'), el('span', '/'), el('span', `${chapter.number}. ${chapter.title}`)); header.append(crumbs);
-    }
     header.append(el('h1', active ? active.title : 'Learn Rust and build a database'));
     if (active) {
       const goal = el('p', undefined, 'lesson-goal'); goal.append(el('strong', 'Goal: '), document.createTextNode(active.objective)); header.append(goal);
       if (!active.prerequisites.length) header.append(el('p', 'Start here. No previous programming experience needed.', 'entry-requirement'));
     }
-    if (!active) header.append(el('p', '', 'progress-copy'));
-    root.append(header);
+
+    if(active)root.append(courseNavigation({active,progress:updateProgress}));root.append(header);
     if (!active) { overview(); updateProgress(); return; }
     const lesson = active, index = course.indexOf(lesson), chapter = chapters.find(x => x.id === lesson.chapter);
     try { localStorage.setItem(prefix + 'last-lesson', lesson.id); } catch { /* Optional resume state. */ }
-    root.append(position(chapter, lesson));
+    if(lesson.prerequisites.length)header.append(prerequisites(lesson));
     const body = el('div', undefined, 'course-body'), article = el('article', undefined, 'reading'); body.append(article); root.append(body);
     lesson.explain.forEach(text => article.append(el('p', text)));
     const diagram = createConceptDiagram(lesson);
@@ -147,6 +90,8 @@ export function initCourse({ openLab, canRun, unsupported }) {
     const createRunner = mode => {
       const runner = createLessonRunner({ lesson, mode, unsupported, canRun: () => !runners.some(item => item.isBusy()) && canRun(), onPass: () => markPractice(lesson.id) }); runners.push(runner); return runner;
     };
+    const prediction=predictionDraft=createDraft(`rust-foundry-prediction-v${courseEdition}:${lesson.id}`,'');
+    const predict=el('section',undefined,'saved-prediction'),predictionLabel=el('label','Your prediction (optional)'),field=el('textarea');field.id='course-prediction';predictionLabel.htmlFor=field.id;field.rows=2;field.value=prediction.value;field.oninput=()=>prediction.save(field.value);predict.append(el('h2','Predict before you run'),el('p','Inspect main.rs below. What will the program print?'),predictionLabel,field);article.append(predict);
     const worked = createRunner('worked');
     const [before, after, observe] = experimentEdits[lesson.id];
     const starterInstructions = el('p');
@@ -168,7 +113,7 @@ export function initCourse({ openLab, canRun, unsupported }) {
     }
     const quiz = el('fieldset', undefined, 'prediction'); quiz.append(el('legend', 'Check your understanding'), el('p', lesson.question));
     const feedback = el('p'); feedback.setAttribute('role', 'status');
-    lesson.choices.forEach((choice, i) => quiz.append(button(choice, () => { feedback.textContent = `${i === lesson.answer ? 'Correct.' : 'Try again.'} ${lesson.feedback}`; feedback.className = i === lesson.answer ? 'passed' : 'check-neutral'; }))); quiz.append(feedback); article.append(quiz);
+    lesson.choices.forEach((choice, i) => quiz.append(button(choice, () => { quiz.dataset.answer=String(i);feedback.textContent = `${i === lesson.answer ? 'Correct.' : 'Try again.'} ${lesson.feedback}`; feedback.className = i === lesson.answer ? 'passed' : 'check-neutral'; }))); quiz.append(feedback); article.append(quiz);
     const practice = el('section', undefined, 'lesson-practice'); practice.id = 'lesson-practice';
     practice.append(el('h2', 'Practice'), el('p', exerciseInstruction(lesson)));
     const check = el('p');
@@ -198,18 +143,13 @@ export function initCourse({ openLab, canRun, unsupported }) {
       article.append(lab);
     }
     const downloads = el('details', undefined, 'hint lesson-downloads'); downloads.append(el('summary', 'Download the starter and reference'), button('Download starter .rs', () => download(lesson.starter, `${lesson.id}-starter.rs`, 'text/plain')), button('Download reference .rs', () => download(lesson.solution, `${lesson.id}-reference.rs`, 'text/plain'))); article.append(downloads);
-    const finish = el('section', undefined, 'reading-completion'); finish.append(el('h2', 'Reading progress'), el('p', 'Mark this lesson when you finish reading. Practice checks have their own progress mark.'));
-    const completionStatus = el('p'); completionStatus.setAttribute('role', 'status');
-    const toggle = button('', () => {
-      const persisted = write(`read:${lesson.id}`, !read(`read:${lesson.id}`)); updateProgress();
-      completionStatus.textContent = persisted ? 'Reading mark saved.' : 'This mark lasts until the tab reloads or closes. Browser storage is unavailable.';
-    }); toggle.dataset.readToggle = lesson.id; finish.append(toggle, completionStatus);
+    article.append(lessonReferences(lesson));
+    const finish=el('section',undefined,'reading-completion'),label=el('label',undefined,'completion-control'),toggle=el('input');toggle.type='checkbox';toggle.dataset.readToggle=lesson.id;label.append(toggle,document.createTextNode('Mark lesson complete'));
+    const completionStatus=el('p','Saved in this browser. Practice checks are recorded separately.','completion-note');completionStatus.setAttribute('role','status');
+    toggle.onchange=()=>{const persisted=write(`read:${lesson.id}`,toggle.checked);updateProgress();completionStatus.textContent=persisted?'Saved in this browser. Practice checks are recorded separately.':'This mark lasts until the tab reloads or closes. Browser storage is unavailable.';};finish.append(label,completionStatus);
     const nav = el('nav', undefined, 'adjacent-lessons'); nav.setAttribute('aria-label', 'Adjacent lessons');
-    if (index > 0) { const previous = course[index - 1]; nav.append(link(`← Previous lesson\n${previous.title}`, '#course/' + previous.id, 'adjacent-previous')); }
-    if (index + 1 < course.length) {
-      const next = course[index + 1], crossChapter = next.chapter !== lesson.chapter;
-      nav.append(link(`${crossChapter ? `Next: chapter ${Number(chapters.find(x => x.id === next.chapter).number)}` : 'Next lesson'} →\n${next.title}`, '#course/' + next.id, 'adjacent-next'));
-    } else nav.append(link('Course complete · return to overview →', '#course', 'adjacent-next'));
+    function card(destination,direction,className){const item=link('',destination?'#course/'+destination.id:'#course',className);item.append(el('small',destination?direction:'Course overview'),el('strong',destination?destination.title:'Choose a lesson'));return item;}
+    nav.append(card(course[index-1],'Previous lesson','adjacent-previous'),card(course[index+1],'Next lesson','adjacent-next'));
     finish.append(nav); article.append(finish); updateProgress();
   }
   window.addEventListener('storage', event => {
@@ -220,14 +160,9 @@ export function initCourse({ openLab, canRun, unsupported }) {
   window.addEventListener('resize', () => fitMenu());
   window.addEventListener('scroll', () => fitMenu(), { passive: true });
   window.visualViewport?.addEventListener('resize', () => fitMenu());
-  document.addEventListener('pointerdown', event => {
-    const bar = root.querySelector('.lesson-position');
-    if (bar && !bar.contains(event.target)) bar.querySelectorAll(':scope > details[open]').forEach(details => { details.open = false; });
-  });
-  root.addEventListener('keydown', event => {
-    if (event.key !== 'Escape') return;
-    const open = root.querySelector('.lesson-position > details[open]');
-    if (open) { open.open = false; open.querySelector('summary').focus(); event.preventDefault(); }
-  });
-  return { render, isBusy: () => runners.some(item => item.isBusy()), suspend: () => runners.forEach(runner => runner.stop()) };
+  return {render,isBusy:()=>runners.some(item=>item.isBusy()),suspend:()=>runners.forEach(runner=>runner.stop()),
+      snapshot:()=>({marks:[...volatile],id:active?.id,prediction:predictionDraft?.snapshot(),runners:runners.map(r=>[r.root.dataset.mode,r.snapshot()])}),
+      restore(value){if(!value||value.id!==active?.id)return;for(const[key,mark]of value.marks||[])volatile.set(key,mark);if(value.prediction&&predictionDraft){predictionDraft.restore(value.prediction);root.querySelector('#course-prediction').value=predictionDraft.value;}
+        for(const[mode,state]of value.runners||[]){if(mode==='reference'&&!runners.some(r=>r.root.dataset.mode===mode)){const box=root.querySelector('.reference-solution');box.open=true;box.ontoggle();}runners.find(r=>r.root.dataset.mode===mode)?.restore(state);}updateProgress();}
+    };
 }

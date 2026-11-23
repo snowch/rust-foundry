@@ -1,0 +1,1 @@
+export function assetURL(path){const base=new URL(document.querySelector('meta[name="gpu-base"]')?.content||'./',document.baseURI),id=document.querySelector('meta[name="gpu-release"]')?.content;return new URL(id?'releases/'+id+'/'+path.replace(/^\.\//,''):path,base);}

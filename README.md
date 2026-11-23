@@ -280,3 +280,7 @@ growth functions as input size changes. Its values are models, not measured
 execution times. No third-party illustration assets are used. Existing lesson
 IDs, edition keys, themes, licensing, and the persistent TinyDB engine remain
 compatible. The overview displays the actual lesson and chapter counts.
+
+## Shared course behavior
+
+See [course style](docs/course-style.md), [managed code runner](docs/code-runner-design.md) and [offline/update design](docs/offline-update-design.md) for the implementation contracts and verification journeys.

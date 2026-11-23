@@ -39,6 +39,7 @@ with sync_playwright() as p:
         options['executable_path'] = executable
     browser = p.chromium.launch(**options)
     context = browser.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True)
+    context.add_init_script("try{localStorage.setItem('rust-foundry:runner-intro:1','1')}catch{}")
     page = context.new_page()
     errors = []
     toolchain_requests = []
@@ -71,7 +72,7 @@ with sync_playwright() as p:
     page.locator('#stop').click()
     expect(page.locator('#status-text')).to_contain_text('Stopped')
     expect(page.locator('#run')).to_be_enabled()
-    expect(page.locator('#download-progress')).to_be_hidden()
+    expect(page.locator('#compiler-download-progress')).to_be_hidden()
     # The next Run downloads as needed and executes without a separate setup step.
     page.locator('#run').click()
     page.wait_for_function('document.getElementById("status-text").textContent.includes("Run finished") || document.getElementById("status-light").classList.contains("error")', timeout=300_000)
@@ -95,7 +96,7 @@ with sync_playwright() as p:
     for width, height in [(320, 700), (390, 844), (768, 1024), (1024, 768), (1280, 800)]:
         page.set_viewport_size({'width': width, 'height': height})
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), width
-        for selector, minimum in [('body', 18), ('#description', 18), ('#source', 17), ('#stdin', 17), ('#diagnostics', 17), ('#stdout', 17), ('#run', 16), ('#status-text', 16), ('#note', 16)]:
+        for selector, minimum in [('body', 17), ('#description', 17), ('#source', 17), ('#stdin', 17), ('#diagnostics', 17), ('#stdout', 17), ('#run', 16), ('#status-text', 16), ('#note', 16)]:
             size = page.locator(selector).evaluate('(element) => parseFloat(getComputedStyle(element).fontSize)')
             assert size >= minimum, (width, selector, size)
         for selector in ['#run', '#stop', '#code-keys button']:

@@ -1,5 +1,10 @@
+import {initializeReadingState} from './reading-state.js';
+import {readResult,writeResult} from './result-state.js';
+import {assetURL} from './asset-url.js';
 import './style.css';
 import './themes.css';
+import './course-style.css';
+import './managed-runner.js';
 import { examples, matchesOutput } from './examples.js';
 import { startRun } from './runner.js';
 import { insertCode } from './editing.js';
@@ -15,8 +20,9 @@ if (!saved.sources || typeof saved.sources !== 'object') saved.sources = {};
 if (!saved.inputs || typeof saved.inputs !== 'object') saved.inputs = {};
 if (!Array.isArray(saved.completed)) saved.completed = [];
 if (!saved.recovery || typeof saved.recovery !== 'object') saved.recovery = {};
+let baseline=structuredClone(saved);
 let current = examples.find(x => x.id === saved.selected) || examples[0];
-let toolchain, cancelLoading, task, artifact, phase;
+let cancelLoading, task, artifact, phase;
 let busy = false;
 let output = '', errors = '', diagnostics = '', lastRun;
 const updateEditorTools = () => {
@@ -27,7 +33,17 @@ const updateEditorTools = () => {
 const save = () => {
   const hint = $('draft-save-status');
   try {
-    localStorage.setItem(storageKey, JSON.stringify(saved));
+    // Merge only this tab's changed keys; another window may have edited a different lesson.
+    const latest=JSON.parse(localStorage.getItem(storageKey)||'{}');
+    for(const group of ['sources','inputs','recovery']){
+      latest[group]||={};for(const key of new Set([...Object.keys(saved[group]),...Object.keys(baseline[group])])){
+        if(JSON.stringify(saved[group][key])!==JSON.stringify(baseline[group][key])){
+          if(key in saved[group])latest[group][key]=saved[group][key];else delete latest[group][key];
+        }
+      }
+    }
+    latest.completed=[...new Set([...(latest.completed||[]),...saved.completed])];latest.selected=saved.selected;
+    localStorage.setItem(storageKey, JSON.stringify(latest));saved=latest;baseline=structuredClone(saved);
     hint.hidden = true; $('saved-dot').classList.remove('unsaved');
   } catch {
     hint.hidden = false; hint.textContent = 'Saved for this tab only. Use Download Rust source in Editor tools and copy any program input before reloading or closing the tab.';
@@ -106,7 +122,7 @@ const renderLesson = () => {
   }
   $('install-tinydb').hidden = !current.tinydb;
   $('install-tinydb').disabled = true;
-  clearResults(); refreshLines(); renderNav(); updateEditorTools(); status('');
+  clearResults(); restoreEditorResult(readResult('editor:'+current.id)); refreshLines(); renderNav(); updateEditorTools();
 };
 const features = [];
 if (!globalThis.crossOriginIsolated || typeof SharedArrayBuffer === 'undefined') features.push('cross-origin isolation (COOP/COEP headers)');
@@ -127,20 +143,20 @@ if (!supported) {
   } else explain();
 }
 const ensureToolchain = () => {
-  if (toolchain) return Promise.resolve(toolchain);
-  $('download-progress').hidden = false;
-  $('download-progress').value = 0;
+
+  $('compiler-download-progress').hidden = false;
+  $('compiler-download-progress').value = 0;
   $('runtime-state').textContent = 'Preparing first run…';
   status('Preparing first run…', 'busy');
   const controller = new AbortController();
   cancelLoading = () => controller.abort();
   return loadCompiler({ signal: controller.signal, onProgress: data => {
-    $('download-progress').value = Math.min(1, data.loaded / data.total);
+    $('compiler-download-progress').value = Math.min(1, data.loaded / data.total);
     const progress = `${(data.loaded / 1e6).toFixed(1)} / ${(data.total / 1e6).toFixed(1)} MB`;
-    $('runtime-state').textContent = data.loaded < data.total ? `Downloading · ${progress}` : 'Preparing first run…';
-    status(data.loaded < data.total ? `Downloading compiler · ${progress}` : 'Preparing compiler…', 'busy');
-  } }).then(result => { toolchain = result; return result; }).finally(() => {
-    cancelLoading = undefined; $('download-progress').hidden = true;
+    $('runtime-state').textContent = data.label?.startsWith('Preparing') ? data.label+'…' : data.loaded < data.total ? `Downloading · ${progress}` : 'Preparing first run…';
+    status(data.label?.startsWith('Preparing') ? data.label+'…' : data.loaded < data.total ? `Downloading compiler · ${progress}` : 'Preparing compiler…', 'busy');
+  } }).finally(() => {
+    cancelLoading = undefined; $('compiler-download-progress').hidden = true;
   });
 };
 const event = (data) => {
@@ -168,12 +184,13 @@ $('run').addEventListener('click', async () => {
   if (new TextEncoder().encode($('source').value).length > 64_000) { status('Source exceeds the 64 KB limit.', 'error'); return; }
   if (new TextEncoder().encode($('stdin').value).length > 100_000) { status('Input exceeds the 100 KB limit.', 'error'); return; }
   const source = $('source').value, stdin = $('stdin').value, lesson = current;
-  clearResults(); lastRun = { source, stdin }; setBusy(true);
+  setBusy(true);
   $('empty-output').querySelector('strong').textContent = 'Your compiler is at work.';
   $('empty-output').querySelector('p').textContent = 'Compilation happens in browser workers. You can stop it at any time.';
   let result;
   try {
-    await ensureToolchain();
+    const toolchain=await ensureToolchain();
+    clearResults();lastRun={source,stdin};
     task = startRun({ toolchain, source, stdin, args: lesson.tinydb ? ['people.rdb'] : [], files: lesson.tinydb ? [] : undefined, onEvent: event });
     result = await task.finished;
   } catch (error) {
@@ -185,6 +202,7 @@ $('run').addEventListener('click', async () => {
     const focusWasOnStop = document.activeElement === $('stop');
     task = undefined; setBusy(false);
     if (focusWasOnStop) $('run').focus();
+    rememberEditorResult();
   }
   if (result.stage === 'compile') {
     selectTab('diagnostics'); status(result.message || 'Rust found an error. See the compiler message.', 'error');
@@ -207,6 +225,7 @@ $('run').addEventListener('click', async () => {
       if (passed && lesson.courseId && lesson.practiceMode === 'exercise') markPractice(lesson.courseId);
     }
   }
+  rememberEditorResult();
 });
 $('stop').addEventListener('click', () => {
   if (cancelLoading) cancelLoading();
@@ -314,7 +333,7 @@ function route() {
   if (view === 'practice' && id === 'tinydb-source' && current.id !== 'tinydb-source:' + mode && !busy) {
     const project = /^(0[1-8]-[a-z-]+|reference)$/.test(mode || '') ? mode : 'reference';
     const url = project === 'reference' ? './programs/tinydb.rs' : `./course/${project}.rs`;
-    fetch(new URL(url, document.baseURI)).then(response => {
+    fetch(assetURL(url)).then(response => {
       if (!response.ok) throw new Error('Could not load the TinyDB source.');
       return response.text();
     }).then(source => {
@@ -326,3 +345,20 @@ function route() {
 }
 window.addEventListener('hashchange', route);
 renderLesson(); setBusy(false); route();
+
+function editorResult(){return{output,errors,diagnostics,lastRun,artifact,status:$('status-text').textContent,kind:$('status-light').className,check:{text:$('check-result').textContent,hidden:$('check-result').hidden,className:$('check-result').className},tab:$('tab-diagnostics').getAttribute('aria-selected')==='true'?'diagnostics':'output'};}
+function rememberEditorResult(){const value=editorResult();delete value.artifact;writeResult('editor:'+current.id,value);}
+function restoreEditorResult(value){if(!value)return;({output='',errors='',diagnostics='',lastRun,artifact}=value);$('stdout').textContent=output;$('stdout').hidden=!output;$('stderr').textContent=errors;$('stderr').hidden=!errors;$('empty-output').hidden=!!lastRun;$('diagnostics').textContent=diagnostics||'Compiler messages will appear here.';$('export-wasm').disabled=!artifact;$('install-tinydb').disabled=!artifact;status(value.status||'');$('status-light').className=value.kind||'status-light';if(value.check){$('check-result').textContent=value.check.text;$('check-result').hidden=value.check.hidden;$('check-result').className=value.check.className;}selectTab(value.tab||'output');$('editor-result-context').hidden=!lastRun||(lastRun.source===$('source').value&&lastRun.stdin===$('stdin').value);$('editor-result-context').textContent='Output from the earlier source or input. Choose Run code to update it.';}
+const appState={
+ isBusy:()=>busy||learning.isBusy()||database.isBusy()||window.rustFoundryRunner.status().loading||window.rustFoundryRunner.status().active>0,
+ stopAll(){cancelLoading?.();task?.cancel();learning.suspend();database.stop();},
+ releaseCaches(){database.releaseCaches();},
+ flush(){save();rememberEditorResult();},
+ snapshot:()=>({current,source:$('source').value,stdin:$('stdin').value,editor:editorResult(),saved,baseline,learning:learning.snapshot(),database:database.snapshot()}),
+ async restore(value){if(!value)return;
+  // Restore only undurable changes over the newest persistent record.
+  const previous=value.baseline||{},candidate=value.saved||{};
+  for(const group of ['sources','inputs','recovery'])for(const key of new Set([...Object.keys(candidate[group]||{}),...Object.keys(previous[group]||{})]))if(JSON.stringify(candidate[group]?.[key])!==JSON.stringify(previous[group]?.[key])){if(key in candidate[group])saved[group][key]=candidate[group][key];else delete saved[group][key];}
+  current=value.current||current;renderLesson();$('source').value=value.source;$('stdin').value=value.stdin;restoreEditorResult(value.editor);refreshLines();learning.restore(value.learning);await database.restore(value.database);
+ }
+};window.rustFoundryApp=appState;initializeReadingState(appState);

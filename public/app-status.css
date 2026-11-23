@@ -1,0 +1,32 @@
+/* App status is available on every page, with the pending badge outside its dialog. */
+#app-status-open { display:flex; flex-direction:column; align-items:start; line-height:1.4; text-align:left; max-width:230px; }
+#app-status-summary { font-size:.78em; color:var(--muted); overflow-wrap:anywhere; }
+#app-status-dialog { background:var(--paper); color:var(--ink); border:1px solid var(--line); border-radius:12px; padding:24px; width:min(600px,calc(100% - 24px)); max-height:calc(100dvh - 32px); overflow:auto; }
+#app-status-dialog::backdrop { background:#0009; }
+#app-status-dialog section { border-top:1px solid var(--line); padding-top:20px; margin-top:20px; }
+#app-status-dialog h3 { font-size:20px; margin-bottom:10px; }
+#app-status-dialog p { font-size:14px; overflow-wrap:anywhere; }
+#app-status-dialog .build-info { display:inline; }
+.status-heading,.status-actions { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.status-heading h2 { margin:0; }
+.status-actions { justify-content:start; }
+#download-progress { margin-top:20px; }
+#asset-progress { display:block; width:100%; accent-color:var(--accent); }
+#app-status-error { margin-top:16px; }
+#app-status-error:empty,#version-detail:empty,#download-behaviour:empty { display:none; }
+#version-status,#offline-status { font-weight:600; font-size:18px; margin:0 0 12px; }
+#app-status-details { border-top:1px solid var(--line); margin-top:24px; padding-top:16px; }
+#app-status-details summary { font-size:14px; }
+#restart-note { margin-top:16px; }
+.restore-notice { border:2px solid var(--accent); padding:16px; }
+/* A verified complete course has a quiet visual confirmation beside its text. */
+.course-state { display:flex; align-items:flex-start; gap:10px; }
+#course-ready-icon { width:20px; height:20px; margin-top:2px; flex:none; fill:none; stroke:var(--accent); stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+@media (forced-colors:active) { #course-ready-icon { stroke:CanvasText; } }
+
+#app-status-open { border:0; background:transparent; color:var(--ink); font:inherit; font-size:.875rem; min-height:44px; padding:8px 10px; }
+#app-status-dialog button { min-height:44px; font:inherit; padding:8px 14px; border:1px solid var(--line); border-radius:6px; background:var(--paper); color:var(--ink); cursor:pointer; }
+#app-status-dialog button.primary { background:var(--accent); color:var(--on-accent); font-weight:650; }
+#app-status-dialog button:disabled { opacity:.6; cursor:default; }
+.site-nav #code-runner-open { border:0; background:transparent; font-size:.875rem; font-weight:400; }
+.site-nav #theme { border:0; background:transparent; font-size:.875rem; font-weight:400; }

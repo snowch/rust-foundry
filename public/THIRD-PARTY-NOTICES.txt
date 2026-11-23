@@ -45,3 +45,9 @@ No compiler services, analytics, or source uploads are used. The application
 serves its compiler assets from the same origin. Program files are temporary
 and reset for each execution. Source and lesson progress use browser localStorage;
 compiler downloads use Cache Storage when available. Fonts are bundled locally.
+
+Shared course interface
+IBM Plex Sans and IBM Plex Mono: IBM, SIL Open Font License 1.1.
+Local font license texts: fonts/ibmplexsans-OFL.txt and fonts/ibmplexmono-OFL.txt.
+Material Symbols SVGs: Google, Apache License 2.0.
+Local icon license: icons/material/LICENSE.txt.
