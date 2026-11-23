@@ -20,7 +20,7 @@ const labFor=lesson=>labGroups.find(g=>g.id===lesson?.chapter);
 function brandLab(group){const brand=document.querySelector('.brand');brand.href=group?group.href:'#course';brand.querySelector('.brand-subtitle').textContent=group?group.title:'Rust 2021 · Learn in your browser';}
 export function initCourse({ openLab, canRun, unsupported }) {
   const root = document.getElementById('course-view');
-  let active, activeLab, rendered = false, renderKey, runners = [],predictionDraft;
+  let active, activeLab, rendered = false, renderKey, runners = [],predictionDraft,hubCleanup=()=>{};
   const link = (text, hash, className) => { const a = el('a', text, className); a.href = hash; return a; };
   const members = chapter => course.filter(x => x.chapter === chapter);
   const tally = (lessons, kind) => lessons.filter(x => read(`${kind}:${x.id}`)).length;
@@ -55,7 +55,7 @@ export function initCourse({ openLab, canRun, unsupported }) {
     const hero=el('div',undefined,'home-hero'),copy=el('div',undefined,'home-copy');copy.append(root.querySelector('.course-heading'));while(intro.firstChild)copy.append(intro.firstChild);hero.append(copy,homeIllustration());intro.append(hero);
     intro.append(el('p',`${course.length} lessons across ${chapters.length} chapters`,'course-size'));
     const choose=el('section',undefined,'hub-choices');choose.innerHTML='<div class="hub-heading"><h2>Choose a lab</h2><p>'+labGroups.filter(g=>g.lessons.every(l=>read('read:'+l.id))).length+' / '+labGroups.length+' labs complete</p></div><div class="foundry-lab-grid">'+foundryHub.cards(labGroups,id=>read('read:'+id))+'</div>';intro.append(choose);intro.append(previousEdition());
-    const archive = link('Download all starters, references, and TinyDB projects ↓', './course/rust-foundry-course.zip'); archive.download = ''; intro.append(archive); root.append(intro);const art=intro.querySelector('figure');art?.classList.add('hub-art');const arrange=()=>{if(!art)return;if(matchMedia('(max-width:900px)').matches)choose.after(art);else hero.append(art);};arrange();const query=matchMedia('(max-width:900px)');query.addEventListener('change',arrange);runners.push({dispose:()=>query.removeEventListener('change',arrange),isBusy:()=>false,stop:()=>{},root:{dataset:{mode:'hub'}},snapshot:()=>({})});
+    const archive = link('Download all starters, references, and TinyDB projects ↓', './course/rust-foundry-course.zip'); archive.download = ''; intro.append(archive); root.append(intro);const art=intro.querySelector('figure');art?.classList.add('hub-art');const arrange=()=>{if(!art)return;if(matchMedia('(max-width:900px)').matches)choose.after(art);else hero.append(art);};arrange();const query=matchMedia('(max-width:900px)');query.addEventListener('change',arrange);hubCleanup=()=>query.removeEventListener('change',arrange);
   }
   function previousEdition() {
     const box = el('details', undefined, 'previous-edition');
@@ -74,7 +74,7 @@ export function initCourse({ openLab, canRun, unsupported }) {
   function render(id,labId) {
     const next = course.find(x => x.id === id);
     const key=(id||'')+'/'+(labId||'');if (rendered && renderKey===key) { updateProgress(); return; }
-    runners.forEach(runner => runner.dispose()); runners = []; active = next;activeLab=labFor(active)||labGroups.find(g=>g.id===labId);brandLab(activeLab);renderKey=key; rendered = true; root.replaceChildren();
+    hubCleanup();hubCleanup=()=>{};predictionDraft=undefined;runners.forEach(runner => runner.dispose()); runners = []; active = next;activeLab=labFor(active)||labGroups.find(g=>g.id===labId);brandLab(activeLab);renderKey=key; rendered = true; root.replaceChildren();
     document.title = active ? `${active.title} · Chapter ${Number(chapters.find(x => x.id === active.chapter).number)} — Rust Foundry` : 'Rust Foundry — learn Rust, build a database';
     const header = el('header', undefined, `course-heading${active ? ' lesson-heading' : ''}`);
     header.append(el('h1', active ? active.title : 'Learn Rust and build a database'));
@@ -168,6 +168,6 @@ export function initCourse({ openLab, canRun, unsupported }) {
   return {render,isBusy:()=>runners.some(item=>item.isBusy()),suspend:()=>runners.forEach(runner=>runner.stop()),
       snapshot:()=>({marks:[...volatile],id:active?.id,prediction:predictionDraft?.snapshot(),runners:runners.map(r=>[r.root.dataset.mode,r.snapshot()])}),
       restore(value){if(!value||value.id!==active?.id)return;for(const[key,mark]of value.marks||[])volatile.set(key,mark);if(value.prediction&&predictionDraft){predictionDraft.restore(value.prediction);root.querySelector('#course-prediction').value=predictionDraft.value;}
-        for(const[mode,state]of value.runners||[]){if(mode==='reference'&&!runners.some(r=>r.root.dataset.mode===mode)){const box=root.querySelector('.reference-solution');box.open=true;box.ontoggle();}runners.find(r=>r.root.dataset.mode===mode)?.restore(state);}updateProgress();}
+        for(const[mode,state]of value.runners||[]){if(mode==='reference'&&!runners.some(r=>r.root.dataset.mode===mode)){const box=root.querySelector('.reference-solution');box.open=true;box.ontoggle();}runners.find(r=>r.root.dataset.mode===mode)?.restore?.(state);}updateProgress();}
     };
 }
