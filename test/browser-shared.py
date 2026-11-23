@@ -4,13 +4,13 @@ from contextlib import ExitStack
 from playwright.sync_api import sync_playwright,expect
 resources=ExitStack();atexit.register(resources.close)
 root=pathlib.Path(__file__).resolve().parent.parent
-base=os.environ.get('BASE_URL');blocked_toolchain=False
+base=os.environ.get('BASE_URL');blocked_toolchain=False;blocked_tinydb=False
 if not base:
  directory=pathlib.Path(resources.enter_context(tempfile.TemporaryDirectory()));(directory/'rust-foundry').symlink_to(root/'dist',target_is_directory=True)
  class Handler(http.server.SimpleHTTPRequestHandler):
   def log_message(self,*args):pass
   def do_GET(self):
-   if blocked_toolchain and '/toolchain/compiler.' in self.path:self.send_error(503);return
+   if (blocked_toolchain and '/toolchain/compiler.' in self.path) or (blocked_tinydb and '/programs/tinydb.wasm' in self.path):self.send_error(503);return
    super().do_GET()
  server=http.server.ThreadingHTTPServer(('127.0.0.1',0),functools.partial(Handler,directory=str(directory)));resources.callback(server.server_close);resources.callback(server.shutdown);threading.Thread(target=server.serve_forever,daemon=True).start();base=f'http://127.0.0.1:{server.server_port}/rust-foundry/'
 with sync_playwright() as p:
@@ -39,4 +39,6 @@ with sync_playwright() as p:
  context.close()
  if not os.environ.get('BASE_URL'):
   blocked_toolchain=True;failed=browser.new_context();broken=failed.new_page();broken.goto(base+'#course/first-program',wait_until='domcontentloaded');broken.wait_for_function('crossOriginIsolated&&!!window.rustFoundryState',timeout=60000);broken.locator('#lesson-code-first-program-worked').fill('fn main(){println!("kept after 503");}');broken.locator('#course-prediction').fill('Keep my prediction.');broken.locator('.inline-runner[data-mode=worked]').get_by_role('button',name='Run example',exact=True).click();broken.locator('#runner-intro [data-continue]').click();expect(broken.get_by_role('alertdialog')).to_be_visible(timeout=30000);assert broken.get_by_role('alertdialog').evaluate('(el)=>el.matches(":modal")');broken.keyboard.press('Escape');expect(broken.get_by_role('alertdialog')).to_be_hidden();broken.locator('.inline-runner[data-mode=worked]').get_by_role('button',name='Run example',exact=True).click();expect(broken.get_by_role('alertdialog')).to_be_visible();broken.evaluate("()=>{Storage.prototype.setItem=function(){throw Error('blocked storage')};}");broken.locator('[data-runtime-reload]').click();expect(broken.locator('#runtime-recovery-dialog-error')).to_be_visible();expect(broken.locator('#lesson-code-first-program-worked')).to_have_value('fn main(){println!("kept after 503");}');expect(broken.locator('#course-prediction')).to_have_value('Keep my prediction.');failed.close();print('PASS HTTP503 native recovery modal, Escape and blocked-storage safe reload',flush=True)
+ if not os.environ.get('BASE_URL'):
+  blocked_tinydb=True;workspace=browser.new_context();db=workspace.new_page();db.goto(base+'#workspace',wait_until='domcontentloaded');db.wait_for_function('crossOriginIsolated&&!!window.rustFoundryState',timeout=60000);db.locator('#db-run').click();expect(db.get_by_role('alertdialog')).to_be_visible(timeout=30000);expect(db.locator('#runtime-recovery-description')).to_contain_text('Then choose Run statements.');workspace.close();print('PASS TinyDB runtime failure names Run statements and direct workspace startup remains isolated',flush=True)
  browser.close()

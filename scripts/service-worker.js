@@ -637,6 +637,9 @@ self.addEventListener('fetch', event => {
       // Missing assets from a selected release must never fall through to a
       // different root deployment. The immutable release URL may repair them.
       const release = await manifest(id).catch(()=>null), file = release?.files.find(f => f.path === path);
+      // Root assets absent from this contract may belong to an older open app.
+      // Keep their original URL; declared and explicitly pinned files stay isolated.
+      if(!pinned&&!file&&!topNavigation)return fetch(event.request);
       let response;
       try{response=await fetch(new URL(`releases/${id}/${path}`, BASE), { cache: 'no-store' });}
       catch(failure){if(!file)throw failure;}

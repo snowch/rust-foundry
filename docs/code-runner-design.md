@@ -19,3 +19,5 @@ HTTP errors, integrity failures and missing compiler workers are preparation fai
 Stopping or cancelling preparation keeps earlier output. An edited source labels earlier output clearly. Compiler preparation promises are shared, rejected jobs are cleared for retry, and finished worker trees cannot keep compiler references alive. Source keys remain backward compatible; full-editor saves merge changed lesson keys so independent tabs do not overwrite each other's drafts.
 
 Before publishing, test header Start → Ready → editor Run with no second introduction; first implicit Run → cancel/settings/continue; stop during preparation and execution; warm runs; idle and explicit free/restart; ordinary compile error versus missing-runtime recovery; reload and cross-tab update with preserved work; and TinyDB execution without compiler download.
+
+Recovery remembers the initiating action before it is disabled or focus moves, including keyboard runs. A TinyDB preparation error must name **Run statements**; a worked example names **Run example**, and practice names **Run checks**. Do not tell a learner to use a control belonging to a different editor.

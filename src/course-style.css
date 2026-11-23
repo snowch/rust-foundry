@@ -81,3 +81,5 @@ dialog{background:var(--paper);color:var(--ink);border:1px solid var(--line);bor
 /* The chapter grid belongs to the outline, never to each chapter's list. */
 :root[data-theme] .chapter-lesson-list{display:block;grid-template-columns:none}
 :root[data-theme] .chapter-lesson-title{overflow-wrap:anywhere}
+
+.course-toggle[aria-expanded=true] .material-symbol{transform:rotate(180deg)}

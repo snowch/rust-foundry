@@ -3,13 +3,14 @@ export function mountRuntimeRecovery({save,beforeOpen=()=>document.activeElement
  const dialog=document.createElement('dialog');dialog.id='runtime-recovery-dialog';dialog.className='runtime-recovery-dialog';
  dialog.setAttribute('role','alertdialog');dialog.setAttribute('aria-labelledby','runtime-recovery-title');dialog.setAttribute('aria-describedby','runtime-recovery-description');
  dialog.innerHTML='<h2 id="runtime-recovery-title" tabindex="-1" autofocus>Files for this experiment could not be loaded</h2><p id="runtime-recovery-description"></p><p id="runtime-recovery-dialog-error" role="alert" hidden></p><div class="runtime-recovery-actions"><button type="button" class="primary" data-runtime-reload>Reload lesson</button><button type="button" data-runtime-stay>Stay on lesson</button></div>';
- dialog.querySelector('#runtime-recovery-description').textContent=`Reload the lesson while online to load the current lesson and runner files. Your work is saved before reloading. Then choose ${runLabel}.`;
+ const describe=()=>dialog.querySelector('#runtime-recovery-description').textContent=`Reload the lesson while online to load the current lesson and runner files. Your work is saved before reloading. Then choose ${typeof runLabel==='function'?runLabel():runLabel}.`;
+ describe();
  document.body.append(dialog);
  const reloadButton=dialog.querySelector('[data-runtime-reload]'),stay=dialog.querySelector('[data-runtime-stay]'),error=dialog.querySelector('[role="alert"]');
  let origin,pending=false,waiting,sequence=0,saving=false;
  function clearWait(){if(waiting){waiting.node.removeEventListener('close',waiting.listener);waiting=null;}}
  function open(){
-  if(dialog.open)return;
+  describe();if(dialog.open)return;
   const preferred=beforeOpen();const other=document.querySelector('dialog:modal');
   if(other&&other!==dialog){
    pending=true;clearWait();const listener=()=>{waiting=null;if(pending)open();};waiting={node:other,listener};other.addEventListener('close',listener,{once:true});return;
