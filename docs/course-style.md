@@ -12,7 +12,7 @@ Each lesson ends with a References row for its actual Rust topics, short reminde
 
 Verify phone, tablet and wide layouts, both themes using the actual theme button, outline and dialog keyboard behavior, all authored routes, original code and suggested edits. Functional tests establish that the interface and examples work; they do not establish learning effectiveness.
 
-The Foundry now uses the [focused lab-series hub](lab-series.md): numbered lab cards, scoped progress and stable lesson links.
+The Foundry uses [numbered parts containing chapters and lessons](lab-series.md), with scoped progress and stable lesson links.
 
 
 ## Foundry navigation
