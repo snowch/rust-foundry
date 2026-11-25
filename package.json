@@ -14,7 +14,8 @@
     "toolchain:fetch": "node scripts/fetch-toolchain.mjs",
     "check": "node scripts/check.mjs",
     "test:hub": "node test/hub-selection.cjs && node test/lab-hub.cjs",
-    "test:navigation": "node test/navigation.cjs"
+    "test:navigation": "node test/navigation.cjs",
+    "test:visuals": "node test/visual-models.cjs"
   },
   "keywords": [],
   "author": "",

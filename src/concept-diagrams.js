@@ -1,3 +1,5 @@
+import {learningModels} from './learning-models.js';
+import {learningFigure} from './learning-model.js';
 // Original text-and-shape diagrams; no third-party illustration assets.
 import { element as el } from './dom.js';
 const map = (title, nodes, caption) => ({ title, nodes, caption });
@@ -28,6 +30,12 @@ export const conceptDiagrams = {
   'browser-storage': map('Reject a stale tab’s write', [['Load a saved revision', 'Remember the version read'], ['Compare and save atomically', 'Check that version is still current'], ['Save or report conflict', 'Do not overwrite newer work']], 'Browser persistence is separate from a single execution’s temporary WASI filesystem.'),
 };
 export function createConceptDiagram(lesson) {
+  const model=learningModels[lesson.id];
+  if(model){
+    const template=document.createElement('template');template.innerHTML=learningFigure(model,lesson.id,'concept-map');
+    return template.content.firstElementChild;
+  }
+
   const data = lesson.diagram || conceptDiagrams[lesson.id];
   if (!data) return null;
   const figure = el('figure', undefined, 'concept-map');

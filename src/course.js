@@ -92,7 +92,7 @@ export function initCourse({ openLab, canRun, unsupported }) {
     const body = el('div', undefined, 'course-body'), article = el('article', undefined, 'reading'); body.append(article); root.append(body);
     lesson.explain.forEach(text => article.append(el('p', text)));
     const diagram = createConceptDiagram(lesson);
-    if (diagram) article.append(diagram);
+
     const createRunner = mode => {
       const runner = createLessonRunner({ lesson, mode, unsupported, canRun: () => !runners.some(item => item.isBusy()) && canRun(), onPass: () => markPractice(lesson.id) }); runners.push(runner); return runner;
     };
@@ -109,8 +109,8 @@ export function initCourse({ openLab, canRun, unsupported }) {
     article.append(el('h2', 'Run the starter and try a change'), starterInstructions, editInstructions, edit, el('p', observe), worked.root);
     const expected = el('details', undefined, 'expected-output'); expected.id = 'expected-output';
     expected.append(el('summary', 'Starter result and practice output target'), codeBlock(lesson.expected)); article.append(expected);
-    const steps = el('ol'); lesson.walkthrough.forEach(text => steps.append(el('li', text))); article.append(el('h2', 'Read the starter step by step'), steps, el('h3', 'Common mistake'), el('p', lesson.pitfall, 'callout'));
-    if (lesson.showOwnershipWalkthrough) {
+    const steps = el('ol'); lesson.walkthrough.forEach(text => steps.append(el('li', text))); article.append(el('h2', 'Read the starter step by step'), steps); if(diagram)article.append(diagram); article.append(el('h3', 'Common mistake'), el('p', lesson.pitfall, 'callout'));
+    if (lesson.showOwnershipWalkthrough && !diagram?.classList.contains('learning-model')) {
       const walk = el('section', undefined, 'ownership-walk'); let step = 0;
       const update = () => {
         const state = ownershipSteps[step]; walk.replaceChildren(el('h3', 'Follow ownership, step by step'), el('p', 'This is an annotated example, independent of your edited program.'), el('p', `Step ${step + 1} / ${ownershipSteps.length} · owner: ${state.owner}`), codeBlock(state.line), el('p', state.access), el('p', state.state));

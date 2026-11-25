@@ -14,3 +14,8 @@ A cold visit on GitHub Pages enables isolation by saving and reloading the readi
 
 Use Course → Part → Chapter → Lesson. See the [navigation review](navigation-review.md)
 for reading order, learner actions, compatibility and verification.
+
+
+## Visual opportunities, 25 November 2026
+
+See [the whole-course visual review](visual-opportunities.md) and its source-pinned lesson records. This pass adds source-specific models as well as revising existing diagrams; the model renderer has no runner, navigation, draft or completion side effects.

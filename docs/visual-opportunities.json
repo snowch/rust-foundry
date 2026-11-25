@@ -1,0 +1,2504 @@
+{
+  "review_date": "2026-11-25",
+  "base_commit": "ea7cacffdd1080d23ed1c136d88c61d163aaab2f",
+  "course": "rust",
+  "scope": "All lesson titles, explanations and current diagram placements were inventoried. Curated additions and redesigns were checked against worked starters and prerequisites. This is a visual-opportunity review, not a sentence-by-sentence copyedit or a claim that every program was executed.",
+  "design_standard": "https://github.com/snowch/cuda-python-lab/blob/main/docs/course-design-guide.md",
+  "method": "Look for references to shared objects, changing slots, exclusive bounds, call/return state, alternative branches, dependency edges, occupancy thresholds and publication/retention boundaries. Add a model when it answers a named question more directly than code/output alone. Keep simple syntax, API lookup and one-step results concise.",
+  "originality": "Original local HTML, CSS and geometric connectors derived from these projects’ fixtures; no third-party illustration assets.",
+  "model_source": "src/learning-models.js",
+  "lessons": [
+    {
+      "id": "first-program",
+      "title": "Your first Rust program",
+      "url": "https://snowch.github.io/rust-foundry/#course/first-program",
+      "decision": "Retained",
+      "passage": "A program is a set of instructions for a computer. The text you edit is its source code; main.rs is the Rust source filename shown here. This program has one instruction: display the message Hello, Rust! You do not need any previous programming experience for this lesson. The first line, fn main() {, marks where the program begins. fn means “function”, a named group of instructions; main is the name Rust starts with. The empty parentheses mean main takes no inputs here. The opening { and closing } enclose its instructions. Keep these outer lines as they are for now. The middle line, println!(\"Hello, Rust!\");, displays the text between the double quotes. Write println! including its exclamation mark: it is Rust’s supplied print command. Its parentheses hold the message, and the semicolon ends the instruction. The quotes mark text in the source; they are not printed. A compiler checks your source and translates it into a program the browser can run. Your first run downloads about 58 MB of compiler files. Later runs in the same tab reuse the prepared compiler.",
+      "starter_sha256": "0417da49d6287cfc46a7fbd206ce9b7d5a57496222247ed67e43e11f8e720deb",
+      "question": "The diagram traces the three parts of the worked program.",
+      "design": null,
+      "reason": "The existing diagram already supplies the relevant relationship; retain its caption and assumptions.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "printing",
+      "title": "Run instructions in order",
+      "url": "https://snowch.github.io/rust-foundry/#course/printing",
+      "decision": "Keep prose / worked evidence",
+      "passage": "Rust follows the instructions in main from top to bottom. Two println! instructions produce two separate lines in that same order. A newline means moving to the next output line. println! adds one after its message, so you do not need to put a line break inside the quotes. Use a new source line and a semicolon for each instruction. Indentation—the spaces before each instruction—helps you see what is inside main.",
+      "starter_sha256": "78937a30d62a68cb490998381eae6c5af5e679843ff2527f451d3a5ae5f35c5e",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "bindings",
+      "title": "Give values names",
+      "url": "https://snowch.github.io/rust-foundry/#course/bindings",
+      "decision": "Keep prose / worked evidence",
+      "passage": "A value is a piece of data, such as text or a number. let gives a value a name. In let message = \"Hello, Rust!\";, message is the name and the quoted greeting is its value. The = sign here means “bind this name to this value”. The semicolon ends the instruction, just as it ends a print instruction. To display the value, write println!(\"{message}\");. The braces inside these quotes are a placeholder: Rust replaces {message} with the value named message. These are different from the outer braces that enclose main. An equivalent spelling is println!(\"{}\", message);. An empty placeholder takes the value supplied after the comma. Later examples use this form to display a calculation or function result directly. This program needs only main, let, and println!. Functions that return values and borrowed text types come in later lessons.",
+      "starter_sha256": "bc3e429b8c04a3abf9d049930c7e1cb6bd41fb63beb1c36092fa9dc51ae3cab2",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "mutable-values",
+      "title": "Change a value with mut",
+      "url": "https://snowch.github.io/rust-foundry/#course/mutable-values",
+      "decision": "Keep prose / worked evidence",
+      "passage": "A whole number is another kind of value. Write let score = 10; without quotes to store the number ten. With quotes, \"10\" would be text instead. A binding declared with let normally keeps its original value. To permit changes, add mut: let mut score = 10;. mut is short for mutable, meaning changeable. After that declaration, score = 15; replaces the stored number. score += 5; is a shorter way to say score = score + 5;. The + sign adds numbers. Only mark a binding mut when the program needs to change it. The worked program starts at 10 and adds 5 twice.",
+      "starter_sha256": "834ad6a85c37acb150ff03b00b2c03352d9aeb0cee339579ac64622851c6b644",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "numbers",
+      "title": "Say what kind of number you mean",
+      "url": "https://snowch.github.io/rust-foundry/#course/numbers",
+      "decision": "Keep prose / worked evidence",
+      "passage": "A type describes what kind of value a name can hold. Rust often infers, or works out, the type. A colon lets you state it: let score: u32 = 90;. u32 means an unsigned 32-bit whole number. A bit is a storage position that holds 0 or 1; using more bits allows more possible values. Unsigned means zero or positive, never negative. u32 holds values from 0 through 4,294,967,295. You do not need to memorise this limit. u8 is a smaller whole number from 0 through 255; it will represent small storage units called bytes later. u64 allows larger whole numbers. usize is Rust’s whole-number type for collection lengths and positions. Each name identifies a numeric type, not a variable. Here all arithmetic uses small u32 values. A value must fit its type: a negative value cannot be stored in u32.",
+      "starter_sha256": "d3145ee66585696ca35310038e97713583f9f03cf016ed29734ae0a2964d9ed7",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "compiler-messages",
+      "title": "Read a compiler message",
+      "url": "https://snowch.github.io/rust-foundry/#course/compiler-messages",
+      "decision": "Keep prose / worked evidence",
+      "passage": "Before running, the compiler checks whether your source follows Rust’s rules. If it finds a problem, this lesson shows Compiler messages below the same code. A compile error prevents execution; it is feedback about the source, not damage to your device. A message usually names a problem and a position in main.rs, your source file. Read the first error, find the named instruction, and compare it with the working example. Rust is case-sensitive: println! and printLn! are different spellings. The compiler may call println! a macro. Here that means the supplied print command; you do not need to write a macro yourself. Text after // is a comment for the reader. Rust does not execute it. Use comments to explain a change without adding output.",
+      "starter_sha256": "6f63793118a1166a17356bb2c0391ca1c4fbc28de4639f191ca6de414858efe3",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "arithmetic",
+      "title": "Calculate before printing",
+      "url": "https://snowch.github.io/rust-foundry/#course/arithmetic",
+      "decision": "Keep prose / worked evidence",
+      "passage": "An expression produces a value. The expression 3 * 60 multiplies three by sixty. Store its result in a binding or supply it directly to a print placeholder. For numbers, + adds, - subtracts, and * multiplies. / divides. With whole-number types, division keeps only the whole part: 7 / 2 is 3. The % operator gives the remainder: 7 % 2 is 1. Parentheses group part of an expression so it is calculated together, such as (2 + 1) * 60. These grouping parentheses are separate from the parentheses used to call println!.",
+      "starter_sha256": "bd554570d79f512e408f4c2d8405370e88b126b24e890546634b7abc3efb385e",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "comparisons",
+      "title": "Ask a true-or-false question",
+      "url": "https://snowch.github.io/rust-foundry/#course/comparisons",
+      "decision": "Keep prose / worked evidence",
+      "passage": "A comparison produces a bool, a value that is either true or false. score >= 50 asks whether score is greater than or equal to fifty. == compares for equality, != means not equal, > and = and <= include equality. A single = assigns a value; it does not compare values. && means both conditions must be true. || means at least one must be true. ! reverses a boolean: !true is false. These operators will let later validation functions state several rules.",
+      "starter_sha256": "167f6bdc3024e0b201ae3571f0acb90d9351ce8d8b3745b5d42a8285c4a4caa7",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "branches",
+      "title": "Choose which instruction runs",
+      "url": "https://snowch.github.io/rust-foundry/#course/branches",
+      "decision": "Keep prose / worked evidence",
+      "passage": "if runs a block only when its condition is true. An else block supplies the alternative when that condition is false. Exactly one of these two blocks runs. The condition is a bool expression you already know how to write. Braces enclose each block just as they enclose main. This example prints one of two messages directly. You do not need a function that returns text, a text-reference type, or a lifetime annotation.",
+      "starter_sha256": "b7b7a5680b587f5fbb951b0d4a495f5e6d9e8dbc83f34a338169d80bce2f2ace",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "functions",
+      "title": "Reuse a group of instructions",
+      "url": "https://snowch.github.io/rust-foundry/#course/functions",
+      "decision": "Keep prose / worked evidence",
+      "passage": "You have used main as the program’s starting function. You can define another named function to group instructions you want to reuse. fn greet() { ... } defines a function named greet. greet(); calls it: execution enters that function, runs its body, then returns to the next instruction in main. A definition alone does not run its body. The two calls in main produce the two greeting lines. The empty parentheses still mean no input values are supplied.",
+      "starter_sha256": "78f22ea64ca39cf0122f32e07f900b994aff74c6a05015f17c30852d24143ddf",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "parameters",
+      "title": "Pass a value into a function",
+      "url": "https://snowch.github.io/rust-foundry/#course/parameters",
+      "decision": "Keep prose / worked evidence",
+      "passage": "A parameter names an input inside a function. In fn show_score(score: u32), score is the parameter and u32 states which type it accepts. An argument is the actual value supplied by a call. show_score(90); supplies ninety. The function uses that value wherever its parameter name appears. Each call gets its own parameter value. The same function can display different scores without changing its definition.",
+      "starter_sha256": "2317c1883a1257b32e541947e1010362a9f6019a62374f6b58a2992fc72650a2",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "return-values",
+      "title": "Return a calculated value",
+      "url": "https://snowch.github.io/rust-foundry/#course/return-values",
+      "decision": "Keep prose / worked evidence",
+      "passage": "A function can produce a value for its caller. -> u32 after the parameters means this function returns a u32. The arrow is part of the function definition, not an arithmetic operation. The last expression in a function becomes its return value when it has no trailing semicolon. minutes * 60 returns the calculated number. A trailing semicolon would discard that expression’s value. Functions with no return arrow, such as our printing helpers, return (), called unit. Unit means no useful result value. This is why a discarded calculation cannot satisfy -> u32.",
+      "starter_sha256": "7ee0af8dccfbb8f63c04e1a322dad626570d3173ba9ccf14e1ef574be1be124b",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "assertions",
+      "title": "Check a result with an assertion",
+      "url": "https://snowch.github.io/rust-foundry/#course/assertions",
+      "decision": "Keep prose / worked evidence",
+      "passage": "An assertion is a check written in the program. assert_eq!(actual, expected); continues only when both values are equal. It prints nothing when the check passes. If the values differ, the running program stops and reports an assertion failure below the code. This is a runtime failure: the compiler accepted the source, but a check failed during execution. assert!(condition); similarly checks that a boolean is true. From this lesson onward, practice starters may contain todo!(\"...\"). That is a deliberate stop marker for an unfinished function. Replace the marker with your implementation. It is not an instruction to print the answer. Keep the assertions in main. They provide additional inputs and boundary cases, so passing means more than matching one displayed example.",
+      "starter_sha256": "9c858f79628c8be826323dd7bf21d9f4b0c9bda2b358feab2e3e02f586fe60ea",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "loops",
+      "title": "Repeat work with a loop",
+      "url": "https://snowch.github.io/rust-foundry/#course/loops",
+      "decision": "Retained",
+      "passage": "for number in 1..=3 runs its block once for each whole number from one through three, including both ends. number is a fresh binding for the current value. A mutable total keeps the running sum. The plain range 0..3 excludes its upper end and visits zero, one, and two. Choose the range whose boundary matches your rule. while condition { ... } repeats while its condition is true; update the relevant value so it can finish. A loop { ... } repeats without a condition until break exits it. Later examples use these forms when the number of steps is not known in advance. return value; immediately leaves the current function with that value, even from inside a loop or if block. Without an early return, execution continues after the block.",
+      "starter_sha256": "2232e70999f6fe0077fc813bfd181649637f3fd847d8f6127610a8ce7dbb34d3",
+      "question": "The accumulator changes while the loop repeatedly applies the same instruction.",
+      "design": null,
+      "reason": "The existing diagram already supplies the relevant relationship; retain its caption and assumptions.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "tuples",
+      "title": "Return two values together",
+      "url": "https://snowch.github.io/rust-foundry/#course/tuples",
+      "decision": "Keep prose / worked evidence",
+      "passage": "A tuple groups a fixed number of values. (7, 8) is a pair. Its type can be written (u32, u32), so a function can return both numbers together. let (left, right) = pair; unpacks the pair into two names. You can also read fields by position: pair.0 is the first and pair.1 is the second. Positions start at zero. println!(\"{pair:?}\"); uses debug formatting, a readable representation useful for inspecting data. The :? inside a placeholder requests this representation. Tuples, arrays, and many standard types already support it.",
+      "starter_sha256": "8f495e5976625c52f470efba7fdf02c3f1ea611ac364b167b3da92447b269ed2",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "arrays",
+      "title": "Store a fixed-size sequence",
+      "url": "https://snowch.github.io/rust-foundry/#course/arrays",
+      "decision": "Revised",
+      "passage": "An array stores several values of the same type in a fixed order. [10, 20, 30] is an array of three integers. Square brackets distinguish an array from a tuple. An index is an element’s position. values[0] reads the first element and values[1] reads the second. values.len() gives the number of elements; .len() is a method, a named operation called on a value with a dot. The type [u32; 3] means three u32 elements. [0; 4] is also a value expression: create four zeroes. A position equal to the length is already outside the array. An invalid index stops the program; later we will learn checked access.",
+      "starter_sha256": "18558b5989ee275c1322a2ebe9f2961967872c74a00aa381652205c34b858099",
+      "question": "Why does second(values) return 20?",
+      "design": {
+        "title": "Index 1 selects the second initialized element",
+        "question": "Why does second(values) return 20?",
+        "kind": "slots",
+        "rows": [
+          {
+            "label": "Three u32 elements",
+            "values": [
+              10,
+              20,
+              30
+            ],
+            "note": "Length=3; valid indices are 0,1,2.",
+            "active": [
+              1
+            ],
+            "muted": [],
+            "tags": {
+              "1": "selected"
+            }
+          }
+        ],
+        "note": "Indices count elements, not bytes. The fixed array is passed by value to second; these u32 elements are Copy.",
+        "description": "Why does second(values) return 20? Three u32 elements: index 0 = 10, index 1 = 20, index 2 = 30. Length=3; valid indices are 0,1,2.. Indices count elements, not bytes. The fixed array is passed by value to second; these u32 elements are Copy."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "strings",
+      "title": "Own a piece of editable text",
+      "url": "https://snowch.github.io/rust-foundry/#course/strings",
+      "decision": "Retained",
+      "passage": "The quoted text you have printed is written directly into the program. A String is a value that owns editable text. Owning means it is responsible for keeping that text available and releasing its storage when it is no longer needed. String::from(\"Ada\") creates an owned String containing Ada. The :: selects a function associated with the String type; from is its constructor here. This differs from a dot, which calls a method on an existing value. name.push_str(\"!\") calls the push_str method on name and appends text. Because the contents change, name must be declared mut. .len() reports how many bytes the text occupies; for the plain A–Z letters here, one letter occupies one byte.",
+      "starter_sha256": "2323ac065eae40d482fbe35c51484b0b2210d1914b1bf5dc7dd037e8ec0214ea",
+      "question": "A later ownership lesson follows what happens when this owner moves to another binding.",
+      "design": null,
+      "reason": "The existing diagram already supplies the relevant relationship; retain its caption and assumptions.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "formatting",
+      "title": "Build formatted text as a value",
+      "url": "https://snowch.github.io/rust-foundry/#course/formatting",
+      "decision": "Keep prose / worked evidence",
+      "passage": "println! displays a message. format! uses the same placeholders but returns an owned String instead of displaying anything. That lets another function use the finished text. The ! on these names marks a macro, a supplied operation that expands into Rust code before compilation. You can use these standard macros without writing a macro definition. Named placeholders such as {score} use the binding of that name. An empty {} uses the value following the comma, such as format!(\"score {}\", score). Use one supplied value for each empty placeholder.",
+      "starter_sha256": "853f70e2447f10e9d28ddd71fa4694d3d41a9a67f9b403d77d04a6e2ebc94622",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "moves",
+      "title": "Follow a moved String",
+      "url": "https://snowch.github.io/rust-foundry/#course/moves",
+      "decision": "Revised",
+      "passage": "The previous lessons created and changed owned text. Now follow who owns that String: a String parameter takes ownership when it receives the caller’s value. In decorate(name), ownership moves from name in main into the function’s parameter. Returning the parameter moves ownership into decorated in the caller. A move does not clone the text. The parameter uses mut because it appends text with the method you already know. After the call, decorated is usable and the original name binding is no longer usable. The assertions and output use the new owner. To read the text without transferring ownership, we will introduce references in the next chapter.",
+      "starter_sha256": "80a495cd54104a0ab157627b74d27a34b36e9c9046592fc49bb23702a8e4e465",
+      "question": "Which binding owns the String at each boundary?",
+      "design": {
+        "title": "Ownership moves; the text is not cloned",
+        "question": "Which binding owns the String at each boundary?",
+        "kind": "references",
+        "states": [
+          {
+            "label": "Before the call",
+            "objects": [
+              {
+                "label": "Logical String value",
+                "value": "Ada",
+                "refs": [
+                  {
+                    "name": "name in main",
+                    "edge": "owns"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "label": "Inside decorate, before push_str",
+            "objects": [
+              {
+                "label": "Logical String value",
+                "value": "Ada",
+                "refs": [
+                  {
+                    "name": "name parameter",
+                    "edge": "owns after the move"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "label": "After return",
+            "objects": [
+              {
+                "label": "Returned String value",
+                "value": "Ada!",
+                "refs": [
+                  {
+                    "name": "decorated in main",
+                    "edge": "owns the result"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "note": "The old binding cannot be used after the move. A move does not clone the text. The later push_str may grow/reallocate storage: the boxes track the logical value, not a guaranteed fixed allocation.",
+        "description": "Which binding owns the String at each boundary? Before the call: Logical String value contains Ada. name in main owns Logical String value. Inside decorate, before push_str: Logical String value contains Ada. name parameter owns after the move Logical String value. After return: Returned String value contains Ada!. decorated in main owns the result Returned String value. The old binding cannot be used after the move. A move does not clone the text. The later push_str may grow/reallocate storage: the boxes track the logical value, not a guaranteed fixed allocation."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "copy",
+      "title": "Small values can Copy",
+      "url": "https://snowch.github.io/rust-foundry/#course/copy",
+      "decision": "Keep prose / worked evidence",
+      "passage": "Assigning a u32 makes another usable copy of that number. Rust calls this behaviour Copy. You can use both integer bindings after the assignment. This is a property of a type, not an exception to the String ownership rule. String does not have Copy behaviour; an assignment of a String transfers its ownership. The worked function returns a tuple, whose construction and destructuring you have already practised. Both elements remain usable because the integers were copied.",
+      "starter_sha256": "684779e4144a2c8dfd77dbd8573c0c3c403a6afbc97ccab934b1ff7dae420d76",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "clone",
+      "title": "Clone deliberately",
+      "url": "https://snowch.github.io/rust-foundry/#course/clone",
+      "decision": "Revised",
+      "passage": "A move transfers ownership. .clone() explicitly creates a separate owned value. For a String, that means independent text storage. The function clones original into changed, then appends to changed. original keeps its contents, as the checks show. The tuple returns the two independent owners together. Only changed needs mut, because only that local value is edited.",
+      "starter_sha256": "c4151a7663030e9f338517ba0582df59d866154b9c1e006cf1c5774732a3bab3",
+      "question": "Why does appending Jr leave the original Ada unchanged?",
+      "design": {
+        "title": "Cloning produces independently owned text",
+        "question": "Why does appending Jr leave the original Ada unchanged?",
+        "kind": "references",
+        "states": [
+          {
+            "label": "Returned pair after keep_and_change",
+            "objects": [
+              {
+                "label": "Original String",
+                "value": "Ada",
+                "refs": [
+                  {
+                    "name": "pair.0",
+                    "edge": "owns original text"
+                  }
+                ]
+              },
+              {
+                "label": "Cloned and edited String",
+                "value": "Ada Jr",
+                "refs": [
+                  {
+                    "name": "pair.1",
+                    "edge": "owns separate text"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "note": "clone copies String content into independently owned storage. The later append may grow that clone’s allocation. Moving both Strings into the returned tuple does not clone them again.",
+        "description": "Why does appending Jr leave the original Ada unchanged? Returned pair after keep_and_change: Original String contains Ada. pair.0 owns original text Original String; Cloned and edited String contains Ada Jr. pair.1 owns separate text Cloned and edited String. clone copies String content into independently owned storage. The later append may grow that clone’s allocation. Moving both Strings into the returned tuple does not clone them again."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "scope",
+      "title": "Notice where a name is usable",
+      "url": "https://snowch.github.io/rust-foundry/#course/scope",
+      "decision": "Keep prose / worked evidence",
+      "passage": "A scope is the region where a name can be used. A binding declared inside a block normally remains usable until that block’s closing brace. When an owned value’s scope ends, Rust drops it: it releases the resources the value owns. You do not manually free a String. An inner block can declare a new binding with the same spelling as an outer one. This is shadowing: the inner name temporarily hides the outer name, but it does not change the outer value.",
+      "starter_sha256": "814c2420fd8328b61b0c552b11765a0ce98198f9bd6f25706804958692858b03",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "references",
+      "title": "Read a String without taking it",
+      "url": "https://snowch.github.io/rust-foundry/#course/references",
+      "decision": "Revised",
+      "passage": "Moving a String gives away its ownership. A reference gives temporary access instead. &name creates a shared reference to the String owned by name. A parameter of type &String accepts that shared access. The receiving function can read the contents but does not own them and cannot change them through this reference. After this call, name is still the owner and can be printed again. A shared borrow must not overlap a change that could invalidate what it reads. The owner must also stay alive for every use of the reference.",
+      "starter_sha256": "c341c5bdda99f7ca41929b866de51e3d167aafde46c91c83e8f0bdd366acb6ec",
+      "question": "Why can main still print name after name_length(&name)?",
+      "design": {
+        "title": "An owner and a reader reach the same String",
+        "question": "Why can main still print name after name_length(&name)?",
+        "kind": "references",
+        "states": [
+          {
+            "label": "While name_length reads",
+            "objects": [
+              {
+                "label": "One String",
+                "value": "Ada · 3 bytes",
+                "refs": [
+                  {
+                    "name": "name in main",
+                    "edge": "owns"
+                  },
+                  {
+                    "name": "name parameter",
+                    "edge": "shared borrow via &String"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "note": "The helper’s reference does not take ownership or clone the String. After the helper returns, the caller still owns name. The borrow cannot outlive the referred-to value.",
+        "description": "Why can main still print name after name_length(&name)? While name_length reads: One String contains Ada · 3 bytes. name in main owns One String; name parameter shared borrow via &String One String. The helper’s reference does not take ownership or clone the String. After the helper returns, the caller still owns name. The borrow cannot outlive the referred-to value."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "mutable",
+      "title": "Change through one mutable borrow",
+      "url": "https://snowch.github.io/rust-foundry/#course/mutable",
+      "decision": "Revised",
+      "passage": "A shared reference supplies read access. &mut supplies exclusive access so a helper can change a value while the caller remains its owner. The declaration fn award(score: &mut u32) accepts a mutable reference. The call uses &mut score to lend that access. The caller’s binding must itself be mut. *score means the integer behind the reference. *score += 5 changes that integer; it does not reassign the reference to a different integer. The two calls work because their exclusive borrows do not overlap. The first call finishes before the second borrow begins.",
+      "starter_sha256": "4f6219a09407810266614b578395acc70fe49a607396558e0b5d417dd4d82849",
+      "question": "Why does score progress from 10 to 15 to 20?",
+      "design": {
+        "title": "Sequential exclusive borrows change one value",
+        "question": "Why does score progress from 10 to 15 to 20?",
+        "kind": "slots",
+        "rows": [
+          {
+            "label": "Before either call",
+            "values": [
+              10
+            ],
+            "note": "One caller-owned score.",
+            "active": [],
+            "muted": []
+          },
+          {
+            "label": "After award(&mut score)",
+            "values": [
+              15
+            ],
+            "note": "The helper adds 5 through a temporary exclusive borrow.",
+            "active": [
+              0
+            ],
+            "muted": []
+          },
+          {
+            "label": "After the second call",
+            "values": [
+              20
+            ],
+            "note": "The first borrow has ended before the second begins.",
+            "active": [
+              0
+            ],
+            "muted": []
+          }
+        ],
+        "note": "Each row shows the same score object. The exclusive accesses are sequential; this does not depict two overlapping mutable borrows.",
+        "description": "Why does score progress from 10 to 15 to 20? Before either call: index 0 = 10. One caller-owned score.. After award(&mut score): index 0 = 15. The helper adds 5 through a temporary exclusive borrow.. After the second call: index 0 = 20. The first borrow has ended before the second begins.. Each row shows the same score object. The exclusive accesses are sequential; this does not depict two overlapping mutable borrows."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "text-slices",
+      "title": "Read a view of text with &str",
+      "url": "https://snowch.github.io/rust-foundry/#course/text-slices",
+      "decision": "Added",
+      "passage": "&str is a shared reference to a view of UTF-8 text. Unlike &String, it does not require the owner to be a String: the view can also refer to text written directly in the program. A String’s .as_str() method returns such a borrowed text view. It creates neither another owner nor a copy of the text. The literal \"Ada\" can already be passed as &str. A function taking &str is therefore a useful choice when it only needs to read text.",
+      "starter_sha256": "4177d8652dc328049157dfc115fbda36d2f79787cee2cd11f0b2cb0340b227dd",
+      "question": "How can text_length read owned.as_str() without consuming owned?",
+      "design": {
+        "title": "A text view does not take ownership",
+        "question": "How can text_length read owned.as_str() without consuming owned?",
+        "kind": "references",
+        "states": [
+          {
+            "label": "While text_length runs",
+            "objects": [
+              {
+                "label": "One caller-owned String",
+                "value": "Ada · 3 UTF-8 bytes",
+                "refs": [
+                  {
+                    "name": "owned",
+                    "edge": "owns"
+                  },
+                  {
+                    "name": "text: &str",
+                    "edge": "borrows the text range"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "note": "The same function can read a string literal. The borrowed view has a byte length; no new owned String is needed.",
+        "description": "How can text_length read owned.as_str() without consuming owned? While text_length runs: One caller-owned String contains Ada · 3 UTF-8 bytes. owned owns One caller-owned String; text: &str borrows the text range One caller-owned String. The same function can read a string literal. The borrowed view has a byte length; no new owned String is needed."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "unicode",
+      "title": "Distinguish bytes from letters",
+      "url": "https://snowch.github.io/rust-foundry/#course/unicode",
+      "decision": "Revised",
+      "passage": "A byte is a small storage unit represented by u8, a number from zero through 255. UTF-8 is the rule Rust uses to represent text as bytes. English letters such as A occupy one byte, but é occupies two. text.len() counts bytes, not visible letters. café has five bytes: c, a, and f use one each, and é uses two. This distinction matters when a file reserves a fixed number of bytes for a name. Double quotes describe text such as \"Ada\". Single quotes describe one Rust character, such as 'A'. A character has type char. To put a quote inside a character literal, escape it as '\\''; \\n inside text represents a newline and \\0 represents a zero byte. Text provides .bytes() to visit its UTF-8 bytes and .chars() to visit its characters. A for loop can visit them as it visits a numeric range. A later lesson will explain the iterator interface behind these operations.",
+      "starter_sha256": "32d3219eb1bc623e09ba482d6cebb7224862789a7e73a639280c33ba0a1564a6",
+      "question": "Which two bytes encode the final é?",
+      "design": {
+        "title": "UTF-8 bytes align with scalar values",
+        "question": "Which two bytes encode the final é?",
+        "kind": "bytes",
+        "label": "Worked text: café",
+        "values": [
+          "63",
+          "61",
+          "66",
+          "C3",
+          "A9"
+        ],
+        "groups": [
+          {
+            "label": "c",
+            "size": 1
+          },
+          {
+            "label": "a",
+            "size": 1
+          },
+          {
+            "label": "f",
+            "size": 1
+          },
+          {
+            "label": "é",
+            "size": 2
+          }
+        ],
+        "note": "text.len() prints 5 bytes; chars() visits four Unicode scalar values. A scalar value is not always an entire grapheme cluster or user-perceived character.",
+        "description": "Which two bytes encode the final é? Worked text: café. c uses byte offsets 0: 63; a uses byte offsets 1: 61; f uses byte offsets 2: 66; é uses byte offsets 3 through 4: C3, A9. text.len() prints 5 bytes; chars() visits four Unicode scalar values. A scalar value is not always an entire grapheme cluster or user-perceived character."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "shared",
+      "title": "Read through a shared borrow",
+      "url": "https://snowch.github.io/rust-foundry/#course/shared",
+      "decision": "Added",
+      "passage": "You have now seen shared references, &str text views, and the difference between UTF-8 bytes and characters. This exercise combines those ideas without adding a new ownership rule. The helper takes &str, reads its byte length, and returns a usize. In byte_len(&name), Rust can use the borrowed String as a text view; name.as_str() is the explicit alternative you already know. The call does not take ownership. The caller can therefore display name after measuring it. café occupies five bytes, so the supplied assertion expects five.",
+      "starter_sha256": "9ba77de28d81a39ce1726f8a43e42fe1a91557608856d399b955e1d75a2bc780",
+      "question": "Why does the final print still include café?",
+      "design": {
+        "title": "A shared reader leaves the owner available",
+        "question": "Why does the final print still include café?",
+        "kind": "references",
+        "states": [
+          {
+            "label": "During byte_len(&name)",
+            "objects": [
+              {
+                "label": "Caller-owned String",
+                "value": "café · 5 UTF-8 bytes",
+                "refs": [
+                  {
+                    "name": "name",
+                    "edge": "owns"
+                  },
+                  {
+                    "name": "text: &str",
+                    "edge": "shared read access"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "note": "The helper reads the byte length through a shared borrow. It neither consumes nor clones name; the caller prints both 5 and café afterward.",
+        "description": "Why does the final print still include café? During byte_len(&name): Caller-owned String contains café · 5 UTF-8 bytes. name owns Caller-owned String; text: &str shared read access Caller-owned String. The helper reads the byte length through a shared borrow. It neither consumes nor clones name; the caller prints both 5 and café afterward."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "borrowed-slices",
+      "title": "Borrow part of an array",
+      "url": "https://snowch.github.io/rust-foundry/#course/borrowed-slices",
+      "decision": "Revised",
+      "passage": "A slice is a borrowed view of a sequence, with a known length. &[u32] means shared access to a sequence of u32 values; it does not fix the number of elements in the type. &values[1..3] borrows the elements at indices one and two. As with a numeric range, .. excludes the upper boundary. The owner must remain alive while the slice is used. A for loop over a shared slice gives a shared reference to each value. *value reads the referenced integer. This is dereferencing, the same operation you used with a mutable reference.",
+      "starter_sha256": "6cf7354781b42663f137ba4418b44a76e54162d9041961af41e7b3fc081ce53a",
+      "question": "Why is the subrange sum 50 while the printed full-array sum is 60?",
+      "design": {
+        "title": "The slice selects existing elements",
+        "question": "Why is the subrange sum 50 while the printed full-array sum is 60?",
+        "kind": "slots",
+        "rows": [
+          {
+            "label": "values = [10,20,30]",
+            "values": [
+              10,
+              20,
+              30
+            ],
+            "note": "&values[1..3] borrows elements 20 and 30: the assertion checks total=50.",
+            "active": [
+              1,
+              2
+            ],
+            "muted": [
+              0
+            ],
+            "tags": {
+              "1": "start",
+              "2": "last included"
+            }
+          },
+          {
+            "label": "The printed call uses &values",
+            "values": [
+              10,
+              20,
+              30
+            ],
+            "note": "10+20+30=60. The empty-slice assertion separately checks total=0.",
+            "active": [
+              0,
+              1,
+              2
+            ],
+            "muted": []
+          }
+        ],
+        "note": "Indices count u32 elements, not bytes. Start is inclusive and stop 3 exclusive. The borrowed slice has a length but does not own or copy these elements.",
+        "description": "Why is the subrange sum 50 while the printed full-array sum is 60? values = [10,20,30]: index 0 = 10, index 1 = 20, index 2 = 30. &values[1..3] borrows elements 20 and 30: the assertion checks total=50.. The printed call uses &values: index 0 = 10, index 1 = 20, index 2 = 30. 10+20+30=60. The empty-slice assertion separately checks total=0.. Indices count u32 elements, not bytes. Start is inclusive and stop 3 exclusive. The borrowed slice has a length but does not own or copy these elements."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "static-text",
+      "title": "Read the lifetime of a text literal",
+      "url": "https://snowch.github.io/rust-foundry/#course/static-text",
+      "decision": "Keep prose / worked evidence",
+      "passage": "A lifetime is the period for which a reference is valid. References must not be used after the data they refer to is gone. Literal text is part of the program itself, so a view of it can remain valid for the whole program. &'static str states that property. Here the apostrophe introduces the lifetime name static; it is not a character literal. This annotation is useful for fixed error messages later. It does not mean every reference is static, and it cannot make a reference to a local String last longer. The later lifetimes lesson covers references borrowed from function inputs.",
+      "starter_sha256": "2fc5f0e05f5f3ee719b4cb2d5e53008c9328b98467b2cbc366202859335c1dad",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "structs",
+      "title": "Give a row a type",
+      "url": "https://snowch.github.io/rust-foundry/#course/structs",
+      "decision": "Retained",
+      "passage": "A tuple groups values by position. A struct groups them by named fields, making the meaning of each value clearer. Row has id, name, and score fields. Each field declaration includes its type. A Row construction names each field and supplies its value. The name field owns a String, so it is created with String::from. row.id reads the named id field, unlike pair.0 for a tuple position. The helper accepts &Row and formats the fields without taking ownership of the row. There is no derive attribute in this first struct example. Generating trait implementations is a separate later lesson.",
+      "starter_sha256": "321601bf2385c2fb8d902ed9a92059f48e8ae9782872a0466d287f808882b05c",
+      "question": "A struct’s in-memory layout is not automatically a portable binary file format.",
+      "design": null,
+      "reason": "The existing diagram already supplies the relevant relationship; retain its caption and assumptions.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "methods",
+      "title": "Write a method for a struct",
+      "url": "https://snowch.github.io/rust-foundry/#course/methods",
+      "decision": "Keep prose / worked evidence",
+      "passage": "A struct groups fields. An impl block groups operations associated with that struct. impl Row { ... } says that the enclosed methods belong to Row. A method’s &self parameter borrows the instance on which it is called. row.passes() supplies row automatically as self. It follows the shared-borrow rules you already know. Inside the impl block, Self is another spelling for the implementing type, here Row. Lowercase self is the current instance, while uppercase Self names the type.",
+      "starter_sha256": "1f0732b04a46584ab7261403cd3c9781a2e7a87994b8e7110860bfa80501314b",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "enums",
+      "title": "Represent alternatives",
+      "url": "https://snowch.github.io/rust-foundry/#course/enums",
+      "decision": "Revised",
+      "passage": "An enum represents a choice between named alternatives called variants. Command::Count carries no additional data; Command::Lookup(42) carries an ID. match selects the arm whose pattern matches the current variant. An arm has pattern => expression syntax. In Command::Lookup(id), the pattern binds the carried value to id. The match must handle every possible variant. A pattern written _ means “anything else”, and an _ payload ignores a value you do not need. Explicit variant arms make it easier to notice a newly added case. Each arm here returns an owned String, using String::from or format!. These operations are already familiar; the new idea is choosing an arm by the enum’s variant.",
+      "starter_sha256": "f03cd3ef94a6c997a1590c1cf37954768c470b51c307a29a4d5e009b49d686c9",
+      "question": "Which payload can the selected match arm read?",
+      "design": {
+        "title": "Exactly one command variant is active",
+        "question": "Which payload can the selected match arm read?",
+        "kind": "branch",
+        "root": "Command value",
+        "paths": [
+          {
+            "when": "Count",
+            "result": "count all rows",
+            "detail": "No ID payload belongs to this variant."
+          },
+          {
+            "when": "Lookup(id)",
+            "result": "lookup the supplied ID",
+            "detail": "The printed call uses Lookup(42), so it prints lookup 42."
+          }
+        ],
+        "note": "The assertions also exercise Count and Lookup(7). Match handles alternatives; the program does not hold both variants in the same Command at once.",
+        "description": "Which payload can the selected match arm read? Command value. Count. count all rows. No ID payload belongs to this variant.; Lookup(id). lookup the supplied ID. The printed call uses Lookup(42), so it prints lookup 42.. The assertions also exercise Count and Lookup(7). Match handles alternatives; the program does not hold both variants in the same Command at once."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "optional-values",
+      "title": "Represent a missing value",
+      "url": "https://snowch.github.io/rust-foundry/#course/optional-values",
+      "decision": "Keep prose / worked evidence",
+      "passage": "Option is a standard enum for a value that may be absent. Option means either Some(number), containing a u32, or None, containing no value. The angle brackets choose the type stored inside this standard container. match handles those two variants just as it handled your own enum. Some(value) binds the contained number to value in that arm; None handles absence. An Option also offers unwrap_or(fallback), which returns the contained value or the supplied fallback. Unlike unwrap(), unwrap_or handles None deliberately. unwrap() instead stops the program on None; use it only when presence is established, such as an assertion-controlled example. When only the present case needs work, if let Some(value) = optional { ... } is a shorter conditional match. It runs its block once for Some and skips it for None. Use a full match when both cases need explicit actions.",
+      "starter_sha256": "55d1fc121299ae012913b898cc7f60ae1c0b85f6fc86a7788ed97608c05417e6",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "option",
+      "title": "Missing is a value",
+      "url": "https://snowch.github.io/rust-foundry/#course/option",
+      "decision": "Keep prose / worked evidence",
+      "passage": "A search may find a record or find nothing. Option expresses those outcomes without making a second owned copy of a name. The helper loops over a borrowed slice of (id, String) tuples. It compares each id and returns Some(name view) as soon as it finds a match. If the loop ends with no match, it returns None. The returned view refers to data owned by rows, so it cannot outlive that owner. With one borrowed input collection, Rust can infer this relationship; the later lifetime-annotation lesson makes similar relationships explicit. main uses an array, which you already know. It deliberately does not introduce a Vec or iterator closure before those topics are taught.",
+      "starter_sha256": "c61b87937cb85fa71904055cd50ffcdb0b2998b12ed720b37ba4c4898dc9e761",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "slices",
+      "title": "Borrow a bounded sequence",
+      "url": "https://snowch.github.io/rust-foundry/#course/slices",
+      "decision": "Keep prose / worked evidence",
+      "passage": "Direct values[0] indexing assumes an element exists. .first() instead returns Some(reference) for the first element or None for an empty slice. The helper matches that Option. Some(value) contains a reference, so *value reads the u32. The None arm supplies zero as the chosen fallback. This reuses slice borrowing and enum matching. It avoids .copied() and iterator pipelines until their own lessons.",
+      "starter_sha256": "3cb21087c7789492ee82520b75a324fce7e6c303c0d94aacabb55f9e98c269da",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "result-basics",
+      "title": "Separate success from failure",
+      "url": "https://snowch.github.io/rust-foundry/#course/result-basics",
+      "decision": "Revised",
+      "passage": "Option says a value may be missing. Result says an operation may succeed or fail with a reason. Result stores either Ok(number) or Err(message). The two type arguments specify the successful value and error types. A recoverable failure is returned as data, so the caller can choose what to do. A positive-id rule can reject zero without stopping the whole program. Result methods is_ok() and is_err() inspect which variant is present. unwrap() returns an Ok value but stops on Err; it is used in worked examples only for inputs whose success has been established by the shown checks. The if/else here is also an expression: its chosen arm produces Ok(id) or Err(message) as the function’s returned Result. Both arms produce the same Result type.",
+      "starter_sha256": "1ce491eb152b72062621361cbcf5404219db04bbb36e9a27527a40fa129a6816",
+      "question": "Why must the zero-ID case not be used as a successful ID?",
+      "design": {
+        "title": "Success and failure carry different payloads",
+        "question": "Why must the zero-ID case not be used as a successful ID?",
+        "kind": "branch",
+        "root": "positive(id)",
+        "paths": [
+          {
+            "when": "id == 0",
+            "result": "Err(id must be positive)",
+            "detail": "The assertion checks this failure."
+          },
+          {
+            "when": "id > 0 · printed case id=7",
+            "result": "Ok(7)",
+            "detail": "The successful value is unwrapped and printed."
+          }
+        ],
+        "note": "Result contains exactly one selected variant. Err does not contain the success value, and unwrap is safe here only because this particular call succeeds.",
+        "description": "Why must the zero-ID case not be used as a successful ID? positive(id). id == 0. Err(id must be positive). The assertion checks this failure.; id > 0 · printed case id=7. Ok(7). The successful value is unwrapped and printed.. Result contains exactly one selected variant. Err does not contain the success value, and unwrap is safe here only because this particular call succeeds."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "result",
+      "title": "Report a recoverable error",
+      "url": "https://snowch.github.io/rust-foundry/#course/result",
+      "decision": "Keep prose / worked evidence",
+      "passage": "Parsing means interpreting text as a value. text.parse::() asks the standard parser for a u32. The :: chooses the method’s output type; angle brackets specify a type rather than a runtime input value. parse returns Result because malformed text, negative numbers, or a number too large for u32 cannot produce this value. An Err(_) pattern ignores the parser’s detailed error when you want your own message. Parsing is different from a domain rule: zero parses as u32, but TinyDB IDs must be positive. Ok(id) if id > 0 is a guarded match arm; the condition must also be true for that arm to match. The function returns one fixed error message for every rejected input. Its &'static str error type is the literal-text reference you have already learned.",
+      "starter_sha256": "3f27a5b803f4cfc4f1b6860ea863a3040e7eb380bf4b4f24c3645e15afe06221",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "checked-arithmetic",
+      "title": "Turn overflow into a result",
+      "url": "https://snowch.github.io/rust-foundry/#course/checked-arithmetic",
+      "decision": "Added",
+      "passage": "A numeric type has a largest representable value. Adding beyond it is overflow. u32::MAX is the named largest u32 value; :: also selects constants associated with a type. checked_add returns Some(sum) when the sum fits and None when it does not. That makes the exceptional case explicit instead of relying on how an unchecked calculation happens to run. .ok_or(message) converts Some(value) into Ok(value), or None into Err(message). It connects an optional calculation with an error-reporting function.",
+      "starter_sha256": "827f5f3d9c108f5ef0bb0c8ab9cefc8158ad5f1cbaad552aeba904039d07f111",
+      "question": "Why does u32::MAX + 1 become an error instead of a wrapped success?",
+      "design": {
+        "title": "Checked addition has a failure outcome",
+        "question": "Why does u32::MAX + 1 become an error instead of a wrapped success?",
+        "kind": "branch",
+        "root": "checked_add followed by ok_or(overflow)",
+        "paths": [
+          {
+            "when": "19 + 23 fits u32",
+            "result": "Some(42) → Ok(42)",
+            "detail": "The successful printed call returns 42."
+          },
+          {
+            "when": "u32::MAX + 1 does not fit",
+            "result": "None → Err(overflow)",
+            "detail": "No wrapped value is accepted."
+          }
+        ],
+        "note": "This is checked arithmetic, independent of debug/release overflow settings. The unrepresentable sum is reported as failure, not evaluated as an ordinary wrapping expression.",
+        "description": "Why does u32::MAX + 1 become an error instead of a wrapped success? checked_add followed by ok_or(overflow). 19 + 23 fits u32. Some(42) → Ok(42). The successful printed call returns 42.; u32::MAX + 1 does not fit. None → Err(overflow). No wrapped value is accepted.. This is checked arithmetic, independent of debug/release overflow settings. The unrepresentable sum is reported as failure, not evaluated as an ordinary wrapping expression."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "question-mark",
+      "title": "Propagate with ?",
+      "url": "https://snowch.github.io/rust-foundry/#course/question-mark",
+      "decision": "Added",
+      "passage": "A fallible helper can pass a failure back to its caller. ? returns early when its Result is Err, or extracts the value when it is Ok. The worked program includes the previous parsing pattern as a named helper, number. You are reusing that helper; the new operation is ? on each call. After both parses succeed, checked_add and ok_or handle overflow as in the preceding lesson. No closure or map_err knowledge is needed here. The ? operator is not a panic catcher. It handles the Result values explicitly returned by these operations.",
+      "starter_sha256": "69cd1c68c1db701b538f4cb462898d54293f572f26577db79744f1200ad8636b",
+      "question": "Which step is skipped when parsing a fails?",
+      "design": {
+        "title": "Question mark either extracts or returns early",
+        "question": "Which step is skipped when parsing a fails?",
+        "kind": "flow",
+        "steps": [
+          {
+            "label": "number(a)?",
+            "detail": "Ok(value) extracts a; Err(bad number) immediately returns from add_text."
+          },
+          {
+            "label": "number(b)?",
+            "detail": "Reached only if parsing a succeeded; apply the same rule to b."
+          },
+          {
+            "label": "checked_add",
+            "detail": "If both parsed, return Ok(sum) or Err(overflow)."
+          }
+        ],
+        "note": "Assertions cover x/2 → bad number, MAX/1 → overflow, and 19/23 → Ok(42). The printed call is 19/23; an early error does not continue through later stages.",
+        "description": "Which step is skipped when parsing a fails? number(a)?. Ok(value) extracts a; Err(bad number) immediately returns from add_text.; number(b)?. Reached only if parsing a succeeded; apply the same rule to b.; checked_add. If both parsed, return Ok(sum) or Err(overflow).. Assertions cover x/2 → bad number, MAX/1 → overflow, and 19/23 → Ok(42). The printed call is 19/23; an early error does not continue through later stages."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "atomic-change",
+      "title": "Validate before you mutate",
+      "url": "https://snowch.github.io/rust-foundry/#course/atomic-change",
+      "decision": "Added",
+      "passage": "A failed change should leave the previous valid state intact. First validate the proposed replacement; only assign it after those checks succeed. This helper uses .is_empty() to ask whether the text has no bytes, and .len() to enforce the maximum byte count. || rejects the replacement if either rule fails. On success, String::from(replacement) creates the new owned text and *name replaces the caller’s String through its mutable reference. On failure, the early Err occurs before that assignment. Rust’s ownership checks do not automatically give your application this failure guarantee. The order of your validation and mutation matters.",
+      "starter_sha256": "bf0d7c2435f479526f2f95d3860a8801070b945a0add86b969842d6173a4a0d7",
+      "question": "Why does a rejected empty replacement preserve Ada?",
+      "design": {
+        "title": "Reject before replacing the old name",
+        "question": "Why does a rejected empty replacement preserve Ada?",
+        "kind": "branch",
+        "root": "replacement is nonempty and at most 31 UTF-8 bytes?",
+        "paths": [
+          {
+            "when": "No · empty string",
+            "result": "Err(invalid name)",
+            "detail": "name stays Ada."
+          },
+          {
+            "when": "Yes · Lin",
+            "result": "Replace name; Ok(())",
+            "detail": "name becomes Lin and is printed."
+          }
+        ],
+        "note": "The function validates before assignment through &mut String. “Atomic change” here describes an all-or-nothing API effect, not lock-free CPU atomics or thread synchronization.",
+        "description": "Why does a rejected empty replacement preserve Ada? replacement is nonempty and at most 31 UTF-8 bytes?. No · empty string. Err(invalid name). name stays Ada.; Yes · Lin. Replace name; Ok(()). name becomes Lin and is printed.. The function validates before assignment through &mut String. “Atomic change” here describes an all-or-nothing API effect, not lock-free CPU atomics or thread synchronization."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "vector-basics",
+      "title": "Use a sequence that can grow",
+      "url": "https://snowch.github.io/rust-foundry/#course/vector-basics",
+      "decision": "Keep prose / worked evidence",
+      "passage": "An array’s length is fixed. A Vec is an owned sequence whose length can change. vec![10, 20] creates a vector containing two elements; Vec names a vector of u32 values. A mutable vector can append with push(value). Its len() reports the current number of elements. As with String, the owner is responsible for the storage. A shared reference to a vector can be read as a slice. This lets the same &[u32] function accept an array view or vector view without taking ownership.",
+      "starter_sha256": "d724f7399eabb219ddaae84e987fe1a1ce4f21e4b2bb2f9ae0f3f1169776de9c",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "closures",
+      "title": "Write a small operation as a value",
+      "url": "https://snowch.github.io/rust-foundry/#course/closures",
+      "decision": "Keep prose / worked evidence",
+      "passage": "A closure is a small function-like value. |value: u32| value + 5 takes an input and produces an output, much like the function you wrote earlier. The vertical bars delimit its parameters. Its final expression is the result. Store it with let add_five = ...; and call it with add_five(10). Rust can often infer parameter types when the calling method already specifies them. A closure can also use a surrounding value; this is called capturing. Later iterator methods accept closures to choose or transform elements.",
+      "starter_sha256": "e9634ebaf44a136773513b0c0112caa40c327a39cd70cb9a20db2e5bde78bdcd",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "iterator-basics",
+      "title": "Ask a sequence for its next item",
+      "url": "https://snowch.github.io/rust-foundry/#course/iterator-basics",
+      "decision": "Keep prose / worked evidence",
+      "passage": "An iterator is a value that supplies items one at a time. .iter() borrows the elements of a collection. Its .next() returns Some(item) until there are no items left, then returns None. while let Some(item) = iterator.next() repeats only while the result matches Some. It binds the item for that repetition and stops on None. This combines a while loop with the enum patterns you learned. An iterator from .iter() yields references. .copied() can turn borrowed Copy values, such as &u32, into u32 values. .collect() gathers items into a collection; a type such as let values: Vec tells Rust what to build. A predicate is an operation returning bool, often written as a closure. Iterator methods .any(predicate) and .all(predicate) test whether any or every item satisfies the rule. A later pipeline lesson combines filtering with a sum.",
+      "starter_sha256": "82783451ecb0685a49b2bcf7d15fc689e3552c76ae34582082ef18299afb9f7e",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "iterators",
+      "title": "Transform without taking ownership",
+      "url": "https://snowch.github.io/rust-foundry/#course/iterators",
+      "decision": "Retained",
+      "passage": "An iterator pipeline connects small operations. .iter() borrows the scores, and .copied() supplies u32 values instead of references to them. .filter(predicate) keeps items whose predicate returns true. It temporarily lends each candidate to the predicate, so |score| *score >= 50 reads through a reference even though the iterator supplies copied numbers. .sum() consumes the retained values and adds them. The helper’s u32 return type tells Rust which sum type is expected. Operations such as filter are lazy: constructing them does not process the whole sequence. A consuming operation such as sum or collect drives the pipeline.",
+      "starter_sha256": "8ec37205dea8dcc5206d376977ccf1a9bc5a5476acdc4e79e0cb4d61c4b8b8bd",
+      "question": "Creating an iterator adaptor alone does not evaluate the full sequence.",
+      "design": null,
+      "reason": "The existing diagram already supplies the relevant relationship; retain its caption and assumptions.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "vectors",
+      "title": "Keep sorted, unique rows",
+      "url": "https://snowch.github.io/rust-foundry/#course/vectors",
+      "decision": "Revised",
+      "passage": "An invariant is a rule kept true after every operation. Here keys must remain sorted and unique. That lets binary_search search the ordered values efficiently. keys.binary_search(&key) returns Ok(index) when the key exists, or Err(index) containing where a missing key belongs. This Result uses Err for a not-found position rather than a text error. Vec::insert(index, value) inserts at that position and shifts later elements. Appending with push would be wrong for a key that belongs in the middle. The function checks the search result before changing keys, preserving the state if the requested key is already present.",
+      "starter_sha256": "1a94246ffaa93e713340092c00cfb2b30f975a6af8f9e81f55aec575d48a5ab7",
+      "question": "Why does inserting 3 into [1,5] preserve sorted order?",
+      "design": {
+        "title": "Insert at the returned position; reject duplicates",
+        "question": "Why does inserting 3 into [1,5] preserve sorted order?",
+        "kind": "slots",
+        "rows": [
+          {
+            "label": "Before insert_key",
+            "values": [
+              1,
+              5
+            ],
+            "note": "binary_search returns Err(1): insert before the old 5.",
+            "active": [],
+            "muted": [],
+            "tags": {
+              "1": "insertion position"
+            }
+          },
+          {
+            "label": "After insertion",
+            "values": [
+              1,
+              3,
+              5
+            ],
+            "note": "A second search for 3 returns Ok(1), so duplicate insertion is rejected.",
+            "active": [
+              1
+            ],
+            "muted": []
+          }
+        ],
+        "note": "The array length changes, so this is a logical element view, not fixed physical storage. Vec may reallocate during insertion; existing element addresses are not promised stable.",
+        "description": "Why does inserting 3 into [1,5] preserve sorted order? Before insert_key: index 0 = 1, index 1 = 5. binary_search returns Err(1): insert before the old 5.. After insertion: index 0 = 1, index 1 = 3, index 2 = 5. A second search for 3 returns Ok(1), so duplicate insertion is rejected.. The array length changes, so this is a logical element view, not fixed physical storage. Vec may reallocate during insertion; existing element addresses are not promised stable."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "imports",
+      "title": "Find names in the standard library",
+      "url": "https://snowch.github.io/rust-foundry/#course/imports",
+      "decision": "Keep prose / worked evidence",
+      "passage": "Rust’s standard library supplies reusable types and functions. std is its top-level name. A module groups related names, and :: steps through that grouping. std::cmp::min names the min function in the cmp comparison module. use std::cmp::min; makes the short name min available in this file. This is why later collection examples write use std::collections::HashMap;. Importing a name does not download a package: these examples use the standard library already provided by the browser compiler.",
+      "starter_sha256": "9f37bb740190e17d9dd4702bcd4cdb1a9092cce59a832e235a3a1e7d5a3c1649",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "maps",
+      "title": "Count with a map",
+      "url": "https://snowch.github.io/rust-foundry/#course/maps",
+      "decision": "Keep prose / worked evidence",
+      "passage": "A HashMap associates each key with a value. HashMap uses owned text as its keys and integer counts as its values. The import makes that standard type’s short name available. .entry(key).or_insert(0) finds the key’s current value or inserts an initial zero. It returns a mutable reference to the count, which you can increment using *count += 1. The input is a slice of borrowed text views. The loop’s word is a reference to one such view, so *word gives the &str used by String::from. This creates the owned key the map needs. .get(\"rust\") borrows a key to look up an optional reference to its value. As with other checked lookups, a missing key produces None. HashMap does not promise iteration order. HashMap::new() creates the empty map. The compiler infers its key and value types from the declared return type and the later entry operations.",
+      "starter_sha256": "96edaa57a2c1e2e1536f18232c291f9a2e9f61fbf2cb281e68209beb7a5c3639",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "sets",
+      "title": "Record whether a value was seen",
+      "url": "https://snowch.github.io/rust-foundry/#course/sets",
+      "decision": "Keep prose / worked evidence",
+      "passage": "A map associates keys with values. A set records only whether each value is present. HashSet therefore stores unique integers without a separate associated value. HashSet::new() creates an empty set. insert(value) returns true if it added a new member, and false if that member was already present. contains(&value) checks membership. TinyDB later uses a set of visited page IDs to reject a page-link cycle: encountering a page twice can signal an invalid file. Set iteration order, like hash-map order, is unspecified.",
+      "starter_sha256": "3f0d5db6534274260b59cf4234229dc27e6192347eb38759d8105c5f43cd462e",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "traits",
+      "title": "Name a behavior with a trait",
+      "url": "https://snowch.github.io/rust-foundry/#course/traits",
+      "decision": "Keep prose / worked evidence",
+      "passage": "A trait names behaviour that a type promises to provide. trait Identified declares an id method; impl Identified for Person supplies that method for Person. The method receives &self, just like the struct method you already wrote. The body returns the existing id field. This first trait example uses the concrete Person type in its helper. It introduces no generic function parameters yet. The next lesson uses a trait bound to make one algorithm accept several types. You have already seen Copy and Clone behaviour. Traits give such behaviour a name that other code can require.",
+      "starter_sha256": "ea60d3ffe2598668b7b9f95fbd9a53d89de7a3fc9279cb8ed950f7b7281bbe84",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "generics",
+      "title": "One algorithm, several types",
+      "url": "https://snowch.github.io/rust-foundry/#course/generics",
+      "decision": "Keep prose / worked evidence",
+      "passage": "You have used type arguments in Option, Vec, and parse::(). A generic function now lets you name an unspecified type parameter yourself: . The bound T: Ord requires that type to support a total ordering, so the function can compare any two values of that type. Integers and string slices support this standard trait. values.iter().max() returns an optional reference to the largest element. The reference stays borrowed from the input slice, and an empty slice produces None. The calls choose integer or text element types. largest::(&[]) explicitly supplies the type for an empty input, where no element would otherwise reveal it.",
+      "starter_sha256": "b8308e2b21fc039057e1efc7264ef71be42262f303897532cbe4f94781446c3a",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "derive",
+      "title": "Ask Rust to generate a trait implementation",
+      "url": "https://snowch.github.io/rust-foundry/#course/derive",
+      "decision": "Keep prose / worked evidence",
+      "passage": "An attribute supplies an instruction about the item below it. #[derive(Debug, PartialEq, Clone)] asks Rust to generate implementations of those traits for the following struct, when its fields support them. Debug enables {:?} inspection. PartialEq enables equality comparisons, including assert_eq!. Clone enables an explicit .clone(). You have used these behaviours on standard types; now your own type can support them too. This does not automatically make the type Copy. A struct containing a String still owns text and needs an explicit clone to make a separate owner.",
+      "starter_sha256": "dd01ef5440152f557c2d5473fe894d840c07b9fe6c5d014d5d3d190b6341d5d5",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "lifetimes",
+      "title": "Describe where a borrow comes from",
+      "url": "https://snowch.github.io/rust-foundry/#course/lifetimes",
+      "decision": "Added",
+      "passage": "The static-text lesson returned a literal valid for the whole program. This function instead returns one of two borrowed inputs, whose owners may have shorter scopes. The name 'a in  is a lifetime parameter. Writing &'a str for both inputs and the output states a relationship: the returned reference must remain valid within a lifetime supported by both input borrows. The annotation neither allocates a copy nor extends an owner’s lifetime. The comparison merely selects which already-borrowed view to return. Equal lengths select the first input in this contract. The assertions check both the longer-text case and that tie rule.",
+      "starter_sha256": "cba8ceeb9d9784264d9b786ec9fe54689b6826f0ad32a7ad8061d4f4674d5e4d",
+      "question": "Why can longer return Grace without allocating a new String?",
+      "design": {
+        "title": "The returned reference still borrows an input",
+        "question": "Why can longer return Grace without allocating a new String?",
+        "kind": "references",
+        "states": [
+          {
+            "label": "During the call and while using the result",
+            "objects": [
+              {
+                "label": "First caller-owned String",
+                "value": "Ada",
+                "refs": [
+                  {
+                    "name": "first",
+                    "edge": "owns"
+                  },
+                  {
+                    "name": "a",
+                    "edge": "shared borrow"
+                  }
+                ]
+              },
+              {
+                "label": "Second caller-owned String",
+                "value": "Grace",
+                "refs": [
+                  {
+                    "name": "second",
+                    "edge": "owns"
+                  },
+                  {
+                    "name": "b and returned result",
+                    "edge": "shared borrows"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "note": "The function chooses b because its byte length is larger. The shared lifetime parameter constrains valid use of the returned borrow; it does not extend either owner’s lifetime or copy the selected text.",
+        "description": "Why can longer return Grace without allocating a new String? During the call and while using the result: First caller-owned String contains Ada. first owns First caller-owned String; a shared borrow First caller-owned String; Second caller-owned String contains Grace. second owns Second caller-owned String; b and returned result shared borrows Second caller-owned String. The function chooses b because its byte length is larger. The shared lifetime parameter constrains valid use of the returned borrow; it does not extend either owner’s lifetime or copy the selected text."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "aliases",
+      "title": "Give a recurring type a readable name",
+      "url": "https://snowch.github.io/rust-foundry/#course/aliases",
+      "decision": "Keep prose / worked evidence",
+      "passage": "A type alias gives an existing type another name. type DbResult = Result; says that DbResult uses a String error while T still chooses the success type. For example, DbResult means Result, and DbResult means a result that reports success without another value. The alias creates no new storage or conversion. pub before an item makes it public, so another module can use it. Items without pub are private to their module by default. The full TinyDB source uses public Row, Database, and Session operations with private helpers.",
+      "starter_sha256": "b88f1698f237e3e401a6f924bad63d86752f6ff8ff6da1173efa878315c498e6",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "alg-complexity",
+      "title": "Big O: time, space, and input cases",
+      "url": "https://snowch.github.io/rust-foundry/#course/alg-complexity",
+      "decision": "Retained",
+      "passage": "Complexity models how work grows as the number of input items n increases. It describes operations and storage, not milliseconds on a specific computer. A scan visits n items, so its time is O(n). Comparing every distinct pair performs n(n−1)/2 comparisons. The quadratic term dominates as n grows, so this work is O(n²). The helper below counts actual loop visits rather than assuming its output proves an algorithm is fast. Auxiliary space measures extra storage beyond the input. Two counters need O(1) extra space even if their loops perform O(n²) work. Best, average, and worst cases refer to different inputs; a worst-case bound is not an average timing prediction. The outer range chooses the first item. The inner range starts at i + 1, so each unordered pair is counted once and no item is paired with itself. Small test inputs keep the u64 arithmetic safely in range.",
+      "starter_sha256": "07baa08e8f745081be4a8c4b0e6398f24db35d5e739e24ae0d1c1ff4ffc25c24",
+      "question": "These are operation models, not timing measurements. Storage growth must be analyzed separately.",
+      "design": null,
+      "reason": "The existing diagram already supplies the relevant relationship; retain its caption and assumptions.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "alg-search",
+      "title": "Implement binary search",
+      "url": "https://snowch.github.io/rust-foundry/#course/alg-search",
+      "decision": "Revised",
+      "passage": "The earlier sorted-vector lesson used the library’s binary_search. Here implement the search itself. A sorted slice lets each comparison rule out half of the remaining candidates. Track a half-open interval [lo, hi): lo is included and hi is excluded. Initially it spans 0..values.len(). While lo < hi, mid = lo + (hi − lo) / 2 is a valid index. An equal value returns Some(mid). A smaller middle value moves lo to mid + 1; a larger middle value moves hi to mid. Both updates strictly shrink the interval, including when the slice is empty or has one element. Each step halves the candidate count, giving O(log n) worst-case time and O(1) auxiliary space. The input must be sorted. With duplicates, this implementation can return any matching position, not necessarily the first.",
+      "starter_sha256": "62d2f6747a7bd3bafd433fd5c6c6fcb963e4dc6b69a4138c154712965540bc18",
+      "question": "Why is 23 found at the original index 5?",
+      "design": {
+        "title": "Keep original indices while the candidates shrink",
+        "question": "Why is 23 found at the original index 5?",
+        "kind": "slots",
+        "rows": [
+          {
+            "label": "First comparison",
+            "values": [
+              2,
+              5,
+              8,
+              12,
+              16,
+              23,
+              38,
+              56
+            ],
+            "note": "16 < 23: keep indices 5..8.",
+            "active": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ],
+            "muted": [],
+            "tags": {
+              "4": "mid"
+            }
+          },
+          {
+            "label": "Second comparison",
+            "values": [
+              2,
+              5,
+              8,
+              12,
+              16,
+              23,
+              38,
+              56
+            ],
+            "note": "38 > 23: keep [5,6).",
+            "active": [
+              5,
+              6,
+              7
+            ],
+            "muted": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "tags": {
+              "6": "mid"
+            }
+          },
+          {
+            "label": "Third comparison",
+            "values": [
+              2,
+              5,
+              8,
+              12,
+              16,
+              23,
+              38,
+              56
+            ],
+            "note": "23 matches at original index 5.",
+            "active": [
+              5
+            ],
+            "muted": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              6,
+              7
+            ],
+            "tags": {
+              "5": "mid"
+            }
+          }
+        ],
+        "note": "The sorted input stays fixed; only the half-open candidate bounds change. Discarded values are still present in the slice.",
+        "description": "Why is 23 found at the original index 5? First comparison: index 0 = 2, index 1 = 5, index 2 = 8, index 3 = 12, index 4 = 16, index 5 = 23, index 6 = 38, index 7 = 56. 16 < 23: keep indices 5..8.. Second comparison: index 0 = 2, index 1 = 5, index 2 = 8, index 3 = 12, index 4 = 16, index 5 = 23, index 6 = 38, index 7 = 56. 38 > 23: keep [5,6).. Third comparison: index 0 = 2, index 1 = 5, index 2 = 8, index 3 = 12, index 4 = 16, index 5 = 23, index 6 = 38, index 7 = 56. 23 matches at original index 5.. The sorted input stays fixed; only the half-open candidate bounds change. Discarded values are still present in the slice."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "alg-sort",
+      "title": "Insertion sort and a sorted-prefix invariant",
+      "url": "https://snowch.github.io/rust-foundry/#course/alg-sort",
+      "decision": "Revised",
+      "passage": "Insertion sort takes the next unsorted item and inserts it into a sorted prefix. Before iteration i, values[..i] is sorted. The saved key is values[i]. Move larger prefix elements one slot to the right until the gap belongs to the key. Test j > 0 before reading values[j − 1], then put the saved key at j. Shifting strictly greater values preserves the relative order of equal values, so this algorithm is stable. It changes the borrowed slice in place and uses O(1) auxiliary space. Already sorted input requires O(n) time. Reverse-sorted input shifts 1 + 2 + … + (n−1) items, giving O(n²) worst-case time. The assertions cover duplicates, negative values, and an empty slice.",
+      "starter_sha256": "9c6de463f0bc67878e1b71c2d9033c896e1d0e98a82526b733ccffd5f558f4db",
+      "question": "Where is key 5 while 9 and 7 shift right?",
+      "design": {
+        "title": "The saved key survives temporary duplicate values",
+        "question": "Where is key 5 while 9 and 7 shift right?",
+        "kind": "slots",
+        "rows": [
+          {
+            "label": "Before the last insertion",
+            "values": [
+              1,
+              2,
+              7,
+              9,
+              5
+            ],
+            "note": "The prefix is sorted; save key=5 separately.",
+            "active": [
+              4
+            ],
+            "muted": []
+          },
+          {
+            "label": "After shifting 9",
+            "values": [
+              1,
+              2,
+              7,
+              9,
+              9
+            ],
+            "note": "key=5 is still held in the local variable.",
+            "active": [
+              4
+            ],
+            "muted": []
+          },
+          {
+            "label": "After shifting 7",
+            "values": [
+              1,
+              2,
+              7,
+              7,
+              9
+            ],
+            "note": "The overwritten source value is safe because key was saved.",
+            "active": [
+              3
+            ],
+            "muted": []
+          },
+          {
+            "label": "Place key at index 2",
+            "values": [
+              1,
+              2,
+              5,
+              7,
+              9
+            ],
+            "note": "All five elements are now sorted.",
+            "active": [
+              2
+            ],
+            "muted": []
+          }
+        ],
+        "note": "These are actual intermediate values for sorting the starter [9,2,7,1,5]. No element becomes an uninitialized hole.",
+        "description": "Where is key 5 while 9 and 7 shift right? Before the last insertion: index 0 = 1, index 1 = 2, index 2 = 7, index 3 = 9, index 4 = 5. The prefix is sorted; save key=5 separately.. After shifting 9: index 0 = 1, index 1 = 2, index 2 = 7, index 3 = 9, index 4 = 9. key=5 is still held in the local variable.. After shifting 7: index 0 = 1, index 1 = 2, index 2 = 7, index 3 = 7, index 4 = 9. The overwritten source value is safe because key was saved.. Place key at index 2: index 0 = 1, index 1 = 2, index 2 = 5, index 3 = 7, index 4 = 9. All five elements are now sorted.. These are actual intermediate values for sorting the starter [9,2,7,1,5]. No element becomes an uninitialized hole."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "alg-recursion",
+      "title": "Recursive algorithms and stack cost",
+      "url": "https://snowch.github.io/rust-foundry/#course/alg-recursion",
+      "decision": "Revised",
+      "passage": "A recursive function calls itself on a smaller problem. factorial(0) is 1; factorial(n) for positive n is n multiplied by factorial(n−1). The base case ends the chain of calls. Every recursive step reduces n, so the valid nonnegative inputs eventually reach zero. This example restricts n to 0 through 20 so the result fits u64. Each call waits for a smaller call before completing its multiplication. There are O(n) calls and O(n) pending stack frames. Rust does not promise tail-call optimization. Recursion expresses a dependency clearly, but it is not automatically faster or more memory-efficient than iteration. Trees later reuse the same smaller-subproblem structure by descending to children.",
+      "starter_sha256": "0224315a2001f7ac4331cbc94694c2e84e553b7402e9750cf0f1579363826cba",
+      "question": "Why does factorial(6) return 720?",
+      "design": {
+        "title": "Calls retain unfinished multiplication",
+        "question": "Why does factorial(6) return 720?",
+        "kind": "frames",
+        "frames": [
+          {
+            "call": "factorial(6)",
+            "pending": "6 × factorial(5)",
+            "result": "Return 720"
+          },
+          {
+            "call": "factorial(5)",
+            "pending": "5 × factorial(4)",
+            "result": "Return 120"
+          },
+          {
+            "call": "factorial(4)",
+            "pending": "4 × factorial(3)",
+            "result": "Return 24"
+          },
+          {
+            "call": "factorial(3)",
+            "pending": "3 × factorial(2)",
+            "result": "Return 6"
+          },
+          {
+            "call": "factorial(2)",
+            "pending": "2 × factorial(1)",
+            "result": "Return 2"
+          },
+          {
+            "call": "factorial(1)",
+            "pending": "1 × factorial(0)",
+            "result": "Return 1"
+          },
+          {
+            "call": "factorial(0)",
+            "pending": "Base case returns 1",
+            "result": "Return 1"
+          }
+        ],
+        "note": "This is the printed factorial(6) call, with results returning from the innermost call outward. Frames are a logical call model, not a physical stack layout or an overflow guarantee for arbitrary inputs.",
+        "description": "Why does factorial(6) return 720? factorial(6). 6 × factorial(5). Return 720; factorial(5). 5 × factorial(4). Return 120; factorial(4). 4 × factorial(3). Return 24; factorial(3). 3 × factorial(2). Return 6; factorial(2). 2 × factorial(1). Return 2; factorial(1). 1 × factorial(0). Return 1; factorial(0). Base case returns 1. Return 1. This is the printed factorial(6) call, with results returning from the innermost call outward. Frames are a logical call model, not a physical stack layout or an overflow guarantee for arbitrary inputs."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "alg-lists",
+      "title": "Linked lists and owned links",
+      "url": "https://snowch.github.io/rust-foundry/#course/alg-lists",
+      "decision": "Revised",
+      "passage": "A singly linked list stores a value and a link to the next node. Option> is either an owned successor or None at the tail. Box owns a heap-allocated value and has a known pointer-sized representation, allowing a recursive Node type to have finite size. Box::new creates the allocation. To prepend, head.take() moves the old Option out and leaves None in its place. Store that old head as the new node’s next link, then assign the new boxed node to head. Traversal should borrow rather than consume the list. as_deref converts an optional owned box into an optional reference to its node. Follow node.next.as_deref() to inspect the successor without moving it. Prepending takes O(1) time; a complete traversal takes O(n). Nodes use O(n) heap space. A Vec usually has better locality and fewer allocations, so a linked list is not a default performance improvement. This small example also avoids deep recursive destruction.",
+      "starter_sha256": "ddbdcdf4a6b1c3a9c69795d036d3342d3ca2e2da5c80fe6056868776c0bcf255",
+      "question": "Which nodes are reused when 3 is prepended?",
+      "design": {
+        "title": "The new owning link takes the old head",
+        "question": "Which nodes are reused when 3 is prepended?",
+        "kind": "panels",
+        "panels": [
+          {
+            "label": "Before prepend(3)",
+            "model": {
+              "kind": "graph",
+              "nodes": [
+                {
+                  "id": "h",
+                  "label": "head",
+                  "x": 12,
+                  "y": 50
+                },
+                {
+                  "id": "2",
+                  "label": "2",
+                  "x": 44,
+                  "y": 50
+                },
+                {
+                  "id": "1",
+                  "label": "1",
+                  "x": 76,
+                  "y": 50
+                }
+              ],
+              "edges": [
+                {
+                  "from": "h",
+                  "to": "2",
+                  "label": ""
+                },
+                {
+                  "from": "2",
+                  "to": "1",
+                  "label": "owns next"
+                }
+              ],
+              "legend": "Node 1.next is None.",
+              "height": 160
+            }
+          },
+          {
+            "label": "After prepend(3)",
+            "model": {
+              "kind": "graph",
+              "nodes": [
+                {
+                  "id": "h",
+                  "label": "head",
+                  "x": 9,
+                  "y": 50
+                },
+                {
+                  "id": "3",
+                  "label": "3",
+                  "x": 34,
+                  "y": 50
+                },
+                {
+                  "id": "2",
+                  "label": "2",
+                  "x": 59,
+                  "y": 50
+                },
+                {
+                  "id": "1",
+                  "label": "1",
+                  "x": 84,
+                  "y": 50
+                }
+              ],
+              "edges": [
+                {
+                  "from": "h",
+                  "to": "3",
+                  "label": ""
+                },
+                {
+                  "from": "3",
+                  "to": "2",
+                  "label": "next"
+                },
+                {
+                  "from": "2",
+                  "to": "1",
+                  "label": "next"
+                }
+              ],
+              "legend": "head.take transfers the old owning link; nodes 2 and 1 are not copied.",
+              "height": 160
+            }
+          }
+        ],
+        "note": "Box links own nodes; the values traversal borrows references. Positions preserve logical identity and do not claim physical adjacency.",
+        "description": "Which nodes are reused when 3 is prepended? Before prepend(3). Nodes: head, 2, 1. Connections: head leads to 2; 2 leads to 1 (owns next). Node 1.next is None.; After prepend(3). Nodes: head, 3, 2, 1. Connections: head leads to 3; 3 leads to 2 (next); 2 leads to 1 (next). head.take transfers the old owning link; nodes 2 and 1 are not copied.. Box links own nodes; the values traversal borrows references. Positions preserve logical identity and do not claim physical adjacency."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "alg-stacks",
+      "title": "Stacks: validate nested delimiters",
+      "url": "https://snowch.github.io/rust-foundry/#course/alg-stacks",
+      "decision": "Revised",
+      "passage": "A stack removes the most recently added item. Vec::push appends at the top, and pop removes that last item, returning None when the stack is empty. For nested delimiters, every opening bracket waits for a matching closing bracket. The next close must match the most recent unmatched opening, not any earlier opening. Iterate text.chars() to read Unicode scalar values. match classifies opening brackets, closing brackets, and ignored text. For a closing bracket, pop and compare its expected opening; finally use is_empty to reject leftover openings. Each character is visited once, so time is O(n). Up to n openings can be pending, so worst-case auxiliary space is O(n). Equal counts alone cannot detect crossed brackets such as ([)].",
+      "starter_sha256": "91d319f8a225932f6d7d98fdcfa562c64d39dc4d461b2b407e2681d92726d393",
+      "question": "Why does { [ ( ) ] } finish with an empty stack?",
+      "design": {
+        "title": "Close the most recent unmatched delimiter",
+        "question": "Why does { [ ( ) ] } finish with an empty stack?",
+        "kind": "table",
+        "headings": [
+          "Token",
+          "Stack after token · bottom → top",
+          "Action"
+        ],
+        "rows": [
+          [
+            "{",
+            "{",
+            "push"
+          ],
+          [
+            "[",
+            "{ [",
+            "push"
+          ],
+          [
+            "(",
+            "{ [ (",
+            "push"
+          ],
+          [
+            ")",
+            "{ [",
+            "pop and compare ("
+          ],
+          [
+            "]",
+            "{",
+            "pop and compare ["
+          ],
+          [
+            "}",
+            "empty",
+            "pop and compare {"
+          ]
+        ],
+        "label": "",
+        "links": [],
+        "note": "This is the printed starter case {[()]}. The separate assertion ([)] fails on mismatched ordering even though the counts match.",
+        "description": "Why does { [ ( ) ] } finish with an empty stack? Token; Stack after token · bottom → top; Action. {; {; push; [; { [; push; (; { [ (; push; ); { [; pop and compare (; ]; {; pop and compare [; }; empty; pop and compare {. . . This is the printed starter case {[()]}. The separate assertion ([)] fails on mismatched ordering even though the counts match."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "alg-queues",
+      "title": "Queues: first in, first out",
+      "url": "https://snowch.github.io/rust-foundry/#course/alg-queues",
+      "decision": "Revised",
+      "passage": "A queue removes the oldest pending item. VecDeque is a growable ring buffer from std::collections; a use declaration brings its name into scope. push_back adds a value at the arrival end. pop_front removes the oldest value and returns Option: Some(value) when work exists, None when empty. Reversing those ends changes the order. The buffer can wrap around its allocation, so removing the front does not shift every remaining item as Vec::remove(0) would. Insertion and removal at its ends take amortized O(1) time; occasional growth can allocate and copy. Queue storage is O(n) for n pending items. The driver interleaves new arrivals and departures to test more than one initial batch.",
+      "starter_sha256": "04f22beb62e966bbb4f37f7e35b58a5fd6fbb55229d2de7e6e3e8b2193494d61",
+      "question": "Why must 20 leave before the newly added 30?",
+      "design": {
+        "title": "The front follows arrival order",
+        "question": "Why must 20 leave before the newly added 30?",
+        "kind": "table",
+        "headings": [
+          "Operation",
+          "Logical queue · front → back",
+          "Returned value"
+        ],
+        "rows": [
+          [
+            "push 10, push 20",
+            "10 → 20",
+            "—"
+          ],
+          [
+            "serve",
+            "20",
+            "Some(10)"
+          ],
+          [
+            "push 30",
+            "20 → 30",
+            "—"
+          ],
+          [
+            "serve",
+            "30",
+            "Some(20)"
+          ],
+          [
+            "serve",
+            "empty",
+            "Some(30)"
+          ],
+          [
+            "serve empty",
+            "empty",
+            "None"
+          ]
+        ],
+        "label": "",
+        "links": [],
+        "note": "VecDeque uses its own storage representation; this is logical FIFO order, not an assumed internal array arrangement.",
+        "description": "Why must 20 leave before the newly added 30? Operation; Logical queue · front → back; Returned value. push 10, push 20; 10 → 20; —; serve; 20; Some(10); push 30; 20 → 30; —; serve; 30; Some(20); serve; empty; Some(30); serve empty; empty; None. . . VecDeque uses its own storage representation; this is logical FIFO order, not an assumed internal array arrangement."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "alg-hashes",
+      "title": "Hashing, collisions, and deterministic output",
+      "url": "https://snowch.github.io/rust-foundry/#course/alg-hashes",
+      "decision": "Retained",
+      "passage": "A hash map uses a key’s hash to choose where to search. Different keys can lead to the same destination: a collision. Correct lookup also compares keys, because a hash is not a unique identifier. HashMap insertion and lookup take expected O(1) time under normal hashing assumptions. This is not a guaranteed worst-case bound, and it does not include unbounded work for hashing an arbitrarily long string. split_whitespace visits words. entry(word).or_insert(0) gets a mutable count, creating zero when absent. Dereference and increment it for every occurrence. The map borrows word slices from text, which remains alive for the function call. Map iteration order is unspecified. Collect keys into a Vec and sort_unstable them before printing counts. That display sort costs O(k log k) for k distinct keys; it is separate from counting.",
+      "starter_sha256": "0950affadc7e2cbc851f73798f0c01f8648b4bfcc07586f6e584d2fdcab332d6",
+      "question": "Expected constant-time map access does not make the final sorted report constant-time.",
+      "design": null,
+      "reason": "The existing diagram already supplies the relevant relationship; retain its caption and assumptions.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "alg-trees",
+      "title": "Binary search trees and height",
+      "url": "https://snowch.github.io/rust-foundry/#course/alg-trees",
+      "decision": "Revised",
+      "passage": "A binary search tree keeps smaller keys in the left subtree and larger keys in the right. Each child is an Option>, reusing the owned-link representation from linked lists. Insert descends to the appropriate child until an empty link becomes a new leaf. This set ignores equal keys. A mutable match lends access to the child being updated without taking away the whole tree. An in-order traversal visits left subtree, current key, then right subtree, so the values appear in sorted order. It borrows the tree and uses push to append values to an output Vec. Insertion takes O(h), where h is height. A balanced tree has logarithmic height, but this unbalanced implementation can become a chain with O(n) height. Nodes use O(n) storage; traversal adds O(h) call-stack space, plus its output. TinyDB’s later B+ tree uses wider balanced nodes instead.",
+      "starter_sha256": "f178af532d17f9504744f2657484e4a18c28c32964f1b63c4206b231e5ef13ef",
+      "question": "Why does in-order traversal return [1,2,3,5,7]?",
+      "design": {
+        "title": "The same ancestor rule applies to every descendant",
+        "question": "Why does in-order traversal return [1,2,3,5,7]?",
+        "kind": "graph",
+        "nodes": [
+          {
+            "id": "5",
+            "label": "5",
+            "x": 58,
+            "y": 12
+          },
+          {
+            "id": "2",
+            "label": "2",
+            "x": 30,
+            "y": 46
+          },
+          {
+            "id": "7",
+            "label": "7",
+            "x": 84,
+            "y": 46
+          },
+          {
+            "id": "1",
+            "label": "1",
+            "x": 14,
+            "y": 85
+          },
+          {
+            "id": "3",
+            "label": "3",
+            "x": 45,
+            "y": 85
+          }
+        ],
+        "edges": [
+          {
+            "from": "5",
+            "to": "2",
+            "label": "< 5"
+          },
+          {
+            "from": "5",
+            "to": "7",
+            "label": "> 5"
+          },
+          {
+            "from": "2",
+            "to": "1",
+            "label": "< 2"
+          },
+          {
+            "from": "2",
+            "to": "3",
+            "label": "> 2"
+          }
+        ],
+        "legend": "Visit left subtree → current key → right subtree. Inserting 7 again leaves this unique-key tree unchanged.",
+        "height": 350,
+        "note": "Ordering alone does not guarantee logarithmic height. The boxes show logical nodes and owning links, not adjacent physical storage.",
+        "description": "Why does in-order traversal return [1,2,3,5,7]? Nodes: 5, 2, 7, 1, 3. Connections: 5 leads to 2 (< 5); 5 leads to 7 (> 5); 2 leads to 1 (< 2); 2 leads to 3 (> 2). Visit left subtree → current key → right subtree. Inserting 7 again leaves this unique-key tree unchanged.. Ordering alone does not guarantee logarithmic height. The boxes show logical nodes and owning links, not adjacent physical storage."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "alg-graphs",
+      "title": "Graphs and breadth-first search",
+      "url": "https://snowch.github.io/rust-foundry/#course/alg-graphs",
+      "decision": "Revised",
+      "passage": "A graph represents vertices and edges. An adjacency list stores each vertex’s neighboring vertex numbers in a Vec. An undirected edge appears in both endpoint lists. Breadth-first search uses VecDeque as a queue. Start at distance zero; every newly discovered neighbor gets the current distance plus one. The distance Vec starts at −1 to mark unseen vertices. Record a neighbor’s distance before push_back so a cycle cannot enqueue it repeatedly. pop_front processes the oldest discovered vertex, finishing distance d before distance d + 1. That is why the first discovered distance is shortest for equal-cost edges. BFS takes O(V + E) time and O(V) auxiliary space beyond the graph: V vertices and E adjacency entries. Weighted edges need a different shortest-path algorithm. Our small valid graphs use vertex numbers as slice indices; production input parsing must validate those bounds.",
+      "starter_sha256": "433c1c969fa679ab32128c071470815d15af5f9950d2004ffdd213f7fc25dea8",
+      "question": "Why is vertex 4 two edges away from vertex 0?",
+      "design": {
+        "title": "BFS discovers distance layers",
+        "question": "Why is vertex 4 two edges away from vertex 0?",
+        "kind": "graph",
+        "nodes": [
+          {
+            "id": "0",
+            "label": "0",
+            "x": 50,
+            "y": 12
+          },
+          {
+            "id": "1",
+            "label": "1",
+            "x": 22,
+            "y": 48
+          },
+          {
+            "id": "3",
+            "label": "3",
+            "x": 78,
+            "y": 48
+          },
+          {
+            "id": "2",
+            "label": "2",
+            "x": 22,
+            "y": 86
+          },
+          {
+            "id": "4",
+            "label": "4",
+            "x": 78,
+            "y": 86
+          }
+        ],
+        "edges": [
+          {
+            "from": "0",
+            "to": "1",
+            "label": "",
+            "directed": false
+          },
+          {
+            "from": "0",
+            "to": "3",
+            "label": "",
+            "directed": false
+          },
+          {
+            "from": "1",
+            "to": "2",
+            "label": "",
+            "directed": false
+          },
+          {
+            "from": "3",
+            "to": "4",
+            "label": "",
+            "directed": false
+          }
+        ],
+        "legend": "Distance 0: vertex 0. Distance 1: vertices 1,3. Distance 2: vertices 2,4. The FIFO queue processes discoveries in layer order.",
+        "height": 340,
+        "note": "The starter traverses the reachable graph before returning distance[target]; it does not stop as soon as target is first seen. Equal-cost edges are required for this shortest-distance rule.",
+        "description": "Why is vertex 4 two edges away from vertex 0? Nodes: 0, 1, 3, 2, 4. Connections: 0 connects to 1; 0 connects to 3; 1 connects to 2; 3 connects to 4. Distance 0: vertex 0. Distance 1: vertices 1,3. Distance 2: vertices 2,4. The FIFO queue processes discoveries in layer order.. The starter traverses the reachable graph before returning distance[target]; it does not stop as soon as target is first seen. Equal-cost edges are required for this shortest-distance rule."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "little-endian",
+      "title": "Encode a number explicitly",
+      "url": "https://snowch.github.io/rust-foundry/#course/little-endian",
+      "decision": "Revised",
+      "passage": "A file format is an agreed rule for translating values into bytes. A u32 uses four bytes, and byte order specifies which byte comes first. Little-endian puts the least significant byte first. For 258, that is [2, 1, 0, 0]: two units plus one group of 256. .to_le_bytes() encodes this order, and u32::from_le_bytes(...) decodes it. A numeric literal beginning 0x is hexadecimal, base sixteen. Digits A through F mean ten through fifteen. 0x12345678 is a compact way to show four distinct byte groups in the known-byte test; you do not need to calculate its decimal value. The returned [u8; 4] is the fixed-size array type you learned earlier. Do not copy a Rust struct’s raw memory as a format: its internal layout and owning fields do not define portable file bytes.",
+      "starter_sha256": "73d855a74ac1fc74da53b6d0fecd88b1ea7c573fb28e654be97e2d5a26b353b3",
+      "question": "How do four chosen bytes reconstruct 258?",
+      "design": {
+        "title": "The least significant byte is stored first",
+        "question": "How do four chosen bytes reconstruct 258?",
+        "kind": "bytes",
+        "label": "258 = hexadecimal 0x00000102",
+        "values": [
+          "02",
+          "01",
+          "00",
+          "00"
+        ],
+        "groups": [
+          {
+            "label": "low byte",
+            "size": 1
+          },
+          {
+            "label": "next byte",
+            "size": 1
+          },
+          {
+            "label": "high bytes",
+            "size": 2
+          }
+        ],
+        "note": "This is the chosen little-endian file encoding, not an assumption about the host’s native layout. 2 + 1×256 = 258.",
+        "description": "How do four chosen bytes reconstruct 258? 258 = hexadecimal 0x00000102. low byte uses byte offsets 0: 02; next byte uses byte offsets 1: 01; high bytes uses byte offsets 2 through 3: 00, 00. This is the chosen little-endian file encoding, not an assumption about the host’s native layout. 2 + 1×256 = 258."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "decode",
+      "title": "Reject short input safely",
+      "url": "https://snowch.github.io/rust-foundry/#course/decode",
+      "decision": "Added",
+      "passage": "A decoder cannot assume the file is long enough. bytes.get(..4) asks for the first four bytes and returns Option, instead of panicking on a short input. The ..4 range means zero through the position before four. .ok_or(\"short input\") converts absence into an error, and ? propagates it as you have already practised. .try_into() attempts to convert the checked slice into the required [u8; 4] array. It returns Result. .map_err(closure) changes only an Err value, here into our chosen fixed message; the closure’s _ ignores the original conversion error. Only after those checks does from_le_bytes interpret the four bytes as a number. Invalid input returns an error without indexing beyond the available bytes.",
+      "starter_sha256": "695454f316bd8aac597c24a3a895ef8ad6c3971b70d3aa246bfe40ea37a7992c",
+      "question": "Why must the short-input cases return an error before decoding?",
+      "design": {
+        "title": "Read only a complete four-byte prefix",
+        "question": "Why must the short-input cases return an error before decoding?",
+        "kind": "panels",
+        "panels": [
+          {
+            "label": "Length guard",
+            "model": {
+              "kind": "branch",
+              "root": "bytes.get(..4)",
+              "paths": [
+                {
+                  "when": "Fewer than 4 bytes",
+                  "result": "Err(short input)",
+                  "detail": "No four-byte array is read."
+                },
+                {
+                  "when": "At least 4 bytes",
+                  "result": "Take the first four bytes",
+                  "detail": "Convert to [u8;4], then decode."
+                }
+              ]
+            }
+          },
+          {
+            "label": "Supplied successful prefix",
+            "model": {
+              "kind": "bytes",
+              "label": "Little-endian bytes → 258",
+              "values": [
+                "02",
+                "01",
+                "00",
+                "00"
+              ],
+              "groups": [
+                {
+                  "label": "low",
+                  "size": 1
+                },
+                {
+                  "label": "next",
+                  "size": 1
+                },
+                {
+                  "label": "high",
+                  "size": 2
+                }
+              ]
+            }
+          }
+        ],
+        "note": "The helper accepts a prefix; it does not reject all trailing bytes. Checked slice access precedes conversion and decoding.",
+        "description": "Why must the short-input cases return an error before decoding? Length guard. bytes.get(..4). Fewer than 4 bytes. Err(short input). No four-byte array is read.; At least 4 bytes. Take the first four bytes. Convert to [u8;4], then decode.; Supplied successful prefix. Little-endian bytes → 258. low uses byte offsets 0: 02; next uses byte offsets 1: 01; high uses byte offsets 2 through 3: 00, 00. The helper accepts a prefix; it does not reject all trailing bytes. Checked slice access precedes conversion and decoding."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "tests",
+      "title": "Test an invariant, not one example",
+      "url": "https://snowch.github.io/rust-foundry/#course/tests",
+      "decision": "Keep prose / worked evidence",
+      "passage": "A round trip encodes a value and decodes the result. The original and decoded values should agree. A boundary is a case where representation changes, such as 255 to 256. The .all(closure) iterator method returns true only if every supplied value satisfies the comparison. An empty iterator also returns true because no item violates the rule. A round-trip test can miss two functions sharing the same mistake. Compare known expected bytes too, or exchange a file with an independent implementation. The assertions here run in main in the browser. A native rustc --test build is a separate way to run Rust test functions; you do not need that command to complete this browser lesson.",
+      "starter_sha256": "6b9846ee2623095c75964cd2799eabb85e3a5cda74bcd4a7ec28c6d8f0af6081",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "files",
+      "title": "Write and reopen bytes",
+      "url": "https://snowch.github.io/rust-foundry/#course/files",
+      "decision": "Keep prose / worked evidence",
+      "passage": "A file is a named sequence of bytes. A filesystem keeps track of those names and contents. A database file is still bytes; a file format gives those bytes a meaning. std::fs::write(name, bytes) writes the supplied bytes. std::fs::read(name) returns them as Vec. Both operations return Result because file access can fail. Here main returns std::io::Result, a standard type alias for a result with an input/output error. ? propagates a file failure, and Ok(()) reports successful completion. This is the same Result pattern you already learned, with the library’s error type. Ordinary lesson runs have a temporary filesystem: the file exists only for this run. The TinyDB workspace later saves complete file snapshots between runs. Do not infer that any editor write is automatically saved on your phone.",
+      "starter_sha256": "8b529152a78a918531142f5ad0617960cc2c57301bc019db534e6f430db45981",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "option-propagation",
+      "title": "Stop a missing calculation with ?",
+      "url": "https://snowch.github.io/rust-foundry/#course/option-propagation",
+      "decision": "Added",
+      "passage": "You used ? with Result to return early on Err. In a function returning Option, ? returns early on None and extracts the value from Some. checked_mul and checked_sub are the multiplication and subtraction counterparts of checked_add. Each returns None if the operation cannot produce a value of the chosen type. This lets page-address calculations reject overflow before using an invalid offset. The return type determines which failure form ? propagates; it does not turn Option into Result by itself.",
+      "starter_sha256": "4c361a3a664487e3f73154b45f84aeb81fc218f1f838500a9513a644cb27bd49",
+      "question": "Why is the oversized record count None?",
+      "design": {
+        "title": "A size overflow stops before constructing the success",
+        "question": "Why is the oversized record count None?",
+        "kind": "branch",
+        "root": "records.checked_mul(size)?",
+        "paths": [
+          {
+            "when": "3 × 40 fits usize",
+            "result": "Extract 120; return Some(120)",
+            "detail": ""
+          },
+          {
+            "when": "usize::MAX × 40 does not fit",
+            "result": "Return None immediately",
+            "detail": "The later Some(count) is not reached."
+          }
+        ],
+        "note": "The maximum depends on usize’s target width. This is a checked byte-count calculation, not an allocation attempt or a claim that memory is available.",
+        "description": "Why is the oversized record count None? records.checked_mul(size)?. 3 × 40 fits usize. Extract 120; return Some(120). ; usize::MAX × 40 does not fit. Return None immediately. The later Some(count) is not reached.. The maximum depends on usize’s target width. This is a checked byte-count calculation, not an allocation attempt or a claim that memory is available."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "checksums",
+      "title": "Check whether bytes changed",
+      "url": "https://snowch.github.io/rust-foundry/#course/checksums",
+      "decision": "Keep prose / worked evidence",
+      "passage": "A checksum is a small value calculated from file bytes. Saving it alongside the data lets a reader recalculate and compare, which can reveal an accidental change. This deliberately simple demonstration adds the bytes into a u32. u32::from(*byte) converts a u8 value to a larger integer type without losing information. wrapping_add deliberately wraps at the numeric limit; it is appropriate here only because this checksum’s rule explicitly defines that behaviour. Different byte sequences can share a checksum. That is a collision. This toy sum gives the same result for [1, 2] and [2, 1], so matching checksums are not proof that two files are identical. TinyDB uses a different checksum algorithm, FNV-1a, plus structural validation. Neither this toy checksum nor FNV-1a authenticates a file against deliberate tampering.",
+      "starter_sha256": "8fb9bfb4c6e601b20f36a2746328c950ba022ba2667522190086eaecb142ac74",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "database-basics",
+      "title": "Meet a table, row, and column",
+      "url": "https://snowch.github.io/rust-foundry/#course/database-basics",
+      "decision": "Retained",
+      "passage": "A database stores organised records so a later operation can find or change them. TinyDB has one table named people. A table is a collection of rows; each row describes one person. The columns are the named fields in every row: id, name, and score. The id identifies one person, name is text, and score is a whole number. A schema is the rule describing these columns and the values they allow. You already modelled a row with a Rust struct. The program below creates one in memory. TinyDB additionally encodes rows into files, indexes IDs, and controls when changes are saved. SQL is a text command language for asking a database to read or change rows. No SQL knowledge is assumed: the next lesson explains the commands. For now, .tables and .schema are TinyDB inspection commands, with one command on each line. In the lab, .tables lists table names, .schema describes their columns and rules, and .check validates the current database structure and reports its row/page counts. These are inspection commands, not SQL statements.",
+      "starter_sha256": "f1a4ae1b2f04404c904519724b253455f5cefd328c422b32c3fcda3b13becf50",
+      "question": "The workspace’s inspection commands reveal actual tables and their rules.",
+      "design": null,
+      "reason": "The existing diagram already supplies the relevant relationship; retain its caption and assumptions.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "sql-crud",
+      "title": "Read and change rows with SQL",
+      "url": "https://snowch.github.io/rust-foundry/#course/sql-crud",
+      "decision": "Keep prose / worked evidence",
+      "passage": "INSERT INTO people VALUES (1, 'Ada', 90); adds one row. The values follow the schema’s id, name, score order. SQL text uses single quotes; the final semicolon ends the statement. SELECT * FROM people; reads all columns from all rows. WHERE id = 1 limits the operation to that ID. SELECT COUNT(*) FROM people; reports how many rows match. UPDATE people SET score = 95 WHERE id = 1; changes that row’s score. DELETE FROM people WHERE id = 1; removes the row. These four kinds of operation are often called CRUD: create, read, update, delete. The lab uses the real Rust database. Each standalone write saves a committed change, called autocommit. Later lessons explain transactions that group writes together. SQL runs in the TinyDB workspace; the small Rust exercise below models the same field change. In the supplied Rust helper, let _ = old; explicitly ignores the previous value. The underscore pattern is the ignore pattern from the enum lesson; here it is used in a let statement. The replacement input is the value that should be returned.",
+      "starter_sha256": "1180052ac645a349cd97dc9788496f0ffa6c314705689087dfd8cd811f6f2aba",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "row-validation",
+      "title": "Define the row contract",
+      "url": "https://snowch.github.io/rust-foundry/#course/row-validation",
+      "decision": "Keep prose / worked evidence",
+      "passage": "You have seen the people table and its columns. Its name rule allows 1–31 UTF-8 bytes and forbids ASCII control characters. A control character is a byte such as newline or zero that controls text handling rather than displaying a normal letter. name.is_empty() checks for no bytes. name.bytes().any(predicate) tests whether at least one byte violates the rule. Unlike filter, any passes each byte value directly to its predicate. Bytes below 32 and the DEL byte 127 are rejected. A positive id, a name meeting this rule, and a u32 score form a valid row; checking id uniqueness additionally needs access to the stored table. The test helper \"é\".repeat(16) creates a String containing sixteen copies of that text. It occupies 32 bytes and therefore exceeds the name limit. Validation must happen before changing the database.",
+      "starter_sha256": "66e53fa5d94db684d81172f146945e8e161db6c0b0fb014bce9703f7c99da467",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "sql-strings",
+      "title": "Parse SQL without splitting names",
+      "url": "https://snowch.github.io/rust-foundry/#course/sql-strings",
+      "decision": "Keep prose / worked evidence",
+      "passage": "SQL commands contain keywords, numbers, punctuation, and quoted text. A lexer separates these into tokens; a parser checks that their order follows the supported command rules. This helper decodes just one text token. SQL doubles a quote inside a quoted name: 'O''Neil' represents O'Neil. This differs from Rust’s backslash escape for a quote in a char literal. The source uses '\\'' to write one Rust quote character. .starts_with and .ends_with check the surrounding quotes before slicing. String::new() creates empty owned text, and .push(character) appends one char. The chars iterator and while let loop use the operations you already learned. On an interior quote, the helper requires and consumes the second quote of the SQL escape pair. A complete parser must also check all remaining tokens and limits.",
+      "starter_sha256": "3f7a58301299a0e204acd8ea52d7d880d79ddb85d166d3cffb5f392fa413bcbf",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "tdb1",
+      "title": "Exchange files with C Foundry",
+      "url": "https://snowch.github.io/rust-foundry/#course/tdb1",
+      "decision": "Keep prose / worked evidence",
+      "passage": "TDB1 is an exchange format shared with C Foundry. A header is the first metadata in a file. Its magic, the bytes spelling TDB1, identifies the format; its version distinguishes compatible layouts. The exact eight header bytes are TDB1, version 1, row size 40, a one-byte row count, and a reserved zero byte. The count may be at most 128. After the header, each record has id (4 bytes), a zero-terminated UTF-8 name field (32 bytes), and score (4 bytes). Integer fields use little-endian order. In Rust, b\"TDB1\" is a byte-string literal: the ASCII letter codes as bytes rather than a text slice. bytes[6] as usize converts the small count byte to the length/index type. This widening conversion is safe for u8; arbitrary narrowing casts would need their own validation. The whole file must have exactly 8 + count * 40 bytes. This exercise checks only that outer contract. The full Rust decoder also validates each row and rejects duplicate IDs. .export creates a separate TDB1 file; .import accepts it after validation. In the test setup, bytes.extend([0; 40]) appends forty zero bytes after the header. extend appends a whole sequence; [0; 40] repeats the array element using the notation from the arrays lesson. The workspace command .export exchange.tdb writes a separate exchange file. .snapshot backup.rdb instead writes a copy in TinyDB’s paged format. Use a different filename from the active database; download the resulting file from the workspace file list.",
+      "starter_sha256": "2d0235c8d9da5b131e98024ef87782efd224de40de48392184f9d4da7c194f66",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "page-layout",
+      "title": "Address fixed-size pages",
+      "url": "https://snowch.github.io/rust-foundry/#course/page-layout",
+      "decision": "Revised",
+      "passage": "TDB1 stores a simple sequence of records. TinyDB’s normal RDB2 format divides a file into fixed-size pages of 256 bytes, so each page ID can be translated into a byte offset. Page zero contains the file header. Other pages hold rows, index branches, or reusable free space. The later tree-lookup lesson explains how branches and row-holding leaves form a tree. Page id starts at id * 256 and ends just before start + 256. Both calculations must be checked for numeric overflow, and the entire page must fit inside the file. The helper returns Some(start) for a whole valid page and None otherwise. Its ? operators propagate None as in the earlier optional-calculation lesson. TinyDB loads these bounded pages into memory; its commit writes a complete snapshot rather than implementing a disk cache. The lab command .pages lists actual page IDs, page types, and the keys they hold. Compare its output before and after the insert that exceeds a leaf’s capacity.",
+      "starter_sha256": "ae7fa304ba6cda05c354b3e69ca67d4e8d11518d13ff4e52da796352123c1a17",
+      "question": "Why is page 1 accepted while page 2 is outside a 512-byte file?",
+      "design": {
+        "title": "A valid page occupies a complete checked range",
+        "question": "Why is page 1 accepted while page 2 is outside a 512-byte file?",
+        "kind": "table",
+        "headings": [
+          "Page ID",
+          "start = ID × 256",
+          "end = start + 256",
+          "Within file?"
+        ],
+        "rows": [
+          [
+            "0",
+            "0",
+            "256",
+            "Yes: [0,256)"
+          ],
+          [
+            "1",
+            "256",
+            "512",
+            "Yes: [256,512)"
+          ],
+          [
+            "2",
+            "512",
+            "768",
+            "No: end > 512"
+          ],
+          [
+            "usize::MAX",
+            "checked multiply",
+            "not evaluated on failure",
+            "No: overflow"
+          ]
+        ],
+        "label": "",
+        "links": [],
+        "note": "This fixture has no header offset: page 0 starts at byte 0. Checked arithmetic and the complete end boundary are both necessary. A page ID is not a Rust pointer.",
+        "description": "Why is page 1 accepted while page 2 is outside a 512-byte file? Page ID; start = ID × 256; end = start + 256; Within file?. 0; 0; 256; Yes: [0,256); 1; 256; 512; Yes: [256,512); 2; 512; 768; No: end > 512; usize::MAX; checked multiply; not evaluated on failure; No: overflow. . . This fixture has no header offset: page 0 starts at byte 0. Checked arithmetic and the complete end boundary are both necessary. A page ID is not a Rust pointer."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "recursion",
+      "title": "Repeat a smaller version of a problem",
+      "url": "https://snowch.github.io/rust-foundry/#course/recursion",
+      "decision": "Keep prose / worked evidence",
+      "passage": "A recursive function calls itself to solve a smaller version of the same problem. sum_down(3) can ask for sum_down(2), then add three to that returned result. A base case ends the chain of calls. Here zero returns zero without another call. Each nonzero call subtracts one from the next input, so the small examples eventually reach that base case. The results return back through the waiting calls: zero, then one, then three, then six for an input of three. The tree implementation uses the same idea by following a child until it reaches a leaf. These examples use small inputs. Very deep recursion needs more call storage, so a missing base case or an unbounded depth can stop a program. TinyDB validates and bounds tree depth.",
+      "starter_sha256": "c060c2bef6a9db9dc97896a809eb86102a10a83578b6de8c32f261f929315627",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "bplus-lookup",
+      "title": "Seek through a B+ tree",
+      "url": "https://snowch.github.io/rust-foundry/#course/bplus-lookup",
+      "decision": "Revised",
+      "passage": "A tree arranges nodes in levels. Search begins at the root. A branch directs the search to a child, while a leaf holds actual rows. A B+ tree keeps every row in sorted leaves, with branches used only for direction. A separator key is the smallest key in the child to its right. With separators [10, 20], keys below ten go to child zero, ten through nineteen to child one, and twenty or more to child two. .partition_point(predicate) finds the boundary where a rule stops being true in sorted data. Here it counts separators <= the sought key. The closure syntax and shared-reference dereference are already familiar. A point lookup follows one root-to-leaf path. A range query seeks its first key and then follows links between leaves. EXPLAIN reports the actual page path; it does not substitute a different search engine. In the lab, .index describes the index and its height, meaning the number of levels from root to leaf. WHERE id >= 3 AND id <= 7 combines two SQL limits with AND; it selects the inclusive range from three through seven.",
+      "starter_sha256": "3cda06dabba7e1a059ddf2f35b5ac6a87448865e5acbf24322086130e1742dcc",
+      "question": "Why does key 15 select child 1?",
+      "design": {
+        "title": "Separators partition child domains",
+        "question": "Why does key 15 select child 1?",
+        "kind": "graph",
+        "nodes": [
+          {
+            "id": "s",
+            "label": "[10,20]",
+            "x": 50,
+            "y": 15
+          },
+          {
+            "id": "a",
+            "label": "child 0",
+            "x": 16,
+            "y": 80
+          },
+          {
+            "id": "b",
+            "label": "child 1",
+            "x": 50,
+            "y": 80
+          },
+          {
+            "id": "c",
+            "label": "child 2",
+            "x": 84,
+            "y": 80
+          }
+        ],
+        "edges": [
+          {
+            "from": "s",
+            "to": "a",
+            "label": "< 10"
+          },
+          {
+            "from": "s",
+            "to": "b",
+            "label": "10..19"
+          },
+          {
+            "from": "s",
+            "to": "c",
+            "label": "≥ 20"
+          }
+        ],
+        "legend": "partition_point counts separators ≤ key. Thus 9→0, 10→1, 15→1, 20→2.",
+        "height": 300,
+        "note": "These are child domains from the inline routing function, not a claim that it constructs complete leaves or stores the keys 10..19 in one node. Equality routes to the right.",
+        "description": "Why does key 15 select child 1? Nodes: [10,20], child 0, child 1, child 2. Connections: [10,20] leads to child 0 (< 10); [10,20] leads to child 1 (10..19); [10,20] leads to child 2 (≥ 20). partition_point counts separators ≤ key. Thus 9→0, 10→1, 15→1, 20→2.. These are child domains from the inline routing function, not a claim that it constructs complete leaves or stores the keys 10..19 in one node. Equality routes to the right."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "rebalance",
+      "title": "Split, merge, and preserve invariants",
+      "url": "https://snowch.github.io/rust-foundry/#course/rebalance",
+      "decision": "Revised",
+      "passage": "TinyDB deliberately uses small capacities: four rows per leaf and five child pointers per branch. Occupancy means how many entries a node currently holds. These small limits let a short lab reveal structural changes. The helper is called on a known, nonempty overflow vector. For five sorted keys, split_off(len / 2) leaves two on the left and returns three on the right. The first right key becomes the parent separator, but remains a data key in the right leaf. In the full tree, the new right leaf is linked into the leaf chain and inserted into its parent. An overflowing parent splits too; a split root creates a new level. Deletion needs the opposite repair: borrow an entry from a sibling with spare capacity, or merge two small nodes and free the removed page. A one-child root collapses. These are the full implementation’s invariants; .check validates them after the lab operations.",
+      "starter_sha256": "05081105aa4dcf4bf3ab6300b6808ef06a5c63649bd529ae68b31eb43d67af9f",
+      "question": "Where does the copied separator 5 belong?",
+      "design": {
+        "title": "A leaf split creates two key ranges",
+        "question": "Where does the copied separator 5 belong?",
+        "kind": "panels",
+        "panels": [
+          {
+            "label": "Before split_keys",
+            "model": {
+              "kind": "slots",
+              "rows": [
+                {
+                  "label": "Five supplied keys",
+                  "values": [
+                    1,
+                    3,
+                    5,
+                    7,
+                    9
+                  ],
+                  "note": "split_off(5/2) moves the suffix starting at index 2.",
+                  "active": [],
+                  "muted": []
+                }
+              ]
+            }
+          },
+          {
+            "label": "Returned split",
+            "model": {
+              "kind": "graph",
+              "nodes": [
+                {
+                  "id": "s",
+                  "label": "5",
+                  "x": 50,
+                  "y": 18
+                },
+                {
+                  "id": "l",
+                  "label": "[1,3]",
+                  "x": 22,
+                  "y": 80
+                },
+                {
+                  "id": "r",
+                  "label": "[5,7,9]",
+                  "x": 78,
+                  "y": 80
+                }
+              ],
+              "edges": [
+                {
+                  "from": "s",
+                  "to": "l",
+                  "label": "< 5"
+                },
+                {
+                  "from": "s",
+                  "to": "r",
+                  "label": "≥ 5"
+                }
+              ],
+              "legend": "left=[1,3]; right=[5,7,9]; separator=5.",
+              "height": 300
+            }
+          }
+        ],
+        "note": "This inline program demonstrates the split only; the parent is a conceptual routing view. Underflow on deletion is a different operation, not the next step of every insertion.",
+        "description": "Where does the copied separator 5 belong? Before split_keys. Five supplied keys: index 0 = 1, index 1 = 3, index 2 = 5, index 3 = 7, index 4 = 9. split_off(5/2) moves the suffix starting at index 2.; Returned split. Nodes: 5, [1,3], [5,7,9]. Connections: 5 leads to [1,3] (< 5); 5 leads to [5,7,9] (≥ 5). left=[1,3]; right=[5,7,9]; separator=5.. This inline program demonstrates the split only; the parent is a conceptual routing view. Underflow on deletion is a different operation, not the next step of every insertion."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "source-primer",
+      "title": "Find your way around the complete source",
+      "url": "https://snowch.github.io/rust-foundry/#course/source-primer",
+      "decision": "Keep prose / worked evidence",
+      "passage": "The complete TinyDB program is longer than a lesson example. Row validates one record. Database owns the page arena and index operations. Session chooses staged or committed state and saves files. Start from the named operation you are studying, not from the first import in the file. Private helpers such as node, alloc, and branch are supplied operations. Read their input and output types, then their comments. The eight optional implementation projects remove one operation at a time while keeping the other helpers available. You are not expected to reconstruct the entire program unaided. Path is a borrowed filesystem path and PathBuf is an owned path, analogous to borrowed text and an owned String. The standard Read, BufRead, and Write traits supply input/output methods. Trait imports make those methods available; these are standard-library APIs, not new SQL rules. #[cfg(...)] is a conditional-compilation attribute: it includes a section only for a named build target. The reference uses it for native file syncing versus the browser’s virtual filesystem. Those platform-specific helpers are provided scaffold; do not edit them for a tree or parser project. All later transaction and recovery lessons still use small, complete Rust programs first. The full source and project starters are an optional extension after the relevant lessons, rather than a prerequisite for following the core course. Some supplied code uses impl FnOnce(...) for a closure called at most once, or collect::>>() to gather successful iterator items while propagating the first error. The underscore asks Rust to infer the element type. These combine the closure, trait-bound, Result, and collection ideas already taught. Named enum-variant fields can be bound or renamed in a match, such as rows: mut target; the pattern borrows or moves the declared fields according to the same ownership rules.",
+      "starter_sha256": "106969f2995f6370848cf73d8a66a34d04020e13a9bca5cf6c5a0347f45097f9",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "staging",
+      "title": "Stage changes before publishing",
+      "url": "https://snowch.github.io/rust-foundry/#course/staging",
+      "decision": "Revised",
+      "passage": "A transaction groups changes into one publish decision. Committed state is the last accepted version. Staged state is a candidate version that may still be committed or discarded. TinyDB begins by cloning its current database. The small helper below uses .to_vec() to make an owned copy of a borrowed slice, then changes only that copy. BEGIN starts the candidate, and reads in the same session see its staged changes. The next lessons show rollback and commit. This bounded design copies state for clarity rather than providing concurrent database sessions. Each browser Run starts a fresh process. BEGIN and its COMMIT or ROLLBACK must therefore appear in the same script; an open transaction rolls back when that input ends.",
+      "starter_sha256": "da8f97d8f6dc93e3c7c24834ddd5eed113d4fd652f7097abaeb2b69aa9041760",
+      "question": "Why does stage(&committed,3) leave committed as [1,2]?",
+      "design": {
+        "title": "A candidate is separate from committed state",
+        "question": "Why does stage(&committed,3) leave committed as [1,2]?",
+        "kind": "references",
+        "states": [
+          {
+            "label": "After staging",
+            "objects": [
+              {
+                "label": "Committed vector",
+                "value": "[1,2]",
+                "refs": [
+                  {
+                    "name": "committed",
+                    "edge": "owns original"
+                  }
+                ]
+              },
+              {
+                "label": "Candidate vector",
+                "value": "[1,2,3]",
+                "refs": [
+                  {
+                    "name": "candidate",
+                    "edge": "owns copied and extended values"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "note": "The stage helper copies then appends. This program does not publish the candidate or claim atomic/durable storage; the old vector is unchanged.",
+        "description": "Why does stage(&committed,3) leave committed as [1,2]? After staging: Committed vector contains [1,2]. committed owns original Committed vector; Candidate vector contains [1,2,3]. candidate owns copied and extended values Candidate vector. The stage helper copies then appends. This program does not publish the candidate or claim atomic/durable storage; the old vector is unchanged."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "rollback",
+      "title": "Rollback discards the candidate",
+      "url": "https://snowch.github.io/rust-foundry/#course/rollback",
+      "decision": "Revised",
+      "passage": "ROLLBACK abandons all staged changes in this transaction. It does not delete rows that were committed before BEGIN. Option> makes this state explicit: Some(candidate) means a transaction has a staged vector, and None means no active candidate. Assigning None drops that owned candidate. .is_none() is a boolean check for the None variant. The test verifies both that staged state disappears and that the committed vector remains unchanged. TinyDB leaves a transaction active after a statement error, preserving the previous staged state. The learner then chooses whether to inspect, commit, or roll back.",
+      "starter_sha256": "d3425bb5365ee3442b850a5a962694bbbafa7043e0f176641c30cb83f702410e",
+      "question": "Why does committed remain [1] after rollback?",
+      "design": {
+        "title": "Rollback discards the staged owner",
+        "question": "Why does committed remain [1] after rollback?",
+        "kind": "references",
+        "states": [
+          {
+            "label": "Before rollback",
+            "objects": [
+              {
+                "label": "Committed vector",
+                "value": "[1]",
+                "refs": [
+                  {
+                    "name": "committed",
+                    "edge": "unchanged"
+                  }
+                ]
+              },
+              {
+                "label": "Optional staged vector",
+                "value": "Some([1,2,3])",
+                "refs": [
+                  {
+                    "name": "staged",
+                    "edge": "owns candidate"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "label": "After rollback",
+            "objects": [
+              {
+                "label": "Same committed vector",
+                "value": "[1]",
+                "refs": [
+                  {
+                    "name": "committed",
+                    "edge": "still owns original"
+                  }
+                ]
+              },
+              {
+                "label": "staged variable",
+                "value": "None · candidate dropped",
+                "refs": []
+              }
+            ]
+          }
+        ],
+        "note": "Assigning None drops the staged Vec owner. Ordinary rollback is not journal replay, and committed is not replaced by the candidate.",
+        "description": "Why does committed remain [1] after rollback? Before rollback: Committed vector contains [1]. committed unchanged Committed vector; Optional staged vector contains Some([1,2,3]). staged owns candidate Optional staged vector. After rollback: Same committed vector contains [1]. committed still owns original Same committed vector; staged variable contains None · candidate dropped. . Assigning None drops the staged Vec owner. Ordinary rollback is not journal replay, and committed is not replaced by the candidate."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "commit-generation",
+      "title": "Commit one new generation",
+      "url": "https://snowch.github.io/rust-foundry/#course/commit-generation",
+      "decision": "Keep prose / worked evidence",
+      "passage": "COMMIT publishes a valid candidate as the next committed state. A generation is a counter identifying that published database version; it is not a row count. Two successful changes inside one transaction produce one new generation. A standalone write autocommits through the same commit operation, producing its own increment. checked_add prevents the counter from wrapping and making a new state look like an old version. The full commit protocol records intent before installing pages; the next chapter explains that journal. A database generation and a browser workspace revision count different things. The final persistence lesson distinguishes the Rust database commit from saving a browser file snapshot.",
+      "starter_sha256": "d2a90f3506edaeaef28c006279faa8db2628082389a0dae5ef03db2b4ebb13c5",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "journal",
+      "title": "Record intent before installing pages",
+      "url": "https://snowch.github.io/rust-foundry/#course/journal",
+      "decision": "Revised",
+      "passage": "A journal records the intended change before replacing committed pages. TinyDB’s RWL2 journal contains a full after-image: the complete candidate RDB2 snapshot for the next generation. The ordered steps are: write a prepared journal, write its committed marker, install the main snapshot, then remove the journal. A prepared marker alone does not commit the candidate. A committed marker says recovery should redo the saved after-image. .crash prepare, .crash commit, and .crash install deliberately interrupt the next commit at those stages. Reopen the database in a second Run to observe the actual recovery decision. These commands are teaching simulations. Native file syncing asks the operating system to flush writes, while a browser virtual filesystem has no physical fsync guarantee. The webpage saves a snapshot after the simulated exit; an actual tab kill has a different persistence boundary, covered in the final lesson. Recovery happens automatically when the database file is reopened. The .recover inspection command reports the completed recovery generation; it is not required to trigger replay.",
+      "starter_sha256": "7091fa253db0bc3e9d23d9c38e97cfeadc03eaea04091055c737f7500281ffc0",
+      "question": "Why is prepared discarded while committed is redone?",
+      "design": {
+        "title": "Recovery follows the committed decision",
+        "question": "Why is prepared discarded while committed is redone?",
+        "kind": "branch",
+        "root": "Was a commit decision recorded?",
+        "paths": [
+          {
+            "when": "No · committed=false",
+            "result": "discard",
+            "detail": "Prepared work does not become a committed update."
+          },
+          {
+            "when": "Yes · committed=true",
+            "result": "redo",
+            "detail": "Recovery may install the committed work."
+          }
+        ],
+        "note": "The inline program tests this decision function; it does not itself write a journal. The TinyDB workspace’s interruption experiments exercise file recovery separately.",
+        "description": "Why is prepared discarded while committed is redone? Was a commit decision recorded?. No · committed=false. discard. Prepared work does not become a committed update.; Yes · committed=true. redo. Recovery may install the committed work.. The inline program tests this decision function; it does not itself write a journal. The TinyDB workspace’s interruption experiments exercise file recovery separately."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    },
+    {
+      "id": "redo",
+      "title": "Replay once, verify on repetition",
+      "url": "https://snowch.github.io/rust-foundry/#course/redo",
+      "decision": "Keep prose / worked evidence",
+      "passage": "Idempotent means repeating an operation has the same effect as doing it once. Recovery needs this property because an interruption may happen after pages are installed but before journal cleanup. A committed journal targeting generation N can install over its base generation N−1. If N is already installed, the exact snapshot bytes must match before removing the journal. Matching generation numbers alone do not prove matching data. A different generation or different bytes are a conflict: report the error and retain the files rather than guessing which state to keep. Checksums detect accidental byte changes, while structural validation checks the tree rules. Neither check authenticates a file against deliberate rewriting.",
+      "starter_sha256": "c18246f45ec516b6c530d799f2e6df035071e5bb9e03f9d687ee99b3213f7118",
+      "question": "",
+      "design": null,
+      "reason": "Keep the focused explanation and editable worked evidence. A separate model is not selected in this pass; the specific visual dependencies selected across this chapter are recorded on their own lessons.",
+      "placement": null,
+      "prose_replacement": null
+    },
+    {
+      "id": "browser-storage",
+      "title": "Save files without overwriting another tab",
+      "url": "https://snowch.github.io/rust-foundry/#course/browser-storage",
+      "decision": "Revised",
+      "passage": "A process is one running copy of a program. When it finishes normally, it returns an exit code: zero for success or a nonzero number for an error. A runtime trap means execution could not continue normally, such as a failed assertion in this browser build. The Rust program runs with a private virtual filesystem: an in-memory set of filenames and bytes supplied for this Run. A normal exit returns its complete file set to the webpage. The webpage stores that set in IndexedDB, a browser-provided local database separate from TinyDB itself. A workspace revision counts successful whole-file-set saves, including reads that create or recover files. It is separate from TinyDB’s committed generation. Saving compares the expected revision with the current revision inside one atomic browser storage transaction: either the complete new set is saved, or none of that save is published. A stale tab keeps its unsaved candidate downloadable rather than overwriting another tab. An ordinary nonzero process exit can include earlier successful commits. Stop, traps, or timeouts return no candidate snapshot and keep the previous saved files. Browser storage can be denied or evicted, so download important files. This explains the recovery lab boundary: a deliberate .crash exit can save the journal plus main file together, while an actual tab termination during the Run leaves the prior IndexedDB snapshot. No JavaScript or operating-system knowledge is required to use these rules.",
+      "starter_sha256": "902ed668298c2177a012afc29cd1c2ff26945c43387bd0554d616c4be20ff35a",
+      "question": "Why does expected=3/current=4 reject the update?",
+      "design": {
+        "title": "Compare the revision before accepting a save",
+        "question": "Why does expected=3/current=4 reject the update?",
+        "kind": "branch",
+        "root": "compare_revision(expected,current)",
+        "paths": [
+          {
+            "when": "3 == 3",
+            "result": "Ok(4)",
+            "detail": "Accept the next bounded revision."
+          },
+          {
+            "when": "3 != 4",
+            "result": "Err(stale workspace)",
+            "detail": "The expected state is older than the saved state."
+          },
+          {
+            "when": "MAX == MAX",
+            "result": "Err(revision overflow)",
+            "detail": "checked_add rejects the unrepresentable next revision."
+          }
+        ],
+        "note": "The helper tests the revision rule. Actual workspace persistence must perform the compare-and-save atomically; this inline function alone is not an atomic storage transaction.",
+        "description": "Why does expected=3/current=4 reject the update? compare_revision(expected,current). 3 == 3. Ok(4). Accept the next bounded revision.; 3 != 4. Err(stale workspace). The expected state is older than the saved state.; MAX == MAX. Err(revision overflow). checked_add rejects the unrepresentable next revision.. The helper tests the revision rule. Actual workspace persistence must perform the compare-and-save atomically; this inline function alone is not an atomic storage transaction."
+      },
+      "reason": "Use the source-specific relationship/state model recorded below.",
+      "placement": "Beside the worked explanation/result; no extra navigation, execution or completion changes.",
+      "prose_replacement": "The diagram replaces a mental reconstruction of the quoted relationship. Keep definitions, preconditions and caveats; do not repeat a second step-by-step narration."
+    }
+  ]
+}

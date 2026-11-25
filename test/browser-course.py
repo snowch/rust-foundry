@@ -101,7 +101,11 @@ fn main() { println!("{}", greeting()); }
         expect(page.locator('.progress-copy')).to_contain_text(f'0 / {part_size(lesson)} lessons complete')
         if lesson.get('diagram') or lesson['id'] in catalog['diagrams']:
             expect(page.locator('.concept-map')).to_be_visible()
-            expect(page.locator('.concept-map-flow li')).to_have_count(3)
+            if page.locator('.concept-map.learning-model').count():
+                expect(page.locator('.lm-description summary')).to_be_visible()
+                assert len(page.locator('.lm-description p').text_content()) > 80
+            else:
+                expect(page.locator('.concept-map-flow li')).to_have_count(3)
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), lesson['id']
     route(page, '#course/alg-complexity')
     slider = page.locator('#growth-size')
@@ -134,8 +138,8 @@ fn main() { println!("{}", greeting()); }
     worked_card.get_by_role('button', name='Restore starter', exact=True).click()
     route(page, '#course/references')
     expect(page.locator('#course-view h1')).to_have_text(by_id['references']['title'])
-    page.get_by_role('button', name='Next step', exact=True).click()
-    expect(page.locator('.ownership-walk')).to_contain_text('view reads through a shared borrow')
+    expect(page.locator('.learning-model')).to_contain_text('shared borrow via &String')
+    expect(page.locator('.learning-model')).to_contain_text('still owns name')
     page.get_by_label('Mark lesson complete',exact=True).check()
     expect(page.locator('.progress-copy')).to_contain_text(f'1 / {part_size(by_id["references"])} lessons complete')
     expect(page.locator('[data-practice-status]')).not_to_contain_text('Practice checks passed')

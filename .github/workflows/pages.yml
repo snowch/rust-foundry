@@ -37,6 +37,8 @@ jobs:
           python -m pip install playwright==1.62.0
           python -m playwright install --with-deps chromium
       - run: npx playwright install chromium
+      - name: Verify readable original concept models
+        run: npm run test:visuals
       - name: Verify focused lab hubs and saved progress
         run: npm run test:hub
       - run: npm run test:navigation
