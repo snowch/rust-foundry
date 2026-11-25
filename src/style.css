@@ -231,3 +231,23 @@ summary{cursor:pointer;min-height:44px;align-content:center;font-size:17px;color
 @media (max-width: 760px) {
   .experiment-edit { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Foundry location: Course > Part > Chapter > Lesson. */
+.hierarchy-trail,.course-crumbs,#breadcrumbs,.course-location .breadcrumbs{display:flex;align-items:baseline;flex-wrap:wrap;gap:.45rem .65rem;min-width:0;overflow-wrap:anywhere}
+.hierarchy-trail{margin-block:1rem 1.5rem;font-size:.95rem}
+.hierarchy-separator{opacity:.65}
+.hierarchy-filter-label{display:block;margin-block:1.25rem .4rem}
+[data-hierarchy-filter]{max-width:100%;width:100%;padding:.7rem;font:inherit;color:inherit;background:var(--surface,#fff);border:1px solid var(--line,#9caeae);border-radius:.4rem}
+[data-theme=dark] [data-hierarchy-filter]{background:#182d30}
+.hierarchy-chapter{border-top:1px solid var(--line,#9caeae);padding-block:1rem;min-width:0}
+.hierarchy-chapter h3{margin:.3rem 0;font-size:1.05rem}
+.hierarchy-chapter p{font-size:.88rem;margin:.5rem 0;opacity:.85}
+.hierarchy-lessons{list-style:none!important;margin:0!important;padding:0!important}
+.hierarchy-lessons li{margin:0!important;padding:0!important}
+.hierarchy-lessons a{display:flex;gap:.6rem;align-items:baseline;min-height:44px;padding:.6rem!important;overflow-wrap:anywhere;border-radius:.4rem;text-decoration:none}
+.hierarchy-lessons a[aria-current=page]{background:var(--accent-soft,#dceee7);color:var(--accent,#166c5b);font-weight:700}
+.hierarchy-lessons .lesson-number{flex:0 0 2ch}
+.hierarchy-mark{margin-inline-start:auto;font-size:.8rem}
+[data-hierarchy-part][hidden]{display:none!important}
+.lesson-nav a small{display:block}
+.course-row{flex-wrap:wrap}

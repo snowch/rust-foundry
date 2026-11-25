@@ -322,7 +322,7 @@ function route() {
   const view = ['course', 'workspace', 'practice'].includes(name) ? name : name === 'about' ? 'practice' : 'course';
   $('course-view').hidden = view !== 'course'; $('database-view').hidden = view !== 'workspace'; $('practice-view').hidden = view !== 'practice';
   document.querySelectorAll('[data-view]').forEach(link => { if (link.dataset.view === view) link.setAttribute('aria-current', 'page'); else link.removeAttribute('aria-current'); });
-  if (view === 'course') learning.render(name==='lab'?undefined:id,name==='lab'?id:undefined);
+  if (view === 'course') learning.render(['lab','part'].includes(name)?undefined:id,name==='lab'?id:undefined,name==='part'?id:undefined);
   else learning.suspend();
   if (view === 'workspace') { document.title = 'TinyDB workspace — Rust Foundry'; database.initialize(); }
   if (view === 'practice') document.title = 'Rust editor — Rust Foundry';
@@ -340,7 +340,7 @@ function route() {
       if (location.hash.startsWith('#practice/tinydb-source') && !busy) openDatabaseSource(source, project);
     }).catch(error => status(error.message, 'error'));
   }
-  if (name !== 'about') window.scrollTo(0, 0);
+  if (name !== 'about') {window.scrollTo(0,0);if(view==='course'){const heading=$('course-view').querySelector('h1');if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true});}}}
   else requestAnimationFrame(() => $('about').scrollIntoView());
 }
 window.addEventListener('hashchange', route);

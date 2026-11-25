@@ -13,7 +13,8 @@
     "serve": "node scripts/serve.mjs",
     "toolchain:fetch": "node scripts/fetch-toolchain.mjs",
     "check": "node scripts/check.mjs",
-    "test:hub": "node test/hub-selection.cjs && node test/lab-hub.cjs"
+    "test:hub": "node test/hub-selection.cjs && node test/lab-hub.cjs",
+    "test:navigation": "node test/navigation.cjs"
   },
   "keywords": [],
   "author": "",
