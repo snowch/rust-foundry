@@ -29,11 +29,17 @@ if not base:
     threading.Thread(target=server.serve_forever, daemon=True).start()
     base = f'http://127.0.0.1:{server.server_port}/rust-foundry/'
 
-catalog = json.loads(subprocess.check_output(['node', '--input-type=module', '-e', 'import {course,chapters} from "./src/course-data.js"; import {conceptDiagrams} from "./src/concept-diagrams.js"; console.log(JSON.stringify({course,chapters,diagrams:Object.keys(conceptDiagrams)}));'], cwd=root))
+catalog = json.loads(subprocess.check_output(['node', '--input-type=module', '-e', 'import {course,chapters} from "./src/course-data.js"; import {conceptDiagrams} from "./src/concept-diagrams.js"; import {partGroups} from "./src/course-structure.js"; console.log(JSON.stringify({course,chapters,parts:partGroups.map(p=>({id:p.id,title:p.title,chapters:p.chapters.map(c=>c.id),lessons:p.lessons.map(l=>l.id)})),diagrams:Object.keys(conceptDiagrams)}));'], cwd=root))
 
 lessons, chapters = catalog['course'], catalog['chapters']
 by_id = {lesson['id']: lesson for lesson in lessons}
 first_size = sum(lesson['chapter'] == lessons[0]['chapter'] for lesson in lessons)
+parts = catalog['parts']
+def part_size(lesson):
+    return len(next(p for p in parts if lesson['id'] in p['lessons'])['lessons'])
+def chapter_position(lesson):
+    group = [value for value in lessons if value['chapter'] == lesson['chapter']]
+    return f'Lesson {group.index(lesson)+1} of {len(group)}'
 
 def route(page, fragment):
     page.evaluate('(fragment) => location.hash = fragment', fragment)
@@ -90,9 +96,9 @@ fn main() { println!("{}", greeting()); }
         actual_prerequisites = page.locator('.lesson-prerequisites a').evaluate_all('(links) => links.map(link => link.hash.slice(8))')
         assert actual_prerequisites == lesson['prerequisites'], lesson['id']
         chapter_index = next(i for i, value in enumerate(lessons) if value['chapter'] == lesson['chapter'])
-        expect(page.locator('.course-crumbs [aria-current]')).to_have_text(lesson['title'])
+        expect(page.locator('.course-crumbs [aria-current]')).to_have_text(chapter_position(lesson))
         expect(page.locator('.shared-outline a[aria-current] span:nth-child(2)')).to_have_text(lesson['title'])
-        expect(page.locator('.progress-copy')).to_contain_text(f'0 / {sum(item["chapter"] == lesson["chapter"] for item in lessons)} complete')
+        expect(page.locator('.progress-copy')).to_contain_text(f'0 / {part_size(lesson)} lessons complete')
         if lesson.get('diagram') or lesson['id'] in catalog['diagrams']:
             expect(page.locator('.concept-map')).to_be_visible()
             expect(page.locator('.concept-map-flow li')).to_have_count(3)
@@ -131,14 +137,14 @@ fn main() { println!("{}", greeting()); }
     page.get_by_role('button', name='Next step', exact=True).click()
     expect(page.locator('.ownership-walk')).to_contain_text('view reads through a shared borrow')
     page.get_by_label('Mark lesson complete',exact=True).check()
-    expect(page.locator('.progress-copy')).to_contain_text(f'1 / {sum(item["chapter"] == by_id["references"]["chapter"] for item in lessons)} complete')
+    expect(page.locator('.progress-copy')).to_contain_text(f'1 / {part_size(by_id["references"])} lessons complete')
     expect(page.locator('[data-practice-status]')).not_to_contain_text('Practice checks passed')
     # Storage events reconcile reading completion in another tab.
     second = context.new_page()
     second.goto(base + '#course/references', wait_until='domcontentloaded')
     expect(second.get_by_label('Mark lesson complete',exact=True)).to_be_checked()
     second.get_by_label('Mark lesson complete',exact=True).uncheck()
-    expect(page.locator('.progress-copy')).to_contain_text(f'0 / {sum(item["chapter"] == by_id["references"]["chapter"] for item in lessons)} complete')
+    expect(page.locator('.progress-copy')).to_contain_text(f'0 / {part_size(by_id["references"])} lessons complete')
     second.close()
     # TinyDB first run downloads only its small Wasm program.
     route(page, '#workspace')
@@ -223,7 +229,7 @@ fn main() { println!("{}", greeting()); }
     expect(worked.get_by_role('button', name='Run example', exact=True)).to_be_enabled(timeout=300_000)
     expect(worked.locator('.inline-output')).to_have_text(lessons[0]['expected'])
     expect(worked.locator('.inline-status')).to_contain_text('Run finished')
-    expect(page.locator('.progress-copy')).to_contain_text(f'0 / {first_size} complete')
+    expect(page.locator('.progress-copy')).to_contain_text(f'0 / {part_size(lessons[0])} lessons complete')
     assert page.url.endswith('#course/first-program')
     request_count = len(compiler_requests)
     worked.locator('textarea').fill('fn main() { println!("An inline edit"); }')
@@ -251,36 +257,37 @@ fn main() { println!("{}", greeting()); }
     expect(practice.locator('.inline-status')).to_contain_text('Practice checks passed', timeout=30_000)
     expect(practice.locator('.inline-output')).to_have_text(lessons[0]['expected'])
     assert page.url.endswith('#course/first-program')
-    expect(page.locator('.progress-copy')).to_contain_text(f'0 / {first_size} complete')
+    expect(page.locator('.progress-copy')).to_contain_text(f'0 / {part_size(lessons[0])} lessons complete')
     # Progress updates must retain editor nodes, their drafts, and execution feedback.
     page.evaluate('window.practiceEditor = document.querySelector(".inline-runner[data-mode=exercise] textarea")')
     page.get_by_label('Mark lesson complete',exact=True).check()
     assert page.evaluate('window.practiceEditor === document.querySelector(".inline-runner[data-mode=exercise] textarea")')
     expect(practice.locator('.inline-output')).to_have_text(lessons[0]['expected'])
-    expect(page.locator('.chapter-progress-copy')).to_contain_text(f'1 / {first_size} read · 1 / {first_size} practiced')
+    expect(page.locator('[data-chapter-progress="start"]')).to_contain_text(f'1 / {first_size} read · 1 / {first_size} practiced')
     # Leaving a running lesson stops its worker; the new lesson can run immediately.
     worked.locator('textarea').fill('fn main() { loop { std::hint::spin_loop(); } }')
     worked.get_by_role('button', name='Run example', exact=True).click()
     expect(worked.locator('.inline-status')).to_have_text('Running locally…', timeout=30_000)
-    # Chapter navigation uses local lesson numbers and explains chapter transitions.
+    # Chapter boundaries move to the next lesson in the same part; numbered
+    # breadcrumbs keep chapter identity and local position visible.
     page.locator('#course-toggle').click()
     page.locator('.shared-outline a[href="#course/compiler-messages"]').click()
-    expect(page.locator('.course-crumbs a')).to_have_text(chapters[0]['title'])
-    expect(page.locator('.course-crumbs [aria-current]')).to_have_text(by_id[page.url.split('/')[-1]]['title'])
+    expect(page.locator('.course-crumbs a[href="#lab/start"]')).to_have_text('Chapter 1: '+chapters[0]['title'])
+    expect(page.locator('.course-crumbs [aria-current]')).to_have_text(chapter_position(by_id['compiler-messages']))
     next_program = page.locator('.inline-runner[data-mode="worked"]')
     next_program.get_by_role('button', name='Run example', exact=True).click()
     expect(next_program.locator('.inline-output')).to_have_text('Fixed\n', timeout=30_000)
     expect(next_program.get_by_role('button', name='Run example', exact=True)).to_be_enabled()
     page.locator('.adjacent-next').click()
-    expect(page.locator('.foundry-lab-intro h1')).to_have_text(chapters[0]['title'])
-    expect(page.locator('.foundry-lab-outline li')).to_have_count(first_size)
-    page.locator('.lab-primary').click()
-    expect(page.locator('.course-crumbs a')).to_have_text(chapters[0]['title'])
+    expect(page.locator('#course-view h1')).to_have_text(by_id['arithmetic']['title'])
+    expect(page.locator('.course-crumbs a[href="#lab/flow"]')).to_have_text('Chapter 2: '+chapters[1]['title'])
+    expect(page.locator('.course-crumbs [aria-current]')).to_have_text(chapter_position(by_id['arithmetic']))
     page.locator('.adjacent-previous').click()
-    expect(page.locator('.course-crumbs a')).to_have_text(chapters[0]['title'])
-    expect(page.locator('.course-crumbs [aria-current]')).to_have_text(by_id['numbers']['title'])
+    expect(page.locator('#course-view h1')).to_have_text(by_id['compiler-messages']['title'])
+    page.locator('.adjacent-previous').click()
+    expect(page.locator('#course-view h1')).to_have_text(by_id['numbers']['title'])
     page.locator('.adjacent-next').click()
-    expect(page.locator('.course-crumbs [aria-current]')).to_have_text(by_id['compiler-messages']['title'])
+    expect(page.locator('#course-view h1')).to_have_text(by_id['compiler-messages']['title'])
     route(page, '#course')
     expect(page.locator('.resume-card')).to_contain_text('Continue: Read a compiler message')
     route(page, '#course/first-program')
