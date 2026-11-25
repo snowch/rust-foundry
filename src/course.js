@@ -154,7 +154,7 @@ export function initCourse({ openLab, canRun, unsupported }) {
     const completionStatus=el('p','Saved in this browser. Practice checks are recorded separately.','completion-note');completionStatus.setAttribute('role','status');
     toggle.onchange=()=>{const persisted=write(`read:${lesson.id}`,toggle.checked);updateProgress();completionStatus.textContent=persisted?'Saved in this browser. Practice checks are recorded separately.':'This mark lasts until the tab reloads or closes. Browser storage is unavailable.';};finish.append(label,completionStatus);
     const nav = el('nav', undefined, 'adjacent-lessons'); nav.setAttribute('aria-label', 'Adjacent lessons');
-    nav.innerHTML=foundryHub.pager(labGroups,activeLab,lesson,'#course');
+    nav.innerHTML=foundryHub.pager(labGroups,activeLab,lesson,'#course');nav.firstElementChild.classList.add('adjacent-previous');nav.lastElementChild.classList.add('adjacent-next');
     finish.append(nav); article.append(finish); updateProgress();
   }
   window.addEventListener('storage', event => {

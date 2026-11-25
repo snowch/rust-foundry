@@ -36,6 +36,7 @@ export function courseNavigation({ active, progress }) {
       return false;
     }
   });
+  panel.querySelectorAll('[data-hierarchy-progress]').forEach(node=>{node.classList.add('chapter-progress-copy');node.dataset.chapterProgress=node.dataset.hierarchyProgress;});
   panel.querySelectorAll("[data-hierarchy-complete]").forEach((n) => {
     n.dataset.lessonProgress = n.dataset.hierarchyComplete;
   });
