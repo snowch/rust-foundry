@@ -91,7 +91,7 @@ fn main() { println!("{}", greeting()); }
         assert actual_prerequisites == lesson['prerequisites'], lesson['id']
         chapter_index = next(i for i, value in enumerate(lessons) if value['chapter'] == lesson['chapter'])
         expect(page.locator('.course-crumbs [aria-current]')).to_have_text(lesson['title'])
-        expect(page.locator('.shared-outline a[aria-current] .chapter-lesson-title')).to_have_text(lesson['title'])
+        expect(page.locator('.shared-outline a[aria-current] span:nth-child(2)')).to_have_text(lesson['title'])
         expect(page.locator('.progress-copy')).to_contain_text(f'0 / {sum(item["chapter"] == lesson["chapter"] for item in lessons)} complete')
         if lesson.get('diagram') or lesson['id'] in catalog['diagrams']:
             expect(page.locator('.concept-map')).to_be_visible()

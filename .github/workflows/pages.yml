@@ -39,6 +39,7 @@ jobs:
       - run: npx playwright install chromium
       - name: Verify focused lab hubs and saved progress
         run: npm run test:hub
+      - run: npm run test:navigation
       - name: Verify isolation and real compilation in a mobile-sized browser
         run: python test/browser-smoke.py
       - name: Verify course, persistent workspace, recovery, and stale-tab protection
