@@ -52,7 +52,11 @@ const config = {
   const base = "http://127.0.0.1:" + server.address().port + prefix,
     browser = await chromium.launch({
       headless: true,
-      executablePath: process.env.CHROMIUM_PATH || (require("node:fs").existsSync("/usr/bin/chromium") ? "/usr/bin/chromium" : chromium.executablePath()),
+      executablePath:
+        process.env.CHROMIUM_PATH ||
+        (require("node:fs").existsSync("/usr/bin/chromium")
+          ? "/usr/bin/chromium"
+          : chromium.executablePath()),
     }),
     context = await browser.newContext(),
     page = await context.newPage(),
@@ -182,6 +186,33 @@ const config = {
     await go(all[0].href);
     await prediction().fill("Keep this prediction across parts");
     await complete().check();
+    await page.locator(config.toggle).click();
+    const panel = page.locator(
+      "#" + (await page.locator(config.toggle).getAttribute("aria-controls")),
+    );
+    const currentLink = panel.locator('a[aria-current="page"]');
+    const popupPromise = context.waitForEvent("page");
+    await currentLink.click({ modifiers: ["Control"] });
+    const popup = await popupPromise;
+    await popup.waitForLoadState("domcontentloaded");
+    await popup.close();
+    assert.equal(
+      await page.locator(config.toggle).getAttribute("aria-expanded"),
+      "true",
+      "modified click keeps current contents open",
+    );
+    await currentLink.click();
+    assert.equal(
+      await page.locator(config.toggle).getAttribute("aria-expanded"),
+      "false",
+      "choosing current lesson closes contents",
+    );
+    assert(
+      await page
+        .locator("h1:visible")
+        .first()
+        .evaluate((n) => n === document.activeElement),
+    );
     await page.locator(config.toggle).click();
     const original = page.url();
     await page.locator(config.filter).selectOption({ index: 2 });

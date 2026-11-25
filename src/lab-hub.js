@@ -161,6 +161,11 @@
       const link = event.target.closest("a[href]");
       if (
         event.defaultPrevented ||
+        event.button !== 0 ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        event.altKey ||
         !link ||
         new URL(link.href).href !== location.href
       )

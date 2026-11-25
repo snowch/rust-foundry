@@ -40,7 +40,13 @@ export function courseNavigation({ active, progress }) {
     n.dataset.lessonProgress = n.dataset.hierarchyComplete;
   });
   panel.addEventListener("click", (event) => {
-    if (event.target.closest("a")?.getAttribute("href") === location.hash) {
+    if (
+      !event.ctrlKey &&
+      !event.metaKey &&
+      !event.shiftKey &&
+      !event.altKey &&
+      event.target.closest("a")?.getAttribute("href") === location.hash
+    ) {
       event.preventDefault();
       show(false);
       const h = document.querySelector("#course-view h1");
