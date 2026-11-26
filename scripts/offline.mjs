@@ -13,7 +13,7 @@ async function filesUnder(directory, prefix = '') {
   }
   return files.sort();
 }
-const markup = `<button id="app-status-open" type="button" aria-haspopup="dialog">App status <span id="app-status-summary">Check version</span></button>`;
+const markup = `<button id="app-status-open" disabled type="button" aria-haspopup="dialog">App status <span id="app-status-summary">Check version</span></button>`;
 const panel = `<dialog id="app-status-dialog" aria-labelledby="app-status-title">
 <div class="status-heading"><h2 id="app-status-title">App status</h2><button id="app-status-close" type="button" autofocus>Close</button></div>
 <div id="app-status-feedback"><p id="app-status-error" role="status"></p></div>
