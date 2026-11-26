@@ -1,3 +1,4 @@
+import { mountHeaderControls } from "./header-controls.mjs";
 // Copyright © 2026 Christopher Snow.
 import './experiment-state.mjs';
 import {readReleaseMetadata} from './release-metadata.mjs';
@@ -68,6 +69,7 @@ function render() {
   if(unavailable&&hasOfflineCopy&&!transferring&&!checkingCopy)status='Couldn’t verify the offline copy';
   // Keep the existing update/offline status slots for older pinned clients,
   // but expose one message under Course status in the current interface.
+  $("app-status-open").dataset.offlineState = transferring ? "busy" : (available || relevantPending || ready) ? "update" : downloaded && !(typeof checkingCopy !== "undefined" && checkingCopy) ? "saved" : "none";
   $('version-status').textContent=status;
   $('course-ready-icon').toggleAttribute('hidden',checkingCopy||transferring||Boolean(ready)||Boolean(available)||!downloaded||version!=='Up to date');
   $('offline-status').textContent=checkingCopy?'Checking saved files':offlineTransfer?status:unavailable?'Offline downloads are unavailable':downloaded?'Downloaded and ready to use offline.':otherCourseDownloaded?'A different version is saved and ready to use offline.':ready?'Downloaded update is ready after restarting.':snapshot.saved||snapshot.partial?'Offline download incomplete':'Not downloaded for offline use';
@@ -510,3 +512,5 @@ const downloadLink=new URL(location.href);
 if(downloadLink.searchParams.get('download')==='1'){
   dialog.showModal();downloadLink.searchParams.delete('download');history.replaceState(history.state,'',downloadLink);
 }
+
+mountHeaderControls();
